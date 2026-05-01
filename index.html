@@ -56,26 +56,70 @@ setTimeout(function(){
 },20000);
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  navigator.serviceWorker.register('/sw.js').then(reg => {
-    // 新しいService Workerが検出されたら自動でリロード
-    reg.addEventListener('updatefound', () => {
-      const newWorker = reg.installing;
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'activated') {
-          // 新版が適用されたらページをリロード
-          window.location.reload();
-        }
-      });
-    });
-    // 起動時に更新チェック
-    reg.update();
-  }).catch(() => {});
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
 
-  // Service Workerからのメッセージを受信（強制リロード）
-  navigator.serviceWorker.addEventListener('message', e => {
-    if (e.data === 'reload') window.location.reload();
+
+const CURRENT_VERSION = '20260502-002';
+
+async function checkForUpdate() {
+  if (!navigator.onLine) return;
+  try {
+    const res = await fetch('/version.json', {
+      cache: 'no-store',
+      headers: {'Cache-Control': 'no-cache'}
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.version && data.version !== CURRENT_VERSION) {
+      showUpdateBanner();
+    }
+  } catch(e) {}
+}
+
+function showUpdateBanner() {
+  if (document.getElementById('update-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'update-banner';
+  banner.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
+    background: linear-gradient(135deg, #059669, #0d9488);
+    padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: -apple-system, sans-serif;
+    box-shadow: 0 2px 12px rgba(0,0,0,.3);
+  `;
+  banner.innerHTML = `
+    <div style="color:white;font-size:13px;font-weight:700">
+      🆕 新しいバージョンがあります
+    </div>
+    <button id="update-btn" style="
+      background: white; color: #059669; border: none;
+      padding: 7px 16px; border-radius: 20px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+    ">今すぐ更新</button>
+  `;
+  document.body.prepend(banner);
+  document.getElementById('update-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('update-btn');
+    btn.textContent = '更新中...';
+    btn.disabled = true;
+    try {
+      // Service Workerを全て解除してキャッシュをクリア
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    } catch(e) {}
+    // 強制リロード
+    window.location.reload(true);
   });
 }
+
+// アプリ起動時に更新チェック（3秒後）
+setTimeout(checkForUpdate, 3000);
 
 </script>
 
@@ -85,8 +129,8 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <script>
 setLoadMsg('アプリ起動中...');
-const _warn=console.warn;
-console.warn=function(){const m=arguments[0]||'';if(typeof m==='string'&&m.includes('in-browser Babel'))return;_warn.apply(console,arguments);};
+const _w=console.warn;
+console.warn=function(){const m=arguments[0]||'';if(typeof m==='string'&&m.includes('in-browser Babel'))return;_w.apply(console,arguments);};
 </script>
 
 <script type="text/babel" data-presets="react">
