@@ -27,7 +27,6 @@ body{background:#0f172a;color:white;font-family:sans-serif;overflow-x:hidden}
   <div id="load-msg" style="font-size:11px;color:#475569">読み込み中...</div>
 </div>
 <div id="root"></div>
-
 <script>window.storage=(()=>{const DB='sapix_v2',ST='kv';let db=null;
 const open=()=>new Promise((r,e)=>{if(db){r(db);return;}const q=indexedDB.open(DB,1);
 q.onupgradeneeded=v=>v.target.result.createObjectStore(ST);
@@ -48,37 +47,25 @@ function hideLoading(){
   var e=document.getElementById('loading');
   if(e){e.classList.add('hide');setTimeout(function(){if(e)e.style.display='none';},300);}
 }
-window.onerror=function(msg,src,line){
-  setLoadMsg('エラー: '+msg+' (行'+line+')');
-  return false;
-};
+window.onerror=function(msg,src,line){setLoadMsg('エラー: '+msg+' (行'+line+')');return false;};
 if('serviceWorker' in navigator && location.protocol==='https:'){
-  navigator.serviceWorker.register('/sw.js')
-    .then(r=>console.log('SW登録OK'))
-    .catch(e=>console.log('SW登録失敗',e));
+  navigator.serviceWorker.register('/sw.js').catch(function(){});
 }
 setTimeout(function(){
   var e=document.getElementById('loading');
   if(e&&!e.classList.contains('hide'))
-    setLoadMsg('時間がかかっています。Wi-Fiが必要です（初回のみ）');
+    setLoadMsg('時間がかかっています。Wi-Fiを確認してください。');
 },20000);
 </script>
-
 <script>setLoadMsg('ライブラリ読み込み中...');</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <script>
 setLoadMsg('アプリ起動中...');
-// Babelの開発警告を抑制（動作には影響なし）
-const _warn = console.warn;
-console.warn = function() {
-  const msg = arguments[0] || '';
-  if (typeof msg === 'string' && msg.includes('in-browser Babel')) return;
-  _warn.apply(console, arguments);
-};
+const _warn=console.warn;
+console.warn=function(){const m=arguments[0]||'';if(typeof m==='string'&&m.includes('in-browser Babel'))return;_warn.apply(console,arguments);};
 </script>
-
 <script type="text/babel" data-presets="react">
 class ErrorBoundary extends React.Component {
   constructor(p){super(p);this.state={error:null};}
@@ -89,13 +76,11 @@ class ErrorBoundary extends React.Component {
         justifyContent:'center',padding:24,flexDirection:'column',gap:16}}>
         <div style={{fontSize:32}}>⚠️</div>
         <div style={{color:'#f87171',fontSize:15,fontWeight:700}}>エラーが発生しました</div>
-        <pre style={{color:'#94a3b8',fontSize:11,textAlign:'left',lineHeight:1.6,
-          background:'#0f172a',padding:12,borderRadius:8,maxWidth:'100%',overflowX:'auto'}}>
+        <pre style={{color:'#94a3b8',fontSize:11,background:'rgba(0,0,0,.3)',padding:12,borderRadius:8,maxWidth:'100%',overflow:'auto'}}>
           {this.state.error.message}
         </pre>
         <button onClick={()=>window.location.reload()}
-          style={{background:'#3b82f6',color:'white',border:'none',
-            padding:'12px 24px',borderRadius:12,fontSize:14,cursor:'pointer'}}>
+          style={{background:'#3b82f6',color:'white',border:'none',padding:'12px 24px',borderRadius:12,fontSize:14,cursor:'pointer'}}>
           再読み込み
         </button>
       </div>
@@ -2026,6 +2011,87 @@ sections:[
 {id:"m09-dsE-2",text:"61E [2](1)(2)円すいにひもを巻く",pts:20},
 {id:"m09-dsE-3",text:"61E [3](1)(2)(3)容器に容器を入れる",pts:10},
 ]},
+],initialAnswers:{}},
+{id:"math-61-10",code:"61-10",title:"立体図形(2)",isSpring:false,
+sections:[
+{id:"m10-ki1",label:"導入と基本①（立体の名前・頂点辺面・投影図）",diff:1,cat:"立体の基本",problems:[
+{id:"m10-ki1-1",text:"[1](1)(2)(3)(4)立体の名前をア〜⑦から選ぶ",pts:10},
+{id:"m10-ki1-2",text:"[2]アイウエオ〜サシスセソ（四角柱・七角柱・六角すい）の表",pts:2},
+{id:"m10-ki1-3",text:"[3](1)(2)(3)真正面と真上から見た立体の名前",pts:5},
+{id:"m10-ki1-4",text:"[4](1)白い箱は何個あるか",pts:5},{id:"m10-ki1-5",text:"[4](2)右側の真横から見たとき白い箱は何個",pts:5},{id:"m10-ki1-6",text:"[4](3)箱は全部で何個",pts:5},
+]},
+{id:"m10-ki2",label:"導入と基本②（積み重ねた立体・色のぬられた立方体）",diff:1,cat:"立体の数え方",problems:[
+{id:"m10-ki2-1",text:"[1]円板を積んだ立体（真上ア・真横イ・矢印Aウ）→何個",pts:30},
+{id:"m10-ki2-2",text:"[2]立方体を積み重ね→何個以上何個以下",pts:20},
+{id:"m10-ki2-3",text:"[3](1)色のぬられていない立方体は何個",pts:10},{id:"m10-ki2-4",text:"[3](2)2つの面が赤色の立方体は何個",pts:10},{id:"m10-ki2-5",text:"[3](3)ぬられていない面の面積合計",pts:10},
+]},
+{id:"m10-ki3",label:"導入と基本③（色をぬった立方体の積み重ね）",diff:2,cat:"立体の数え方",problems:[
+{id:"m10-ki3-1",text:"[1](1)5つの面だけ色のぬられている立方体は何個",pts:12},{id:"m10-ki3-2",text:"[1](2)4つの面",pts:12},{id:"m10-ki3-3",text:"[1](3)3つの面",pts:12},{id:"m10-ki3-4",text:"[1](4)2つの面",pts:12},{id:"m10-ki3-5",text:"[1](5)1つの面",pts:12},
+{id:"m10-ki3-6",text:"[2]4面が赤色のもの・3面・2面・1面それぞれ何個",pts:10},
+]},
+{id:"m10-ap1",label:"デイリーアプローチ①（投影図から考える）",diff:2,cat:"投影図",problems:[
+{id:"m10-ap1-1",text:"投影図(1)[1](1)箱の数が最も多いとき何個 (2)最少のとき体積",pts:10},
+{id:"m10-ap1-2",text:"投影図(1)[2](1)(2)同様",pts:10},
+{id:"m10-ap1-3",text:"投影図(2)[1]立方体を積み重ね→何個以上何個以下",pts:10},
+{id:"m10-ap1-4",text:"投影図(2)[2]同様",pts:10},
+]},
+{id:"m10-ap2",label:"デイリーアプローチ②（何面ぬられた？1）",diff:2,cat:"色のぬられた立方体",problems:[
+{id:"m10-ap2-1",text:"[1](1)どの面にも色のぬられていない (2)1つの面 (3)2つ (4)3つ (5)面積",pts:10},
+{id:"m10-ap2-2",text:"[2](1)色のぬられていない (2)2つ以上の面 (3)面積",pts:10},
+]},
+{id:"m10-ap3",label:"デイリーアプローチ③（何面ぬられた？2）",diff:2,cat:"色のぬられた立方体",problems:[
+{id:"m10-ap3-1",text:"[1](1)色をぬった面積 (2)①0個②1個③2個④3個④⑤4個⑤個数",pts:12},
+{id:"m10-ap3-2",text:"[2](1)色をぬった面積 (2)①4面②1面③0面",pts:10},
+]},
+{id:"m10-ap4",label:"デイリーアプローチ④（はりあわせる・接する面の数）",diff:2,cat:"立体の表面積",problems:[
+{id:"m10-ap4-1",text:"はりあわせる[1]表面積が一番大きくなるとき",pts:10},
+{id:"m10-ap4-2",text:"はりあわせる[2]同様",pts:10},
+{id:"m10-ap4-3",text:"接する面の数[1]14個の立方体→接している面は何個",pts:10},
+{id:"m10-ap4-4",text:"接する面の数[2]同様",pts:10},
+]},
+{id:"m10-ap5",label:"デイリーアプローチ⑤（表面積の最大・最小）",diff:2,cat:"立体の表面積",problems:[
+{id:"m10-ap5-1",text:"[1](1)表面積最小 (2)最大",pts:10},
+{id:"m10-ap5-2",text:"[2](1)表面積最小 (2)最大",pts:10},
+{id:"m10-ap5-3",text:"表面積の最大最小(2)[1]最大と最小",pts:10},
+{id:"m10-ap5-4",text:"表面積の最大最小(2)[2]最大と最小",pts:10},
+]},
+{id:"m10-ap6",label:"デイリーアプローチ⑥（多面体を切る）",diff:3,cat:"多面体",problems:[
+{id:"m10-ap6-1",text:"[1](1)面・辺・頂点の数 (2)体積は元の何分のいくつ",pts:10},
+{id:"m10-ap6-2",text:"[2](1)面・辺・頂点の数 (2)体積は正八面体の何分のいくつ",pts:10},
+{id:"m10-ap6-3",text:"[3](ア)〜(カ)正二十面体の頂点・辺・面の数",pts:10},
+]},
+{id:"m10-ap7",label:"デイリーアプローチ⑦（穴のあき方）",diff:3,cat:"立方体の穴",problems:[
+{id:"m10-ap7-1",text:"[1]64個・4つの黒丸の穴→穴なし・1方向・2方向・3方向",pts:10},
+{id:"m10-ap7-2",text:"[2]64個・5つの黒丸の穴→同様",pts:10},
+]},
+{id:"m10-ap8",label:"デイリーアプローチ⑧（玉はどこにある？）",diff:3,cat:"立体の観察",problems:[
+{id:"m10-ap8-1",text:"[1](1)図1の場合、1段目・2段目・3段目の場所 (2)個数の範囲",pts:10},
+{id:"m10-ap8-2",text:"[2](1)同様 (2)個数の範囲",pts:10},
+]},
+{id:"m10-dsA",label:"Daily Support 61A",diff:2,cat:"デイリーサポート",problems:[
+{id:"m10-dsA-1",text:"61A [1](1)色のぬられていない (2)2つの面 (3)面積",pts:10},
+{id:"m10-dsA-2",text:"61A [2]14個の立方体→接している面の数",pts:20},
+{id:"m10-dsA-3",text:"61A [3](1)箱最多のとき (2)最少のとき体積",pts:10},
+{id:"m10-dsA-4",text:"61A [4]立方体を積み重ね→何個以上何個以下",pts:15},
+]},
+{id:"m10-dsB",label:"Daily Support 61B",diff:2,cat:"デイリーサポート",problems:[
+{id:"m10-dsB-1",text:"61B [1]54cm³の直方体→最大・最小の表面積",pts:15},
+{id:"m10-dsB-2",text:"61B [2](1)表面積最小 (2)最大",pts:15},
+{id:"m10-dsB-3",text:"61B [3](1)6等分→1面が青いもの (2)3面青8・2面青36…→何等分",pts:20},
+]},
+{id:"m10-dsC",label:"Daily Support 61C",diff:2,cat:"デイリーサポート",problems:[
+{id:"m10-dsC-1",text:"61C [1]3つの直方体を積み重ねた表面積最大",pts:30},
+{id:"m10-dsC-2",text:"61C [2]7つの平面で囲まれた立体→体積最大",pts:30},
+{id:"m10-dsC-3",text:"61C [3](1)色をぬった面積 (2)①②③個数",pts:10},
+]},
+{id:"m10-dsD",label:"Daily Support 61D",diff:3,cat:"デイリーサポート",problems:[
+{id:"m10-dsD-1",text:"61D [1](1)面・辺・頂点の数 (2)体積の比",pts:10},
+{id:"m10-dsD-2",text:"61D [2]64個・7つの黒丸の穴→穴なし・1方向・2方向・3方向",pts:15},
+]},
+{id:"m10-dsE",label:"Daily Support 61E",diff:3,cat:"デイリーサポート",problems:[
+{id:"m10-dsE-1",text:"61E [1](ア)〜(カ)正二十面体の各数",pts:10},
+{id:"m10-dsE-2",text:"61E [2](1)図1の場所 (2)個数の範囲（玉はどこにある）",pts:20},
+]},
 ],initialAnswers:{}}],
 japanese: [
 {
@@ -2489,6 +2555,32 @@ sections:[
 {id:"j09-s-2",text:"②知の冒険（62A-06 七・八・九）",pts:5},
 {id:"j09-s-3",text:"③言葉ナビ（㊇P70〜P75）",pts:5},
 ]},
+],initialAnswers:{}},
+{id:"japanese-62A-10",code:"62A-10",title:"ライバルと仲間（物語文）記述問題の攻略2",isSpring:false,
+sections:[
+{id:"j10-method",label:"解法メソッド　記述問題の攻略2（上手に言いかえよう！）",diff:1,cat:"解法メソッド",problems:[
+{id:"j10-m-1",text:"解法メソッド①：比喩表現を別の表現に置きかえて記述する方法",pts:10},
+{id:"j10-m-2",text:"解法メソッド②：文章の内容を分析して、どのような言葉に置きかえるか検討する方法",pts:10},
+]},
+{id:"j10-kiso",label:"授業の確認問題 基礎編",diff:1,cat:"読解問題",problems:[
+{id:"j10-k-1",text:"基礎編[1]記述問題①（比喩表現の言いかえ）",pts:10},
+{id:"j10-k-2",text:"基礎編[2]記述問題②",pts:10},
+{id:"j10-k-3",text:"基礎編[3]記述問題③",pts:10},
+]},
+{id:"j10-hatten",label:"授業の確認問題 発展編",diff:2,cat:"読解問題",problems:[
+{id:"j10-h-1",text:"発展編[1]記述問題（複雑な言いかえ）①",pts:10},
+{id:"j10-h-2",text:"発展編[2]記述問題②",pts:10},
+{id:"j10-h-3",text:"発展編[3]記述問題③",pts:10},
+]},
+{id:"j10-jissen",label:"授業の確認問題 実戦編",diff:3,cat:"読解問題",problems:[
+{id:"j10-j-1",text:"実戦編[1]記述問題（長文）①",pts:15},
+{id:"j10-j-2",text:"実戦編[2]②",pts:15},
+]},
+{id:"j10-step",label:"デイリーステップ（62A-10）",diff:1,cat:"デイリーステップ",problems:[
+{id:"j10-s-1",text:"①漢字（P33〜P35・P60）",pts:5},
+{id:"j10-s-2",text:"②知の冒険（62A-06 十・十一・十二）",pts:5},
+{id:"j10-s-3",text:"③言葉ナビ（㊇P116〜P118）",pts:5},
+]},
 ],initialAnswers:{}}],
 science: [
 // ============================================================
@@ -2875,6 +2967,25 @@ sections:[
 {id:"s09-t2-8",text:"[デイリーチェック1](1)〜(5)",pts:5},
 {id:"s09-t2-9",text:"[デイリーチェック2](1)〜(5)",pts:5},
 ]},
+],initialAnswers:{}},
+{id:"sci-610",code:"630-10",title:"ばね",isSpring:false,
+sections:[
+{id:"s10-t1",label:"テーマ1　ばねの性質（フックの法則）",diff:1,cat:"ばねの基本",problems:[
+{id:"s10-t1-1",text:"[確認1]ばねののびと力の関係（フックの法則）を答えなさい",pts:5},
+{id:"s10-t1-2",text:"[確認2]ばね定数・弾性限界とは何か答えなさい",pts:5},
+{id:"s10-t1-3",text:"[確認3]ばねはかりの仕組みと使い方を答えなさい",pts:5},
+{id:"s10-t1-4",text:"[DS①〜⑤]デイリーステップ（ばねの基本）",pts:5},
+{id:"s10-t1-5",text:"[DS⑥〜⑩]デイリーステップ（ばねの計算）",pts:5},
+]},
+{id:"s10-t2",label:"テーマ2　ばねの計算",diff:2,cat:"ばねの計算",problems:[
+{id:"s10-t2-1",text:"[確認4]ばねののびを求めよ（1本）",pts:10},
+{id:"s10-t2-2",text:"[確認5]ばねを直列・並列につないだときののびを求めよ",pts:10},
+{id:"s10-t2-3",text:"[確認6]複数のばねにおもりをつり下げたとき",pts:10},
+{id:"s10-t2-4",text:"[確認問題1]ばねの総合問題",pts:10},
+{id:"s10-t2-5",text:"[確認問題2]ばね発展問題",pts:10},
+{id:"s10-t2-6",text:"[デイリーチェック1](1)〜(5)ばねの基本確認",pts:5},
+{id:"s10-t2-7",text:"[デイリーチェック2](1)〜(5)ばねの計算確認",pts:5},
+]},
 ],initialAnswers:{}}],
 
 // ============================================================
@@ -3096,6 +3207,51 @@ sections:[
 {id:"s640-09-dc2-4",text:"DC2(4)サンフランシスコ平和条約・年・首相名",pts:4},
 {id:"s640-09-dc2-5",text:"DC2(5)日ソ共同宣言の年と意義",pts:4},
 ]},
+],initialAnswers:{}},
+{id:"social-640-10",code:"640-10",title:"日本国憲法①（日本国憲法の三大原則）",isSpring:false,
+sections:[
+{id:"s640-10-ds",label:"デイリーステップ（日本国憲法の前文・第1条・第9条の空欄補充1〜21）",diff:1,cat:"デイリーステップ",problems:[
+{id:"s640-10-ds-1",text:"1 前文",pts:2},{id:"s640-10-ds-2",text:"2 選挙",pts:2},{id:"s640-10-ds-3",text:"3 代表者",pts:2},
+{id:"s640-10-ds-4",text:"4 自由",pts:2},{id:"s640-10-ds-5",text:"5 政府",pts:2},{id:"s640-10-ds-6",text:"6 戦争",pts:2},
+{id:"s640-10-ds-7",text:"7 主権",pts:2},{id:"s640-10-ds-8",text:"8 国民",pts:2},{id:"s640-10-ds-9",text:"9 権威",pts:2},
+{id:"s640-10-ds-10",text:"10 権力",pts:2},{id:"s640-10-ds-11",text:"11 福利",pts:2},{id:"s640-10-ds-12",text:"12 象徴",pts:2},
+{id:"s640-10-ds-13",text:"13 9（条）",pts:2},{id:"s640-10-ds-14",text:"14 国際平和",pts:2},{id:"s640-10-ds-15",text:"15 国権",pts:2},
+{id:"s640-10-ds-16",text:"16 武力",pts:2},{id:"s640-10-ds-17",text:"17 紛争",pts:2},{id:"s640-10-ds-18",text:"18 放棄",pts:2},
+{id:"s640-10-ds-19",text:"19 陸海空軍",pts:2},{id:"s640-10-ds-20",text:"20 戦力",pts:2},{id:"s640-10-ds-21",text:"21 交戦権",pts:2},
+]},
+{id:"s640-10-kiso",label:"授業の確認問題 基礎編",diff:1,cat:"確認問題 基礎編",problems:[
+{id:"s640-10-k-1",text:"[1](1)空欄1〜3（国民主権・平和主義・基本的人権）漢字で",pts:2},
+{id:"s640-10-k-2",text:"[1](2)A公布・B施行の年月日",pts:2},
+{id:"s640-10-k-3",text:"[1](3)下線部❶大日本帝国憲法の名前・発布日・内閣総理大臣名",pts:3},
+{id:"s640-10-k-4",text:"[1](4)下線部❷「主権」の説明",pts:3},
+{id:"s640-10-k-5",text:"[1](5)下線部❸①②③空欄に当てはまる語句",pts:3},
+{id:"s640-10-k-6",text:"[1](6)下線部❹1941年から始まった戦争の名前",pts:2},
+{id:"s640-10-k-7",text:"[1](7)下線部❺第9条の資料→①第何条②あ〜おの語句",pts:3},
+{id:"s640-10-k-8",text:"[1](8)下線部❻基本的人権の名称（漢字）",pts:2},
+{id:"s640-10-k-9",text:"[1](9)下線部❼①改正について正しい文選択②第何条",pts:2},
+]},
+{id:"s640-10-hatten",label:"授業の確認問題 発展編",diff:2,cat:"確認問題 発展編",problems:[
+{id:"s640-10-h-1",text:"[1]A〜Fの国名と地図位置（各3点×12問）",pts:3},
+{id:"s640-10-h-2",text:"[1](2)空欄1〜3の語句・年代",pts:2},
+{id:"s640-10-h-3",text:"[1](3)あ〜えの数字（地図選択）",pts:2},
+{id:"s640-10-h-4",text:"[1](4)アの文を答えなさい",pts:2},
+{id:"s640-10-h-5",text:"[1](5)イ・ウの土地を地図から選ぶ",pts:2},
+{id:"s640-10-h-6",text:"[1](6)日英同盟の名前",pts:2},
+]},
+{id:"s640-10-dc1",label:"デイリーチェック[1]（5問・基礎）",diff:1,cat:"デイリーチェック",problems:[
+{id:"s640-10-dc1-1",text:"DC1(1)日本国憲法の三大原則を答えよ",pts:4},
+{id:"s640-10-dc1-2",text:"DC1(2)日本国憲法が公布された年月日",pts:4},
+{id:"s640-10-dc1-3",text:"DC1(3)大日本帝国憲法を発布した天皇の名前",pts:4},
+{id:"s640-10-dc1-4",text:"DC1(4)国民主権とは何か説明せよ",pts:4},
+{id:"s640-10-dc1-5",text:"DC1(5)平和主義について第9条の内容を答えよ",pts:4},
+]},
+{id:"s640-10-dc2",label:"デイリーチェック[2]（5問・発展）",diff:2,cat:"デイリーチェック",problems:[
+{id:"s640-10-dc2-1",text:"DC2(1)基本的人権とはどのような権利か答えよ",pts:4},
+{id:"s640-10-dc2-2",text:"DC2(2)日本国憲法改正の手続きを答えよ",pts:4},
+{id:"s640-10-dc2-3",text:"DC2(3)大日本帝国憲法と日本国憲法の違いを答えよ",pts:4},
+{id:"s640-10-dc2-4",text:"DC2(4)GHQとは何か、日本国憲法制定との関係を答えよ",pts:4},
+{id:"s640-10-dc2-5",text:"DC2(5)日本国憲法制定時の内閣総理大臣の名前",pts:4},
+]},
 ],initialAnswers:{}}],
 };
 // ============================================================
@@ -3122,6 +3278,7 @@ const UNIT_PDFS = {
 "math-H61-05":"算6H05規則性.pdf",
 "math-H61-06":"算6H06場合の数.pdf",
 "math-61-09":"算609立体図形.pdf",
+"math-61-10":"算610立体図形.pdf",
 "japanese-62A-01":"国601.pdf",
 "japanese-62A-02":"国602.pdf",
 "japanese-62A-03":"国603.pdf",
@@ -3131,6 +3288,7 @@ const UNIT_PDFS = {
 "japanese-62A-07":"国607.pdf",
 "japanese-62A-08":"国608.pdf",
 "japanese-62A-09":"国609.pdf",
+"japanese-62A-10":"国610.pdf",
 "sci-601":"理601水溶液.pdf",
 "sci-602":"理602植物.pdf",
 "sci-603":"理603植物.pdf",
@@ -3142,6 +3300,7 @@ const UNIT_PDFS = {
 "sci-6H02":"理6H02太陽.pdf",
 "sci-6H03":"理6H03月.pdf",
 "sci-609":"理609てこ.pdf",
+"sci-610":"理610は_ね.pdf",
 "social-640-01":"社601旧石器_古墳.pdf",
 "social-640-02":"社602古墳_平安.pdf",
 "social-640-03":"社603平安_室町.pdf",
@@ -3154,6 +3313,7 @@ const UNIT_PDFS = {
 "social-6H02":"社6H02社会産業史.pdf",
 "social-6H03":"社6H03社会産業史.pdf",
 "social-640-09":"社609外交史.pdf",
+"social-640-10":"社610日本国憲法.pdf",
 };
 // ============================================================
 

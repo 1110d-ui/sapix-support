@@ -1,4 +1,4 @@
-const VERSION = '20260429-002';
+const VERSION = '20260502-001';
 const CACHE = 'sapix-' + VERSION;
 const CDN_URLS = [
   'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',
