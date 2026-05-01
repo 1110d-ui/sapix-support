@@ -27,6 +27,7 @@ body{background:#0f172a;color:white;font-family:sans-serif;overflow-x:hidden}
   <div id="load-msg" style="font-size:11px;color:#475569">読み込み中...</div>
 </div>
 <div id="root"></div>
+
 <script>window.storage=(()=>{const DB='sapix_v2',ST='kv';let db=null;
 const open=()=>new Promise((r,e)=>{if(db){r(db);return;}const q=indexedDB.open(DB,1);
 q.onupgradeneeded=v=>v.target.result.createObjectStore(ST);
@@ -48,15 +49,36 @@ function hideLoading(){
   if(e){e.classList.add('hide');setTimeout(function(){if(e)e.style.display='none';},300);}
 }
 window.onerror=function(msg,src,line){setLoadMsg('エラー: '+msg+' (行'+line+')');return false;};
-if('serviceWorker' in navigator && location.protocol==='https:'){
-  navigator.serviceWorker.register('/sw.js').catch(function(){});
-}
 setTimeout(function(){
   var e=document.getElementById('loading');
   if(e&&!e.classList.contains('hide'))
     setLoadMsg('時間がかかっています。Wi-Fiを確認してください。');
 },20000);
+
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    // 新しいService Workerが検出されたら自動でリロード
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'activated') {
+          // 新版が適用されたらページをリロード
+          window.location.reload();
+        }
+      });
+    });
+    // 起動時に更新チェック
+    reg.update();
+  }).catch(() => {});
+
+  // Service Workerからのメッセージを受信（強制リロード）
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data === 'reload') window.location.reload();
+  });
+}
+
 </script>
+
 <script>setLoadMsg('ライブラリ読み込み中...');</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -66,6 +88,7 @@ setLoadMsg('アプリ起動中...');
 const _warn=console.warn;
 console.warn=function(){const m=arguments[0]||'';if(typeof m==='string'&&m.includes('in-browser Babel'))return;_warn.apply(console,arguments);};
 </script>
+
 <script type="text/babel" data-presets="react">
 class ErrorBoundary extends React.Component {
   constructor(p){super(p);this.state={error:null};}
@@ -76,11 +99,11 @@ class ErrorBoundary extends React.Component {
         justifyContent:'center',padding:24,flexDirection:'column',gap:16}}>
         <div style={{fontSize:32}}>⚠️</div>
         <div style={{color:'#f87171',fontSize:15,fontWeight:700}}>エラーが発生しました</div>
-        <pre style={{color:'#94a3b8',fontSize:11,background:'rgba(0,0,0,.3)',padding:12,borderRadius:8,maxWidth:'100%',overflow:'auto'}}>
-          {this.state.error.message}
-        </pre>
+        <pre style={{color:'#94a3b8',fontSize:11,background:'rgba(0,0,0,.3)',padding:12,
+          borderRadius:8,maxWidth:'100%',overflow:'auto'}}>{this.state.error.message}</pre>
         <button onClick={()=>window.location.reload()}
-          style={{background:'#3b82f6',color:'white',border:'none',padding:'12px 24px',borderRadius:12,fontSize:14,cursor:'pointer'}}>
+          style={{background:'#3b82f6',color:'white',border:'none',
+            padding:'12px 24px',borderRadius:12,fontSize:14,cursor:'pointer'}}>
           再読み込み
         </button>
       </div>
