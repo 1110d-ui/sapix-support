@@ -27,7 +27,6 @@ body{background:#0f172a;color:white;font-family:sans-serif;overflow-x:hidden}
   <div id="load-msg" style="font-size:11px;color:#475569">読み込み中...</div>
 </div>
 <div id="root"></div>
-
 <script>window.storage=(()=>{const DB='sapix_v2',ST='kv';let db=null;
 const open=()=>new Promise((r,e)=>{if(db){r(db);return;}const q=indexedDB.open(DB,1);
 q.onupgradeneeded=v=>v.target.result.createObjectStore(ST);
@@ -44,34 +43,21 @@ list:async(p='')=>{try{const ks=await run('readonly',s=>s.getAllKeys());return{k
 };})();</script>
 <script>
 function setLoadMsg(m){var e=document.getElementById('load-msg');if(e)e.textContent=m;}
-function hideLoading(){
-  var e=document.getElementById('loading');
-  if(e){e.classList.add('hide');setTimeout(function(){if(e)e.style.display='none';},300);}
-}
-window.onerror=function(msg,src,line){setLoadMsg('エラー: '+msg+' (行'+line+')');return false;};
-setTimeout(function(){
-  var e=document.getElementById('loading');
-  if(e&&!e.classList.contains('hide'))
-    setLoadMsg('時間がかかっています。Wi-Fiを確認してください。');
-},20000);
+function hideLoading(){var e=document.getElementById('loading');if(e){e.classList.add('hide');setTimeout(function(){if(e)e.style.display='none';},300);}}
+window.onerror=function(msg,src,line){setLoadMsg('エラー: '+msg);return false;};
+setTimeout(function(){var e=document.getElementById('loading');if(e&&!e.classList.contains('hide'))setLoadMsg('時間がかかっています。Wi-Fiを確認してください。');},20000);
+if('serviceWorker'in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
 
-if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
-}
-
-
-const CURRENT_VERSION = '20260502-002';
+const CURRENT_VERSION = '20260502-003';
 
 async function checkForUpdate() {
   if (!navigator.onLine) return;
   try {
-    const res = await fetch('/version.json', {
-      cache: 'no-store',
-      headers: {'Cache-Control': 'no-cache'}
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-    if (data.version && data.version !== CURRENT_VERSION) {
+    const res = await fetch('/', {cache:'no-store'});
+    const text = await res.text();
+    // index.html内のバージョン文字列を検索
+    const match = text.match(/CURRENT_VERSION = '([^']+)'/);
+    if (match && match[1] && match[1] !== CURRENT_VERSION) {
       showUpdateBanner();
     }
   } catch(e) {}
@@ -81,31 +67,21 @@ function showUpdateBanner() {
   if (document.getElementById('update-banner')) return;
   const banner = document.createElement('div');
   banner.id = 'update-banner';
-  banner.style.cssText = `
-    position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
-    background: linear-gradient(135deg, #059669, #0d9488);
-    padding: 12px 16px;
-    display: flex; align-items: center; justify-content: space-between;
-    font-family: -apple-system, sans-serif;
-    box-shadow: 0 2px 12px rgba(0,0,0,.3);
-  `;
-  banner.innerHTML = `
-    <div style="color:white;font-size:13px;font-weight:700">
-      🆕 新しいバージョンがあります
-    </div>
-    <button id="update-btn" style="
-      background: white; color: #059669; border: none;
-      padding: 7px 16px; border-radius: 20px;
-      font-size: 13px; font-weight: 700; cursor: pointer;
-    ">今すぐ更新</button>
-  `;
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;' +
+    'background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;' +
+    'display:flex;align-items:center;justify-content:space-between;' +
+    'font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';
+  banner.innerHTML =
+    '<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div>' +
+    '<button id="update-btn" style="background:white;color:#059669;border:none;' +
+    'padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">' +
+    '今すぐ更新</button>';
   document.body.prepend(banner);
   document.getElementById('update-btn').addEventListener('click', async () => {
     const btn = document.getElementById('update-btn');
     btn.textContent = '更新中...';
     btn.disabled = true;
     try {
-      // Service Workerを全て解除してキャッシュをクリア
       if ('serviceWorker' in navigator) {
         const regs = await navigator.serviceWorker.getRegistrations();
         await Promise.all(regs.map(r => r.unregister()));
@@ -113,49 +89,37 @@ function showUpdateBanner() {
       const keys = await caches.keys();
       await Promise.all(keys.map(k => caches.delete(k)));
     } catch(e) {}
-    // 強制リロード
     window.location.reload(true);
   });
 }
 
-// アプリ起動時に更新チェック（3秒後）
 setTimeout(checkForUpdate, 3000);
 
 </script>
-
 <script>setLoadMsg('ライブラリ読み込み中...');</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <script>
 setLoadMsg('アプリ起動中...');
-const _w=console.warn;
-console.warn=function(){const m=arguments[0]||'';if(typeof m==='string'&&m.includes('in-browser Babel'))return;_w.apply(console,arguments);};
+const _w=console.warn;console.warn=function(){const m=arguments[0]||'';if(typeof m==='string'&&m.includes('in-browser Babel'))return;_w.apply(console,arguments);};
 </script>
-
 <script type="text/babel" data-presets="react">
 class ErrorBoundary extends React.Component {
   constructor(p){super(p);this.state={error:null};}
   static getDerivedStateFromError(e){return{error:e};}
   render(){
     if(this.state.error)return(
-      <div style={{background:'#0f172a',minHeight:'100vh',display:'flex',alignItems:'center',
-        justifyContent:'center',padding:24,flexDirection:'column',gap:16}}>
+      <div style={{background:'#0f172a',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24,flexDirection:'column',gap:16}}>
         <div style={{fontSize:32}}>⚠️</div>
         <div style={{color:'#f87171',fontSize:15,fontWeight:700}}>エラーが発生しました</div>
-        <pre style={{color:'#94a3b8',fontSize:11,background:'rgba(0,0,0,.3)',padding:12,
-          borderRadius:8,maxWidth:'100%',overflow:'auto'}}>{this.state.error.message}</pre>
-        <button onClick={()=>window.location.reload()}
-          style={{background:'#3b82f6',color:'white',border:'none',
-            padding:'12px 24px',borderRadius:12,fontSize:14,cursor:'pointer'}}>
-          再読み込み
-        </button>
+        <pre style={{color:'#94a3b8',fontSize:11,background:'rgba(0,0,0,.3)',padding:12,borderRadius:8,maxWidth:'100%',overflow:'auto'}}>{this.state.error.message}</pre>
+        <button onClick={()=>window.location.reload()} style={{background:'#3b82f6',color:'white',border:'none',padding:'12px 24px',borderRadius:12,fontSize:14,cursor:'pointer'}}>再読み込み</button>
       </div>
     );
     return this.props.children;
   }
 }
-
 // Reactはグローバル変数として利用
 const { useState, useEffect, useCallback } = React;
 
@@ -6152,10 +6116,7 @@ return (
 );
 }
 
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <ErrorBoundary><App /></ErrorBoundary>
-);
+ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
 hideLoading();
 </script>
 </body>
