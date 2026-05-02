@@ -46,7 +46,7 @@ window.onerror=function(msg,src,line){setLoadMsg('エラー: '+msg);return false
 setTimeout(function(){var e=document.getElementById('loading');if(e&&!e.classList.contains('hide'))setLoadMsg('時間がかかっています。Wi-Fiを確認してください。');},20000);
 if('serviceWorker'in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
 
-const CURRENT_VERSION = '20260502-005';
+const CURRENT_VERSION = '20260502-006';
 async function checkForUpdate() {
   if (!navigator.onLine) return;
   try {
@@ -311,21 +311,35 @@ const supabase = (() => {
     // 1問の正誤を保存（upsert）
     saveAnswer: async (unitId, problemId, isCorrect) => {
       try {
-        const res = await fetch(
+        const val = isCorrect === true ? true : false;
+        const now = new Date().toISOString();
+        // PATCHで既存レコードを更新（is_correct=falseも確実に保存）
+        const patchRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/sapix_answers?user_id=eq.${USER_ID}&unit_id=eq.${encodeURIComponent(unitId)}&problem_id=eq.${encodeURIComponent(problemId)}`,
+          {
+            method: "PATCH",
+            headers: { ...headers, "Prefer": "return=representation,count=exact" },
+            body: JSON.stringify({ is_correct: val, updated_at: now }),
+          }
+        );
+        if (patchRes.ok) {
+          const text = await patchRes.text();
+          const updated = JSON.parse(text || '[]');
+          if (Array.isArray(updated) && updated.length > 0) return true;
+        }
+        // 既存レコードなし → INSERT
+        const insertRes = await fetch(
           `${SUPABASE_URL}/rest/v1/sapix_answers`,
           {
             method: "POST",
-            headers: { ...headers, "Prefer": "resolution=merge-duplicates,return=minimal" },
+            headers: { ...headers, "Prefer": "return=minimal" },
             body: JSON.stringify({
-              user_id: USER_ID,
-              unit_id: unitId,
-              problem_id: problemId,
-              is_correct: isCorrect === true ? true : false,
-              updated_at: new Date().toISOString(),
+              user_id: USER_ID, unit_id: unitId,
+              problem_id: problemId, is_correct: val, updated_at: now,
             }),
           }
         );
-        return res.ok;
+        return insertRes.ok;
       } catch { return false; }
     },
 
