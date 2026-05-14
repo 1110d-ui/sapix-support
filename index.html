@@ -34,380 +34,16 @@ window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
 if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260502-013';
-async function checkForUpdate() {
-  if (!navigator.onLine) return;
-  try {
-    const res = await fetch('/', {cache:'no-store'});
-    const text = await res.text();
-    const match = text.match(/CURRENT_VERSION = '([^']+)'/);
-    if (match && match[1] && match[1] !== CURRENT_VERSION) showUpdateBanner();
-  } catch(e) {}
-}
-function showUpdateBanner() {
-  if (document.getElementById('update-banner')) return;
-  const banner = document.createElement('div');
-  banner.id = 'update-banner';
-  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';
-  banner.innerHTML = '<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';
-  document.body.prepend(banner);
-  document.getElementById('update-btn').addEventListener('click', async () => {
-    const btn = document.getElementById('update-btn');
-    btn.textContent = '更新中...'; btn.disabled = true;
-    try {
-      if ('serviceWorker' in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map(r => r.unregister()));
-      }
-      const keys = await caches.keys();
-      await Promise.all(keys.map(k => caches.delete(k)));
-    } catch(e) {}
-    window.location.reload(true);
-  });
-}
-setTimeout(checkForUpdate, 3000);
+const CURRENT_VERSION = '20260512-018';
+async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
+function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
+setTimeout(checkForUpdate,3000);
 </script>
-<script>setLoadMsg("ライブラリ読み込み中...");</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script>setLoadMsg("データ読み込み中...");</script>
 <script>
-setLoadMsg("アプリ起動中...");
-const _w=console.warn;console.warn=function(){const m=arguments[0]||"";if(typeof m==="string"&&m.includes("in-browser Babel"))return;_w.apply(console,arguments);};
-</script>
-<script type="text/babel" data-presets="react">
-class ErrorBoundary extends React.Component {
-  constructor(p){super(p);this.state={error:null};}
-  static getDerivedStateFromError(e){return{error:e};}
-  render(){
-    if(this.state.error)return(
-      <div style={{background:"#0f172a",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24,flexDirection:"column",gap:16}}>
-        <div style={{fontSize:32}}>⚠️</div>
-        <div style={{color:"#f87171",fontSize:15,fontWeight:700}}>エラーが発生しました</div>
-        <pre style={{color:"#94a3b8",fontSize:11,background:"rgba(0,0,0,.3)",padding:12,borderRadius:8,maxWidth:"100%",overflow:"auto"}}>{this.state.error.message}</pre>
-        <button onClick={()=>window.location.reload()} style={{background:"#3b82f6",color:"white",border:"none",padding:"12px 24px",borderRadius:12,fontSize:14,cursor:"pointer"}}>再読み込み</button>
-      </div>
-    );
-    return this.props.children;
-  }
-}
-// Reactはグローバル変数として利用
-const { useState, useEffect, useCallback } = React;
-
-// ============================================================
-// データ定義：科目・回・問題
-// ============================================================
-// ============================================================
-// ストレージ抽象化レイヤー（永続化保証版）
-// 優先順位: window.storage → localStorage → IndexedDB
-// ユーザーデータを絶対にリセットしない
-// ============================================================
-const Storage = (() => {
-  // ── 1. window.storage（Claude artifact API）──
-  const ws = {
-    available: () => {
-      try {
-        return typeof window !== 'undefined' &&
-          window.storage != null &&
-          typeof window.storage.get === 'function' &&
-          typeof window.storage.set === 'function';
-      } catch { return false; }
-    },
-    get: async (key) => { try { return await window.storage.get(key, true); } catch { return null; } },
-    set: async (key, value) => { try { return await window.storage.set(key, value, true); } catch { return null; } },
-    delete: async (key) => { try { return await window.storage.delete(key, true); } catch { return null; } },
-    list: async (prefix) => { try { return await window.storage.list(prefix, true); } catch { return { keys: [] }; } },
-  };
-
-  // ── 2. localStorage ──
-  const ls = {
-    available: () => { try { localStorage.setItem('_t','1'); localStorage.removeItem('_t'); return true; } catch { return false; } },
-    get: async (key) => { try { const v = localStorage.getItem(key); return v != null ? { key, value: v } : null; } catch { return null; } },
-    set: async (key, value) => { try { localStorage.setItem(key, value); return { key, value }; } catch { return null; } },
-    delete: async (key) => { try { localStorage.removeItem(key); return { key, deleted: true }; } catch { return null; } },
-    list: async (prefix = '') => {
-      try {
-        const keys = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          if (k && k.startsWith(prefix)) keys.push(k);
-        }
-        return { keys };
-      } catch { return { keys: [] }; }
-    },
-  };
-
-  // ── 3. IndexedDB（最終フォールバック）──
-  const idb = (() => {
-    const DB = 'sapix_db', STORE = 'kv';
-    let _db = null;
-    const open = () => new Promise((res, rej) => {
-      if (_db) { res(_db); return; }
-      const r = indexedDB.open(DB, 1);
-      r.onupgradeneeded = e => e.target.result.createObjectStore(STORE);
-      r.onsuccess = e => { _db = e.target.result; res(_db); };
-      r.onerror = () => rej(r.error);
-    });
-    const tx = async (mode, fn) => {
-      const db = await open();
-      return new Promise((res, rej) => {
-        const t = db.transaction(STORE, mode);
-        const s = t.objectStore(STORE);
-        const r = fn(s);
-        if (r) { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }
-        else { t.oncomplete = () => res(); t.onerror = () => rej(t.error); }
-      });
-    };
-    return {
-      available: () => typeof indexedDB !== 'undefined',
-      get: async (key) => { try { const v = await tx('readonly', s => s.get(key)); return v != null ? { key, value: v } : null; } catch { return null; } },
-      set: async (key, value) => { try { await tx('readwrite', s => s.put(value, key)); return { key, value }; } catch { return null; } },
-      delete: async (key) => { try { await tx('readwrite', s => s.delete(key)); return { key, deleted: true }; } catch { return null; } },
-      list: async (prefix = '') => {
-        try {
-          const keys = await tx('readonly', s => s.getAllKeys());
-          return { keys: (keys || []).filter(k => typeof k === 'string' && k.startsWith(prefix)) };
-        } catch { return { keys: [] }; }
-      },
-    };
-  })();
-
-  // 利用可能なストレージを選択（複数に同時書き込みして確実に保存）
-  const getBackends = () => {
-    const backends = [];
-    if (ws.available()) backends.push(ws);
-    if (ls.available()) backends.push(ls);
-    if (idb.available()) backends.push(idb);
-    return backends.length > 0 ? backends : [idb]; // 最低限idb
-  };
-
-  return {
-    get: async (key) => {
-      // 全バックエンドから順に試して最初に見つかった値を返す
-      for (const b of getBackends()) {
-        const r = await b.get(key);
-        if (r != null) return r;
-      }
-      return null;
-    },
-    set: async (key, value) => {
-      // 全バックエンドに並行書き込み（冗長保存）
-      const backends = getBackends();
-      const results = await Promise.allSettled(backends.map(b => b.set(key, value)));
-      const success = results.find(r => r.status === 'fulfilled' && r.value != null);
-      return success ? success.value : null;
-    },
-    delete: async (key) => {
-      const backends = getBackends();
-      await Promise.allSettled(backends.map(b => b.delete(key)));
-      return { key, deleted: true };
-    },
-    list: async (prefix = '') => {
-      for (const b of getBackends()) {
-        const r = await b.list(prefix);
-        if (r && r.keys && r.keys.length > 0) return r;
-      }
-      // 全バックエンドを集約
-      const allKeys = new Set();
-      for (const b of getBackends()) {
-        const r = await b.list(prefix);
-        if (r && r.keys) r.keys.forEach(k => allKeys.add(k));
-      }
-      return { keys: [...allKeys] };
-    },
-  };
-})();
-
-// ============================================================
-// 単元データ整合性チェック＆自動修復
-// 起動時・UNITS変更時に実行して常に安全な状態を保つ
-// ============================================================
-function sanitizeUnit(unit) {
-  if (!unit || typeof unit !== 'object') return null;
-  // sections が配列でない場合は空配列に
-  if (!Array.isArray(unit.sections)) unit.sections = [];
-  // 各sectionのproblemsが配列でない場合は空配列に
-  unit.sections = unit.sections.map(sec => {
-    if (!sec || typeof sec !== 'object') return null;
-    if (!Array.isArray(sec.problems)) sec.problems = [];
-    // 必須フィールドの保証
-    return {
-      id: sec.id || `sec-${Math.random().toString(36).slice(2,7)}`,
-      label: sec.label || '問題',
-      diff: sec.diff || 2,
-      cat: sec.cat || '問題',
-      problems: sec.problems.filter(p => p && p.id).map(p => ({
-        id: p.id,
-        text: p.text || '',
-        pts: typeof p.pts === 'number' ? p.pts : 5,
-      })),
-    };
-  }).filter(Boolean);
-  return unit;
-}
-
-function sanitizeAllUnits(units) {
-  const result = {};
-  for (const [subjId, arr] of Object.entries(units)) {
-    if (!Array.isArray(arr)) { result[subjId] = []; continue; }
-    result[subjId] = arr.map(sanitizeUnit).filter(Boolean);
-  }
-  return result;
-}
-
-// ============================================================
-// Supabase クライアント（クラウド自動同期）
-// 設定後は正誤データが自動でクラウド保存されます
-// ============================================================
-const SUPABASE_URL = "https://cliztnbsxqecwrrzasaq.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsaXp0bmJzeHFlY3dycnphc2FxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NDkxMDksImV4cCI6MjA5MzAyNTEwOX0.Qnk8JTmkPO95aIMfBlpH0nKKwnl-_2XElkFXgr6r2ow";
-
-const supabase = (() => {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
-
-  const headers = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": `Bearer ${SUPABASE_KEY}`,
-    "Content-Type": "application/json",
-    "Prefer": "return=minimal",
-  };
-
-  const USER_ID = "default"; // シングルユーザー
-
-  return {
-    // 正誤データを全件読み込み
-    loadAnswers: async () => {
-      try {
-        const res = await fetch(
-          `${SUPABASE_URL}/rest/v1/sapix_answers?user_id=eq.${USER_ID}&select=unit_id,problem_id,is_correct`,
-          { headers }
-        );
-        if (!res.ok) return null;
-        const rows = await res.json();
-        // {unitId: {problemId: true/false}} 形式に変換
-        const result = {};
-        for (const row of rows) {
-          if (!result[row.unit_id]) result[row.unit_id] = {};
-          // is_correctを確実にboolean型に変換（文字列"true"/"false"対策）
-          result[row.unit_id][row.problem_id] = row.is_correct === true || row.is_correct === 'true' ? true : false;
-        }
-        return result;
-      } catch { return null; }
-    },
-
-    // 1問の正誤を保存（upsert）
-    saveAnswer: async (unitId, problemId, isCorrect) => {
-      try {
-        const val = isCorrect === true ? true : false;
-        const now = new Date().toISOString();
-        // PATCHで既存レコードを更新（is_correct=falseも確実に保存）
-        const patchRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/sapix_answers?user_id=eq.${USER_ID}&unit_id=eq.${encodeURIComponent(unitId)}&problem_id=eq.${encodeURIComponent(problemId)}`,
-          {
-            method: "PATCH",
-            headers: { ...headers, "Prefer": "return=representation,count=exact" },
-            body: JSON.stringify({ is_correct: val, updated_at: now }),
-          }
-        );
-        if (patchRes.ok) {
-          const text = await patchRes.text();
-          const updated = JSON.parse(text || '[]');
-          if (Array.isArray(updated) && updated.length > 0) return true;
-        }
-        // 既存レコードなし → INSERT
-        const insertRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/sapix_answers`,
-          {
-            method: "POST",
-            headers: { ...headers, "Prefer": "return=minimal" },
-            body: JSON.stringify({
-              user_id: USER_ID, unit_id: unitId,
-              problem_id: problemId, is_correct: val, updated_at: now,
-            }),
-          }
-        );
-        return insertRes.ok;
-      } catch { return false; }
-    },
-
-    // 全正誤データを一括保存（初回移行用）
-    saveAllAnswers: async (allAnswers) => {
-      try {
-        const rows = [];
-        for (const [unitId, probs] of Object.entries(allAnswers)) {
-          for (const [problemId, isCorrect] of Object.entries(probs)) {
-            rows.push({
-              user_id: USER_ID,
-              unit_id: unitId,
-              problem_id: problemId,
-              is_correct: isCorrect === true ? true : false,
-              updated_at: new Date().toISOString(),
-            });
-          }
-        }
-        if (rows.length === 0) return true;
-        // 50件ずつ分割してupsert
-        for (let i = 0; i < rows.length; i += 50) {
-          const chunk = rows.slice(i, i + 50);
-          const res = await fetch(
-            `${SUPABASE_URL}/rest/v1/sapix_answers`,
-            {
-              method: "POST",
-              headers: { ...headers, "Prefer": "resolution=merge-duplicates,return=minimal" },
-              body: JSON.stringify(chunk),
-            }
-          );
-          if (!res.ok) return false;
-        }
-        return true;
-      } catch { return false; }
-    },
-
-    // カスタム単元を保存
-    saveCustomUnit: async (unitId, unitData) => {
-      try {
-        const res = await fetch(
-          `${SUPABASE_URL}/rest/v1/sapix_custom_units`,
-          {
-            method: "POST",
-            headers: { ...headers, "Prefer": "resolution=merge-duplicates,return=minimal" },
-            body: JSON.stringify({
-              user_id: USER_ID,
-              unit_id: unitId,
-              unit_data: unitData,
-              updated_at: new Date().toISOString(),
-            }),
-          }
-        );
-        return res.ok;
-      } catch { return false; }
-    },
-
-    // カスタム単元を全件読み込み
-    loadCustomUnits: async () => {
-      try {
-        const res = await fetch(
-          `${SUPABASE_URL}/rest/v1/sapix_custom_units?user_id=eq.${USER_ID}&select=unit_id,unit_data`,
-          { headers }
-        );
-        if (!res.ok) return null;
-        const rows = await res.json();
-        const result = {};
-        for (const row of rows) result[row.unit_id] = row.unit_data;
-        return result;
-      } catch { return null; }
-    },
-  };
-})();
-
-const SUBJECTS = [
-{ id: "math",    label: "算数", en: "Math",    color: "#1e3a5f", accent: "#3b82f6", light: "#eff6ff", icon: "∑" },
-{ id: "japanese",label: "国語", en: "Japanese", color: "#5f1e1e", accent: "#ef4444", light: "#fef2f2", icon: "文" },
-{ id: "science", label: "理科", en: "Science",  color: "#1e4d2b", accent: "#22c55e", light: "#f0fdf4", icon: "⚗" },
-{ id: "social",  label: "社会", en: "Social",   color: "#4d3a1e", accent: "#f59e0b", light: "#fffbeb", icon: "🌏" },
-];
-
-const UNITS = {
+// SAPIX データ定義（Babelコンパイル対象外）
+window.__SAPIX_DATA__ = {
+UNITS: {
 math: [
 {
 id: "math-61-01",
@@ -4844,16 +4480,8 @@ sections:[
 ]},
 ],initialAnswers:{}}
 ],
-};
-// ============================================================
-// 単元PDFファイルマップ（全43単元）
-// ============================================================
-// 起動時に全単元データを自動サニタイズ（整合性保証）
-const UNITS_SAFE = sanitizeAllUnits(UNITS);
-// UNITS自体も上書き（参照を統一）
-Object.assign(UNITS, UNITS_SAFE);
-
-const UNIT_PDFS = {
+},
+UNIT_PDFS: {
 "math-61-01":"算601数の性質.pdf",
 "math-61-02":"算602平面図形.pdf",
 "math-61-03":"算603割合.pdf",
@@ -4906,7 +4534,2758 @@ const UNIT_PDFS = {
 "social-6H03":"社6H03社会産業史.pdf",
 "social-640-09":"社609外交史.pdf",
 "social-640-10":"社610日本国憲法.pdf",
+},
+WS_UNITS: {
+math: [
+{id:"ws-math-01",code:"WS-01",title:"平面図形①（角度・面積）・旅人算③",sections:[
+{id:"ws-math-01-r1a",label:"R1A（平面図形①（角度・面積））基礎①",diff:1,cat:"R1A",problems:[
+{id:"ws-math-01-r1a-1-1",text:"[1](1) 平面図形①（角度・面積）の計算①",pts:5},
+{id:"ws-math-01-r1a-1-2",text:"[1](2) 平面図形①（角度・面積）の計算②",pts:5},
+{id:"ws-math-01-r1a-1-3",text:"[1](3) 平面図形①（角度・面積）の計算③",pts:5},
+{id:"ws-math-01-r1a-1-4",text:"[1](4) 平面図形①（角度・面積）の計算④",pts:5},
+{id:"ws-math-01-r1a-1-5",text:"[1](5) 平面図形①（角度・面積）の計算⑤",pts:5},
+{id:"ws-math-01-r1a-1-6",text:"[1](6) 平面図形①（角度・面積）の計算⑥",pts:5},
+{id:"ws-math-01-r1a-1-7",text:"[1](7) 平面図形①（角度・面積）の計算⑦",pts:5},
+{id:"ws-math-01-r1a-1-8",text:"[1](8) 平面図形①（角度・面積）の計算⑧",pts:5},
+{id:"ws-math-01-r1a-2-1",text:"[2](1) 平面図形①（角度・面積）の応用①",pts:20},
+{id:"ws-math-01-r1a-2-2",text:"[2](2) 平面図形①（角度・面積）のグラフ",pts:10},
+{id:"ws-math-01-r1a-3-1",text:"[3](1) 平面図形①（角度・面積）の応用②",pts:10},
+{id:"ws-math-01-r1a-3-2",text:"[3](2) 平面図形①（角度・面積）の応用③",pts:10},
+{id:"ws-math-01-r1a-4-1",text:"[4](1) 平面図形①（角度・面積）の応用④",pts:10},
+{id:"ws-math-01-r1a-4-2",text:"[4](2) 平面図形①（角度・面積）の応用⑤",pts:10}
+]},
+{id:"ws-math-01-r1b",label:"R1B（平面図形①（角度・面積））基礎②",diff:1,cat:"R1B",problems:[
+{id:"ws-math-01-r1b-1-1",text:"[1](1) 平行線と角度①",pts:10},
+{id:"ws-math-01-r1b-1-2",text:"[1](2) 平行線と角度②",pts:10},
+{id:"ws-math-01-r1b-2-1",text:"[2](1) 平面図形①（角度・面積）の斜線部分①",pts:10},
+{id:"ws-math-01-r1b-2-2",text:"[2](2) 平面図形①（角度・面積）の斜線部分②",pts:10},
+{id:"ws-math-01-r1b-2-3",text:"[2](3) 平面図形①（角度・面積）の斜線部分③",pts:10},
+{id:"ws-math-01-r1b-3-1",text:"[3](1) 正多角形の内角の和",pts:5},
+{id:"ws-math-01-r1b-3-2",text:"[3](2) 正多角形の1つの内角",pts:5},
+{id:"ws-math-01-r1b-3-3",text:"[3](3) 正多角形の1つの外角",pts:5},
+{id:"ws-math-01-r1b-3-4",text:"[3](4) 正多角形の外角の和",pts:5},
+{id:"ws-math-01-r1b-4-1",text:"[4](1) 台形の等積分割①",pts:10},
+{id:"ws-math-01-r1b-4-2",text:"[4](2) 台形の等積分割②",pts:10},
+{id:"ws-math-01-r1b-4-3",text:"[4](3) 台形の等積分割③",pts:10}
+]},
+{id:"ws-math-01-r1c",label:"R1C（平面図形①（角度・面積））標準③",diff:2,cat:"R1C",problems:[
+{id:"ws-math-01-r1c-1-1",text:"[1](1) 平面図形①（角度・面積）発展①",pts:20},
+{id:"ws-math-01-r1c-1-2",text:"[1](2) 平面図形①（角度・面積）発展②（面積が300㎝²になる時刻）",pts:20},
+{id:"ws-math-01-r1c-2-1",text:"[2](1) 平面図形①（角度・面積）発展③",pts:20},
+{id:"ws-math-01-r1c-2-2",text:"[2](2) 平面図形①（角度・面積）発展④",pts:20},
+{id:"ws-math-01-r1c-2-3",text:"[2](3) 平面図形①（角度・面積）発展⑤",pts:20}
+]},
+{id:"ws-math-01-r2a",label:"R2A（旅人算③）応用①",diff:2,cat:"R2A",problems:[
+{id:"ws-math-01-r2a-1-1",text:"[1](1) 旅人算③①",pts:10},
+{id:"ws-math-01-r2a-1-2",text:"[1](2) 旅人算③②",pts:10},
+{id:"ws-math-01-r2a-1-3",text:"[1](3) 旅人算③③",pts:10},
+{id:"ws-math-01-r2a-1-4",text:"[1](4) 旅人算③④",pts:10},
+{id:"ws-math-01-r2a-1-5",text:"[1](5) 旅人算③⑤",pts:10},
+{id:"ws-math-01-r2a-2-1",text:"[2](1) 旅人算③⑥",pts:5},
+{id:"ws-math-01-r2a-2-2",text:"[2](2) 旅人算③⑦",pts:5},
+{id:"ws-math-01-r2a-3-1",text:"[3](1) 旅人算③最小公倍数①",pts:5},
+{id:"ws-math-01-r2a-3-2",text:"[3](2) 旅人算③最小公倍数②",pts:5},
+{id:"ws-math-01-r2a-3-3",text:"[3](3) 旅人算③最小公倍数③",pts:5},
+{id:"ws-math-01-r2a-3-4",text:"[3](4) 旅人算③最小公倍数④",pts:5},
+{id:"ws-math-01-r2a-4-1",text:"[4](1) 旅人算③立方体①",pts:10},
+{id:"ws-math-01-r2a-4-2",text:"[4](2) 旅人算③立方体②",pts:10}
+]},
+{id:"ws-math-01-r2b",label:"R2B（旅人算③）応用②",diff:2,cat:"R2B",problems:[
+{id:"ws-math-01-r2b-1-1",text:"[1](1) 旅人算③⑧",pts:10},
+{id:"ws-math-01-r2b-1-2",text:"[1](2) 旅人算③⑨",pts:10},
+{id:"ws-math-01-r2b-1-3",text:"[1](3) 旅人算③⑩",pts:10},
+{id:"ws-math-01-r2b-2-1",text:"[2](1) 旅人算③4けた①",pts:5},
+{id:"ws-math-01-r2b-2-2",text:"[2](2) 旅人算③4けた②",pts:5},
+{id:"ws-math-01-r2b-2-3",text:"[2](3) 旅人算③4けた③",pts:5},
+{id:"ws-math-01-r2b-3-1",text:"[3](1) ランプが同時点灯する時刻",pts:10},
+{id:"ws-math-01-r2b-3-2",text:"[3](2) ランプが同時点灯する回数",pts:10},
+{id:"ws-math-01-r2b-4-1",text:"[4](1) 余りが同じ整数①",pts:10},
+{id:"ws-math-01-r2b-4-2",text:"[4](2) 余りが同じ整数②",pts:10}
+]},
+{id:"ws-math-01-r2c",label:"R2C（旅人算③）難問③",diff:3,cat:"R2C",problems:[
+{id:"ws-math-01-r2c-1",text:"[1] 旅人算③難問①（25点）",pts:25},
+{id:"ws-math-01-r2c-2",text:"[2] 旅人算③難問②（25点）",pts:25},
+{id:"ws-math-01-r2c-3",text:"[3] 旅人算③難問③（25点）",pts:25},
+{id:"ws-math-01-r2c-4",text:"[4] 旅人算③難問④（25点）",pts:25}
+]},
+{id:"ws-math-01-x1",label:"x-01① 発展①",diff:3,cat:"x①",problems:[
+{id:"ws-math-01-x1-1",text:"x①[1] カレンダー・曜日の計算（25点）",pts:25},
+{id:"ws-math-01-x1-2",text:"x①[2] 分数の数列で何番目か（25点）",pts:25},
+{id:"ws-math-01-x1-3",text:"x①[3] 整数を並べて700番目の数（25点）",pts:25},
+{id:"ws-math-01-x1-4",text:"x①[4] さいころの裏面の数の和（25点）",pts:25}
+]},
+{id:"ws-math-01-x2",label:"x-01② 発展②",diff:3,cat:"x②",problems:[
+{id:"ws-math-01-x2-1",text:"x②[1] 4月3日から100日目の曜日（25点）",pts:25},
+{id:"ws-math-01-x2-2",text:"x②[2] 分数の列で6/13は何番目（25点）",pts:25},
+{id:"ws-math-01-x2-3",text:"x②[3] 区切りの和が303になる番目（25点）",pts:25},
+{id:"ws-math-01-x2-4",text:"x②[4] 4個のさいころ積が60・裏面の和（25点）",pts:25}
+]},
+{id:"ws-math-01-z1",label:"Z-01① 最難問①",diff:3,cat:"Z①",problems:[
+{id:"ws-math-01-z1-1",text:"Z①[1](1) じゃんけん・階段①",pts:20},
+{id:"ws-math-01-z1-2",text:"Z①[1](2) じゃんけん・階段②",pts:20},
+{id:"ws-math-01-z1-3",text:"Z①[1](3) じゃんけん・考えられるだけ（20点）",pts:20},
+{id:"ws-math-01-z1-4",text:"Z①[2](1) 動点・三角形の面積（20点）",pts:20},
+{id:"ws-math-01-z1-5",text:"Z①[2](2) 動点・二等辺三角形になる時刻（20点）",pts:20},
+{id:"ws-math-01-z1-6",text:"Z①[3](1) 複合図形①",pts:20},
+{id:"ws-math-01-z1-7",text:"Z①[3](2) 複合図形②",pts:20},
+{id:"ws-math-01-z1-8",text:"Z①[3](3) 複合図形③",pts:20},
+{id:"ws-math-01-z1-9",text:"Z①[3](4) 複合図形④",pts:20}
+]},
+{id:"ws-math-01-z2",label:"Z-01② 最難問②",diff:3,cat:"Z②",problems:[
+{id:"ws-math-01-z2-4-1",text:"Z②[4](1) 折り返し図形①（三角形になるDE範囲）",pts:20},
+{id:"ws-math-01-z2-4-2",text:"Z②[4](2) 折り返し図形②（BE=4㎝の重なり面積）",pts:20},
+{id:"ws-math-01-z2-5-1",text:"Z②[5](1) 偶奇操作で15が1になる回数①",pts:20},
+{id:"ws-math-01-z2-5-2",text:"Z②[5](2) 偶奇操作で6になる最初の数すべて（20点）",pts:20},
+{id:"ws-math-01-z2-6",text:"Z②[6] 長方形の周囲の長さ（25点）",pts:25},
+{id:"ws-math-01-z2-7-1",text:"Z②[7](1) 装置A・C・DにIN=27（25点）",pts:25},
+{id:"ws-math-01-z2-7-2",text:"Z②[7](2) 逆順でOUT=35のIN（25点）",pts:25}
+]}
+],initialAnswers:{}},
+{id:"ws-math-02",code:"WS-02",title:"平面図形②（円・おうぎ形）・グラフ（動点）",sections:[
+{id:"ws-math-02-r1a",label:"R1A（平面図形②（円・おうぎ形））基礎①",diff:1,cat:"R1A",problems:[
+{id:"ws-math-02-r1a-1-1",text:"[1](1) 平面図形②（円・おうぎ形）の計算①",pts:5},
+{id:"ws-math-02-r1a-1-2",text:"[1](2) 平面図形②（円・おうぎ形）の計算②",pts:5},
+{id:"ws-math-02-r1a-1-3",text:"[1](3) 平面図形②（円・おうぎ形）の計算③",pts:5},
+{id:"ws-math-02-r1a-1-4",text:"[1](4) 平面図形②（円・おうぎ形）の計算④",pts:5},
+{id:"ws-math-02-r1a-1-5",text:"[1](5) 平面図形②（円・おうぎ形）の計算⑤",pts:5},
+{id:"ws-math-02-r1a-1-6",text:"[1](6) 平面図形②（円・おうぎ形）の計算⑥",pts:5},
+{id:"ws-math-02-r1a-1-7",text:"[1](7) 平面図形②（円・おうぎ形）の計算⑦",pts:5},
+{id:"ws-math-02-r1a-1-8",text:"[1](8) 平面図形②（円・おうぎ形）の計算⑧",pts:5},
+{id:"ws-math-02-r1a-2-1",text:"[2](1) 平面図形②（円・おうぎ形）の応用①",pts:20},
+{id:"ws-math-02-r1a-2-2",text:"[2](2) 平面図形②（円・おうぎ形）のグラフ",pts:10},
+{id:"ws-math-02-r1a-3-1",text:"[3](1) 平面図形②（円・おうぎ形）の応用②",pts:10},
+{id:"ws-math-02-r1a-3-2",text:"[3](2) 平面図形②（円・おうぎ形）の応用③",pts:10},
+{id:"ws-math-02-r1a-4-1",text:"[4](1) 平面図形②（円・おうぎ形）の応用④",pts:10},
+{id:"ws-math-02-r1a-4-2",text:"[4](2) 平面図形②（円・おうぎ形）の応用⑤",pts:10}
+]},
+{id:"ws-math-02-r1b",label:"R1B（平面図形②（円・おうぎ形））基礎②",diff:1,cat:"R1B",problems:[
+{id:"ws-math-02-r1b-1-1",text:"[1](1) 平行線と角度①",pts:10},
+{id:"ws-math-02-r1b-1-2",text:"[1](2) 平行線と角度②",pts:10},
+{id:"ws-math-02-r1b-2-1",text:"[2](1) 平面図形②（円・おうぎ形）の斜線部分①",pts:10},
+{id:"ws-math-02-r1b-2-2",text:"[2](2) 平面図形②（円・おうぎ形）の斜線部分②",pts:10},
+{id:"ws-math-02-r1b-2-3",text:"[2](3) 平面図形②（円・おうぎ形）の斜線部分③",pts:10},
+{id:"ws-math-02-r1b-3-1",text:"[3](1) 正多角形の内角の和",pts:5},
+{id:"ws-math-02-r1b-3-2",text:"[3](2) 正多角形の1つの内角",pts:5},
+{id:"ws-math-02-r1b-3-3",text:"[3](3) 正多角形の1つの外角",pts:5},
+{id:"ws-math-02-r1b-3-4",text:"[3](4) 正多角形の外角の和",pts:5},
+{id:"ws-math-02-r1b-4-1",text:"[4](1) 台形の等積分割①",pts:10},
+{id:"ws-math-02-r1b-4-2",text:"[4](2) 台形の等積分割②",pts:10},
+{id:"ws-math-02-r1b-4-3",text:"[4](3) 台形の等積分割③",pts:10}
+]},
+{id:"ws-math-02-r1c",label:"R1C（平面図形②（円・おうぎ形））標準③",diff:2,cat:"R1C",problems:[
+{id:"ws-math-02-r1c-1-1",text:"[1](1) 平面図形②（円・おうぎ形）発展①",pts:20},
+{id:"ws-math-02-r1c-1-2",text:"[1](2) 平面図形②（円・おうぎ形）発展②（面積が300㎝²になる時刻）",pts:20},
+{id:"ws-math-02-r1c-2-1",text:"[2](1) 平面図形②（円・おうぎ形）発展③",pts:20},
+{id:"ws-math-02-r1c-2-2",text:"[2](2) 平面図形②（円・おうぎ形）発展④",pts:20},
+{id:"ws-math-02-r1c-2-3",text:"[2](3) 平面図形②（円・おうぎ形）発展⑤",pts:20}
+]},
+{id:"ws-math-02-r2a",label:"R2A（グラフ（動点））応用①",diff:2,cat:"R2A",problems:[
+{id:"ws-math-02-r2a-1-1",text:"[1](1) グラフ（動点）①",pts:10},
+{id:"ws-math-02-r2a-1-2",text:"[1](2) グラフ（動点）②",pts:10},
+{id:"ws-math-02-r2a-1-3",text:"[1](3) グラフ（動点）③",pts:10},
+{id:"ws-math-02-r2a-1-4",text:"[1](4) グラフ（動点）④",pts:10},
+{id:"ws-math-02-r2a-1-5",text:"[1](5) グラフ（動点）⑤",pts:10},
+{id:"ws-math-02-r2a-2-1",text:"[2](1) グラフ（動点）⑥",pts:5},
+{id:"ws-math-02-r2a-2-2",text:"[2](2) グラフ（動点）⑦",pts:5},
+{id:"ws-math-02-r2a-3-1",text:"[3](1) グラフ（動点）最小公倍数①",pts:5},
+{id:"ws-math-02-r2a-3-2",text:"[3](2) グラフ（動点）最小公倍数②",pts:5},
+{id:"ws-math-02-r2a-3-3",text:"[3](3) グラフ（動点）最小公倍数③",pts:5},
+{id:"ws-math-02-r2a-3-4",text:"[3](4) グラフ（動点）最小公倍数④",pts:5},
+{id:"ws-math-02-r2a-4-1",text:"[4](1) グラフ（動点）立方体①",pts:10},
+{id:"ws-math-02-r2a-4-2",text:"[4](2) グラフ（動点）立方体②",pts:10}
+]},
+{id:"ws-math-02-r2b",label:"R2B（グラフ（動点））応用②",diff:2,cat:"R2B",problems:[
+{id:"ws-math-02-r2b-1-1",text:"[1](1) グラフ（動点）⑧",pts:10},
+{id:"ws-math-02-r2b-1-2",text:"[1](2) グラフ（動点）⑨",pts:10},
+{id:"ws-math-02-r2b-1-3",text:"[1](3) グラフ（動点）⑩",pts:10},
+{id:"ws-math-02-r2b-2-1",text:"[2](1) グラフ（動点）4けた①",pts:5},
+{id:"ws-math-02-r2b-2-2",text:"[2](2) グラフ（動点）4けた②",pts:5},
+{id:"ws-math-02-r2b-2-3",text:"[2](3) グラフ（動点）4けた③",pts:5},
+{id:"ws-math-02-r2b-3-1",text:"[3](1) ランプが同時点灯する時刻",pts:10},
+{id:"ws-math-02-r2b-3-2",text:"[3](2) ランプが同時点灯する回数",pts:10},
+{id:"ws-math-02-r2b-4-1",text:"[4](1) 余りが同じ整数①",pts:10},
+{id:"ws-math-02-r2b-4-2",text:"[4](2) 余りが同じ整数②",pts:10}
+]},
+{id:"ws-math-02-r2c",label:"R2C（グラフ（動点））難問③",diff:3,cat:"R2C",problems:[
+{id:"ws-math-02-r2c-1",text:"[1] グラフ（動点）難問①（25点）",pts:25},
+{id:"ws-math-02-r2c-2",text:"[2] グラフ（動点）難問②（25点）",pts:25},
+{id:"ws-math-02-r2c-3",text:"[3] グラフ（動点）難問③（25点）",pts:25},
+{id:"ws-math-02-r2c-4",text:"[4] グラフ（動点）難問④（25点）",pts:25}
+]},
+{id:"ws-math-02-x1",label:"x-02① 発展①",diff:3,cat:"x①",problems:[
+{id:"ws-math-02-x1-1",text:"x①[1] カレンダー・曜日の計算（25点）",pts:25},
+{id:"ws-math-02-x1-2",text:"x①[2] 分数の数列で何番目か（25点）",pts:25},
+{id:"ws-math-02-x1-3",text:"x①[3] 整数を並べて700番目の数（25点）",pts:25},
+{id:"ws-math-02-x1-4",text:"x①[4] さいころの裏面の数の和（25点）",pts:25}
+]},
+{id:"ws-math-02-x2",label:"x-02② 発展②",diff:3,cat:"x②",problems:[
+{id:"ws-math-02-x2-1",text:"x②[1] 4月3日から100日目の曜日（25点）",pts:25},
+{id:"ws-math-02-x2-2",text:"x②[2] 分数の列で6/13は何番目（25点）",pts:25},
+{id:"ws-math-02-x2-3",text:"x②[3] 区切りの和が303になる番目（25点）",pts:25},
+{id:"ws-math-02-x2-4",text:"x②[4] 4個のさいころ積が60・裏面の和（25点）",pts:25}
+]},
+{id:"ws-math-02-z1",label:"Z-02① 最難問①",diff:3,cat:"Z①",problems:[
+{id:"ws-math-02-z1-1",text:"Z①[1](1) じゃんけん・階段①",pts:20},
+{id:"ws-math-02-z1-2",text:"Z①[1](2) じゃんけん・階段②",pts:20},
+{id:"ws-math-02-z1-3",text:"Z①[1](3) じゃんけん・考えられるだけ（20点）",pts:20},
+{id:"ws-math-02-z1-4",text:"Z①[2](1) 動点・三角形の面積（20点）",pts:20},
+{id:"ws-math-02-z1-5",text:"Z①[2](2) 動点・二等辺三角形になる時刻（20点）",pts:20},
+{id:"ws-math-02-z1-6",text:"Z①[3](1) 複合図形①",pts:20},
+{id:"ws-math-02-z1-7",text:"Z①[3](2) 複合図形②",pts:20},
+{id:"ws-math-02-z1-8",text:"Z①[3](3) 複合図形③",pts:20},
+{id:"ws-math-02-z1-9",text:"Z①[3](4) 複合図形④",pts:20}
+]},
+{id:"ws-math-02-z2",label:"Z-02② 最難問②",diff:3,cat:"Z②",problems:[
+{id:"ws-math-02-z2-4-1",text:"Z②[4](1) 折り返し図形①（三角形になるDE範囲）",pts:20},
+{id:"ws-math-02-z2-4-2",text:"Z②[4](2) 折り返し図形②（BE=4㎝の重なり面積）",pts:20},
+{id:"ws-math-02-z2-5-1",text:"Z②[5](1) 偶奇操作で15が1になる回数①",pts:20},
+{id:"ws-math-02-z2-5-2",text:"Z②[5](2) 偶奇操作で6になる最初の数すべて（20点）",pts:20},
+{id:"ws-math-02-z2-6",text:"Z②[6] 長方形の周囲の長さ（25点）",pts:25},
+{id:"ws-math-02-z2-7-1",text:"Z②[7](1) 装置A・C・DにIN=27（25点）",pts:25},
+{id:"ws-math-02-z2-7-2",text:"Z②[7](2) 逆順でOUT=35のIN（25点）",pts:25}
+]}
+],initialAnswers:{}},
+{id:"ws-math-03",code:"WS-03",title:"立体図形①（展開図・表面積）・割合③",sections:[
+{id:"ws-math-03-r1a",label:"R1A（立体図形①（展開図・表面積））基礎①",diff:1,cat:"R1A",problems:[
+{id:"ws-math-03-r1a-1-1",text:"[1](1) 立体図形①（展開図・表面積）の計算①",pts:5},
+{id:"ws-math-03-r1a-1-2",text:"[1](2) 立体図形①（展開図・表面積）の計算②",pts:5},
+{id:"ws-math-03-r1a-1-3",text:"[1](3) 立体図形①（展開図・表面積）の計算③",pts:5},
+{id:"ws-math-03-r1a-1-4",text:"[1](4) 立体図形①（展開図・表面積）の計算④",pts:5},
+{id:"ws-math-03-r1a-1-5",text:"[1](5) 立体図形①（展開図・表面積）の計算⑤",pts:5},
+{id:"ws-math-03-r1a-1-6",text:"[1](6) 立体図形①（展開図・表面積）の計算⑥",pts:5},
+{id:"ws-math-03-r1a-1-7",text:"[1](7) 立体図形①（展開図・表面積）の計算⑦",pts:5},
+{id:"ws-math-03-r1a-1-8",text:"[1](8) 立体図形①（展開図・表面積）の計算⑧",pts:5},
+{id:"ws-math-03-r1a-2-1",text:"[2](1) 立体図形①（展開図・表面積）の応用①",pts:20},
+{id:"ws-math-03-r1a-2-2",text:"[2](2) 立体図形①（展開図・表面積）のグラフ",pts:10},
+{id:"ws-math-03-r1a-3-1",text:"[3](1) 立体図形①（展開図・表面積）の応用②",pts:10},
+{id:"ws-math-03-r1a-3-2",text:"[3](2) 立体図形①（展開図・表面積）の応用③",pts:10},
+{id:"ws-math-03-r1a-4-1",text:"[4](1) 立体図形①（展開図・表面積）の応用④",pts:10},
+{id:"ws-math-03-r1a-4-2",text:"[4](2) 立体図形①（展開図・表面積）の応用⑤",pts:10}
+]},
+{id:"ws-math-03-r1b",label:"R1B（立体図形①（展開図・表面積））基礎②",diff:1,cat:"R1B",problems:[
+{id:"ws-math-03-r1b-1-1",text:"[1](1) 平行線と角度①",pts:10},
+{id:"ws-math-03-r1b-1-2",text:"[1](2) 平行線と角度②",pts:10},
+{id:"ws-math-03-r1b-2-1",text:"[2](1) 立体図形①（展開図・表面積）の斜線部分①",pts:10},
+{id:"ws-math-03-r1b-2-2",text:"[2](2) 立体図形①（展開図・表面積）の斜線部分②",pts:10},
+{id:"ws-math-03-r1b-2-3",text:"[2](3) 立体図形①（展開図・表面積）の斜線部分③",pts:10},
+{id:"ws-math-03-r1b-3-1",text:"[3](1) 正多角形の内角の和",pts:5},
+{id:"ws-math-03-r1b-3-2",text:"[3](2) 正多角形の1つの内角",pts:5},
+{id:"ws-math-03-r1b-3-3",text:"[3](3) 正多角形の1つの外角",pts:5},
+{id:"ws-math-03-r1b-3-4",text:"[3](4) 正多角形の外角の和",pts:5},
+{id:"ws-math-03-r1b-4-1",text:"[4](1) 台形の等積分割①",pts:10},
+{id:"ws-math-03-r1b-4-2",text:"[4](2) 台形の等積分割②",pts:10},
+{id:"ws-math-03-r1b-4-3",text:"[4](3) 台形の等積分割③",pts:10}
+]},
+{id:"ws-math-03-r1c",label:"R1C（立体図形①（展開図・表面積））標準③",diff:2,cat:"R1C",problems:[
+{id:"ws-math-03-r1c-1-1",text:"[1](1) 立体図形①（展開図・表面積）発展①",pts:20},
+{id:"ws-math-03-r1c-1-2",text:"[1](2) 立体図形①（展開図・表面積）発展②（面積が300㎝²になる時刻）",pts:20},
+{id:"ws-math-03-r1c-2-1",text:"[2](1) 立体図形①（展開図・表面積）発展③",pts:20},
+{id:"ws-math-03-r1c-2-2",text:"[2](2) 立体図形①（展開図・表面積）発展④",pts:20},
+{id:"ws-math-03-r1c-2-3",text:"[2](3) 立体図形①（展開図・表面積）発展⑤",pts:20}
+]},
+{id:"ws-math-03-r2a",label:"R2A（割合③）応用①",diff:2,cat:"R2A",problems:[
+{id:"ws-math-03-r2a-1-1",text:"[1](1) 割合③①",pts:10},
+{id:"ws-math-03-r2a-1-2",text:"[1](2) 割合③②",pts:10},
+{id:"ws-math-03-r2a-1-3",text:"[1](3) 割合③③",pts:10},
+{id:"ws-math-03-r2a-1-4",text:"[1](4) 割合③④",pts:10},
+{id:"ws-math-03-r2a-1-5",text:"[1](5) 割合③⑤",pts:10},
+{id:"ws-math-03-r2a-2-1",text:"[2](1) 割合③⑥",pts:5},
+{id:"ws-math-03-r2a-2-2",text:"[2](2) 割合③⑦",pts:5},
+{id:"ws-math-03-r2a-3-1",text:"[3](1) 割合③最小公倍数①",pts:5},
+{id:"ws-math-03-r2a-3-2",text:"[3](2) 割合③最小公倍数②",pts:5},
+{id:"ws-math-03-r2a-3-3",text:"[3](3) 割合③最小公倍数③",pts:5},
+{id:"ws-math-03-r2a-3-4",text:"[3](4) 割合③最小公倍数④",pts:5},
+{id:"ws-math-03-r2a-4-1",text:"[4](1) 割合③立方体①",pts:10},
+{id:"ws-math-03-r2a-4-2",text:"[4](2) 割合③立方体②",pts:10}
+]},
+{id:"ws-math-03-r2b",label:"R2B（割合③）応用②",diff:2,cat:"R2B",problems:[
+{id:"ws-math-03-r2b-1-1",text:"[1](1) 割合③⑧",pts:10},
+{id:"ws-math-03-r2b-1-2",text:"[1](2) 割合③⑨",pts:10},
+{id:"ws-math-03-r2b-1-3",text:"[1](3) 割合③⑩",pts:10},
+{id:"ws-math-03-r2b-2-1",text:"[2](1) 割合③4けた①",pts:5},
+{id:"ws-math-03-r2b-2-2",text:"[2](2) 割合③4けた②",pts:5},
+{id:"ws-math-03-r2b-2-3",text:"[2](3) 割合③4けた③",pts:5},
+{id:"ws-math-03-r2b-3-1",text:"[3](1) ランプが同時点灯する時刻",pts:10},
+{id:"ws-math-03-r2b-3-2",text:"[3](2) ランプが同時点灯する回数",pts:10},
+{id:"ws-math-03-r2b-4-1",text:"[4](1) 余りが同じ整数①",pts:10},
+{id:"ws-math-03-r2b-4-2",text:"[4](2) 余りが同じ整数②",pts:10}
+]},
+{id:"ws-math-03-r2c",label:"R2C（割合③）難問③",diff:3,cat:"R2C",problems:[
+{id:"ws-math-03-r2c-1",text:"[1] 割合③難問①（25点）",pts:25},
+{id:"ws-math-03-r2c-2",text:"[2] 割合③難問②（25点）",pts:25},
+{id:"ws-math-03-r2c-3",text:"[3] 割合③難問③（25点）",pts:25},
+{id:"ws-math-03-r2c-4",text:"[4] 割合③難問④（25点）",pts:25}
+]},
+{id:"ws-math-03-x1",label:"x-03① 発展①",diff:3,cat:"x①",problems:[
+{id:"ws-math-03-x1-1",text:"x①[1] カレンダー・曜日の計算（25点）",pts:25},
+{id:"ws-math-03-x1-2",text:"x①[2] 分数の数列で何番目か（25点）",pts:25},
+{id:"ws-math-03-x1-3",text:"x①[3] 整数を並べて700番目の数（25点）",pts:25},
+{id:"ws-math-03-x1-4",text:"x①[4] さいころの裏面の数の和（25点）",pts:25}
+]},
+{id:"ws-math-03-x2",label:"x-03② 発展②",diff:3,cat:"x②",problems:[
+{id:"ws-math-03-x2-1",text:"x②[1] 4月3日から100日目の曜日（25点）",pts:25},
+{id:"ws-math-03-x2-2",text:"x②[2] 分数の列で6/13は何番目（25点）",pts:25},
+{id:"ws-math-03-x2-3",text:"x②[3] 区切りの和が303になる番目（25点）",pts:25},
+{id:"ws-math-03-x2-4",text:"x②[4] 4個のさいころ積が60・裏面の和（25点）",pts:25}
+]},
+{id:"ws-math-03-z1",label:"Z-03① 最難問①",diff:3,cat:"Z①",problems:[
+{id:"ws-math-03-z1-1",text:"Z①[1](1) じゃんけん・階段①",pts:20},
+{id:"ws-math-03-z1-2",text:"Z①[1](2) じゃんけん・階段②",pts:20},
+{id:"ws-math-03-z1-3",text:"Z①[1](3) じゃんけん・考えられるだけ（20点）",pts:20},
+{id:"ws-math-03-z1-4",text:"Z①[2](1) 動点・三角形の面積（20点）",pts:20},
+{id:"ws-math-03-z1-5",text:"Z①[2](2) 動点・二等辺三角形になる時刻（20点）",pts:20},
+{id:"ws-math-03-z1-6",text:"Z①[3](1) 複合図形①",pts:20},
+{id:"ws-math-03-z1-7",text:"Z①[3](2) 複合図形②",pts:20},
+{id:"ws-math-03-z1-8",text:"Z①[3](3) 複合図形③",pts:20},
+{id:"ws-math-03-z1-9",text:"Z①[3](4) 複合図形④",pts:20}
+]},
+{id:"ws-math-03-z2",label:"Z-03② 最難問②",diff:3,cat:"Z②",problems:[
+{id:"ws-math-03-z2-4-1",text:"Z②[4](1) 折り返し図形①（三角形になるDE範囲）",pts:20},
+{id:"ws-math-03-z2-4-2",text:"Z②[4](2) 折り返し図形②（BE=4㎝の重なり面積）",pts:20},
+{id:"ws-math-03-z2-5-1",text:"Z②[5](1) 偶奇操作で15が1になる回数①",pts:20},
+{id:"ws-math-03-z2-5-2",text:"Z②[5](2) 偶奇操作で6になる最初の数すべて（20点）",pts:20},
+{id:"ws-math-03-z2-6",text:"Z②[6] 長方形の周囲の長さ（25点）",pts:25},
+{id:"ws-math-03-z2-7-1",text:"Z②[7](1) 装置A・C・DにIN=27（25点）",pts:25},
+{id:"ws-math-03-z2-7-2",text:"Z②[7](2) 逆順でOUT=35のIN（25点）",pts:25}
+]}
+],initialAnswers:{}},
+{id:"ws-math-04",code:"WS-04",title:"立体図形②（体積・切断）・速さ①",sections:[
+{id:"ws-math-04-r1a",label:"R1A（立体図形②（体積・切断））基礎①",diff:1,cat:"R1A",problems:[
+{id:"ws-math-04-r1a-1-1",text:"[1](1) 立体図形②（体積・切断）の計算①",pts:5},
+{id:"ws-math-04-r1a-1-2",text:"[1](2) 立体図形②（体積・切断）の計算②",pts:5},
+{id:"ws-math-04-r1a-1-3",text:"[1](3) 立体図形②（体積・切断）の計算③",pts:5},
+{id:"ws-math-04-r1a-1-4",text:"[1](4) 立体図形②（体積・切断）の計算④",pts:5},
+{id:"ws-math-04-r1a-1-5",text:"[1](5) 立体図形②（体積・切断）の計算⑤",pts:5},
+{id:"ws-math-04-r1a-1-6",text:"[1](6) 立体図形②（体積・切断）の計算⑥",pts:5},
+{id:"ws-math-04-r1a-1-7",text:"[1](7) 立体図形②（体積・切断）の計算⑦",pts:5},
+{id:"ws-math-04-r1a-1-8",text:"[1](8) 立体図形②（体積・切断）の計算⑧",pts:5},
+{id:"ws-math-04-r1a-2-1",text:"[2](1) 立体図形②（体積・切断）の応用①",pts:20},
+{id:"ws-math-04-r1a-2-2",text:"[2](2) 立体図形②（体積・切断）のグラフ",pts:10},
+{id:"ws-math-04-r1a-3-1",text:"[3](1) 立体図形②（体積・切断）の応用②",pts:10},
+{id:"ws-math-04-r1a-3-2",text:"[3](2) 立体図形②（体積・切断）の応用③",pts:10},
+{id:"ws-math-04-r1a-4-1",text:"[4](1) 立体図形②（体積・切断）の応用④",pts:10},
+{id:"ws-math-04-r1a-4-2",text:"[4](2) 立体図形②（体積・切断）の応用⑤",pts:10}
+]},
+{id:"ws-math-04-r1b",label:"R1B（立体図形②（体積・切断））基礎②",diff:1,cat:"R1B",problems:[
+{id:"ws-math-04-r1b-1-1",text:"[1](1) 平行線と角度①",pts:10},
+{id:"ws-math-04-r1b-1-2",text:"[1](2) 平行線と角度②",pts:10},
+{id:"ws-math-04-r1b-2-1",text:"[2](1) 立体図形②（体積・切断）の斜線部分①",pts:10},
+{id:"ws-math-04-r1b-2-2",text:"[2](2) 立体図形②（体積・切断）の斜線部分②",pts:10},
+{id:"ws-math-04-r1b-2-3",text:"[2](3) 立体図形②（体積・切断）の斜線部分③",pts:10},
+{id:"ws-math-04-r1b-3-1",text:"[3](1) 正多角形の内角の和",pts:5},
+{id:"ws-math-04-r1b-3-2",text:"[3](2) 正多角形の1つの内角",pts:5},
+{id:"ws-math-04-r1b-3-3",text:"[3](3) 正多角形の1つの外角",pts:5},
+{id:"ws-math-04-r1b-3-4",text:"[3](4) 正多角形の外角の和",pts:5},
+{id:"ws-math-04-r1b-4-1",text:"[4](1) 台形の等積分割①",pts:10},
+{id:"ws-math-04-r1b-4-2",text:"[4](2) 台形の等積分割②",pts:10},
+{id:"ws-math-04-r1b-4-3",text:"[4](3) 台形の等積分割③",pts:10}
+]},
+{id:"ws-math-04-r1c",label:"R1C（立体図形②（体積・切断））標準③",diff:2,cat:"R1C",problems:[
+{id:"ws-math-04-r1c-1-1",text:"[1](1) 立体図形②（体積・切断）発展①",pts:20},
+{id:"ws-math-04-r1c-1-2",text:"[1](2) 立体図形②（体積・切断）発展②（面積が300㎝²になる時刻）",pts:20},
+{id:"ws-math-04-r1c-2-1",text:"[2](1) 立体図形②（体積・切断）発展③",pts:20},
+{id:"ws-math-04-r1c-2-2",text:"[2](2) 立体図形②（体積・切断）発展④",pts:20},
+{id:"ws-math-04-r1c-2-3",text:"[2](3) 立体図形②（体積・切断）発展⑤",pts:20}
+]},
+{id:"ws-math-04-r2a",label:"R2A（速さ①）応用①",diff:2,cat:"R2A",problems:[
+{id:"ws-math-04-r2a-1-1",text:"[1](1) 速さ①①",pts:10},
+{id:"ws-math-04-r2a-1-2",text:"[1](2) 速さ①②",pts:10},
+{id:"ws-math-04-r2a-1-3",text:"[1](3) 速さ①③",pts:10},
+{id:"ws-math-04-r2a-1-4",text:"[1](4) 速さ①④",pts:10},
+{id:"ws-math-04-r2a-1-5",text:"[1](5) 速さ①⑤",pts:10},
+{id:"ws-math-04-r2a-2-1",text:"[2](1) 速さ①⑥",pts:5},
+{id:"ws-math-04-r2a-2-2",text:"[2](2) 速さ①⑦",pts:5},
+{id:"ws-math-04-r2a-3-1",text:"[3](1) 速さ①最小公倍数①",pts:5},
+{id:"ws-math-04-r2a-3-2",text:"[3](2) 速さ①最小公倍数②",pts:5},
+{id:"ws-math-04-r2a-3-3",text:"[3](3) 速さ①最小公倍数③",pts:5},
+{id:"ws-math-04-r2a-3-4",text:"[3](4) 速さ①最小公倍数④",pts:5},
+{id:"ws-math-04-r2a-4-1",text:"[4](1) 速さ①立方体①",pts:10},
+{id:"ws-math-04-r2a-4-2",text:"[4](2) 速さ①立方体②",pts:10}
+]},
+{id:"ws-math-04-r2b",label:"R2B（速さ①）応用②",diff:2,cat:"R2B",problems:[
+{id:"ws-math-04-r2b-1-1",text:"[1](1) 速さ①⑧",pts:10},
+{id:"ws-math-04-r2b-1-2",text:"[1](2) 速さ①⑨",pts:10},
+{id:"ws-math-04-r2b-1-3",text:"[1](3) 速さ①⑩",pts:10},
+{id:"ws-math-04-r2b-2-1",text:"[2](1) 速さ①4けた①",pts:5},
+{id:"ws-math-04-r2b-2-2",text:"[2](2) 速さ①4けた②",pts:5},
+{id:"ws-math-04-r2b-2-3",text:"[2](3) 速さ①4けた③",pts:5},
+{id:"ws-math-04-r2b-3-1",text:"[3](1) ランプが同時点灯する時刻",pts:10},
+{id:"ws-math-04-r2b-3-2",text:"[3](2) ランプが同時点灯する回数",pts:10},
+{id:"ws-math-04-r2b-4-1",text:"[4](1) 余りが同じ整数①",pts:10},
+{id:"ws-math-04-r2b-4-2",text:"[4](2) 余りが同じ整数②",pts:10}
+]},
+{id:"ws-math-04-r2c",label:"R2C（速さ①）難問③",diff:3,cat:"R2C",problems:[
+{id:"ws-math-04-r2c-1",text:"[1] 速さ①難問①（25点）",pts:25},
+{id:"ws-math-04-r2c-2",text:"[2] 速さ①難問②（25点）",pts:25},
+{id:"ws-math-04-r2c-3",text:"[3] 速さ①難問③（25点）",pts:25},
+{id:"ws-math-04-r2c-4",text:"[4] 速さ①難問④（25点）",pts:25}
+]},
+{id:"ws-math-04-x1",label:"x-04① 発展①",diff:3,cat:"x①",problems:[
+{id:"ws-math-04-x1-1",text:"x①[1] カレンダー・曜日の計算（25点）",pts:25},
+{id:"ws-math-04-x1-2",text:"x①[2] 分数の数列で何番目か（25点）",pts:25},
+{id:"ws-math-04-x1-3",text:"x①[3] 整数を並べて700番目の数（25点）",pts:25},
+{id:"ws-math-04-x1-4",text:"x①[4] さいころの裏面の数の和（25点）",pts:25}
+]},
+{id:"ws-math-04-x2",label:"x-04② 発展②",diff:3,cat:"x②",problems:[
+{id:"ws-math-04-x2-1",text:"x②[1] 4月3日から100日目の曜日（25点）",pts:25},
+{id:"ws-math-04-x2-2",text:"x②[2] 分数の列で6/13は何番目（25点）",pts:25},
+{id:"ws-math-04-x2-3",text:"x②[3] 区切りの和が303になる番目（25点）",pts:25},
+{id:"ws-math-04-x2-4",text:"x②[4] 4個のさいころ積が60・裏面の和（25点）",pts:25}
+]},
+{id:"ws-math-04-z1",label:"Z-04① 最難問①",diff:3,cat:"Z①",problems:[
+{id:"ws-math-04-z1-1",text:"Z①[1](1) じゃんけん・階段①",pts:20},
+{id:"ws-math-04-z1-2",text:"Z①[1](2) じゃんけん・階段②",pts:20},
+{id:"ws-math-04-z1-3",text:"Z①[1](3) じゃんけん・考えられるだけ（20点）",pts:20},
+{id:"ws-math-04-z1-4",text:"Z①[2](1) 動点・三角形の面積（20点）",pts:20},
+{id:"ws-math-04-z1-5",text:"Z①[2](2) 動点・二等辺三角形になる時刻（20点）",pts:20},
+{id:"ws-math-04-z1-6",text:"Z①[3](1) 複合図形①",pts:20},
+{id:"ws-math-04-z1-7",text:"Z①[3](2) 複合図形②",pts:20},
+{id:"ws-math-04-z1-8",text:"Z①[3](3) 複合図形③",pts:20},
+{id:"ws-math-04-z1-9",text:"Z①[3](4) 複合図形④",pts:20}
+]},
+{id:"ws-math-04-z2",label:"Z-04② 最難問②",diff:3,cat:"Z②",problems:[
+{id:"ws-math-04-z2-4-1",text:"Z②[4](1) 折り返し図形①（三角形になるDE範囲）",pts:20},
+{id:"ws-math-04-z2-4-2",text:"Z②[4](2) 折り返し図形②（BE=4㎝の重なり面積）",pts:20},
+{id:"ws-math-04-z2-5-1",text:"Z②[5](1) 偶奇操作で15が1になる回数①",pts:20},
+{id:"ws-math-04-z2-5-2",text:"Z②[5](2) 偶奇操作で6になる最初の数すべて（20点）",pts:20},
+{id:"ws-math-04-z2-6",text:"Z②[6] 長方形の周囲の長さ（25点）",pts:25},
+{id:"ws-math-04-z2-7-1",text:"Z②[7](1) 装置A・C・DにIN=27（25点）",pts:25},
+{id:"ws-math-04-z2-7-2",text:"Z②[7](2) 逆順でOUT=35のIN（25点）",pts:25}
+]}
+],initialAnswers:{}},
+{id:"ws-math-05",code:"WS-05",title:"割合①（比の利用）・速さ②",sections:[
+{id:"ws-math-05-r1a",label:"R1A（割合①（比の利用））基礎①",diff:1,cat:"R1A",problems:[
+{id:"ws-math-05-r1a-1-1",text:"[1](1) 割合①（比の利用）の計算①",pts:5},
+{id:"ws-math-05-r1a-1-2",text:"[1](2) 割合①（比の利用）の計算②",pts:5},
+{id:"ws-math-05-r1a-1-3",text:"[1](3) 割合①（比の利用）の計算③",pts:5},
+{id:"ws-math-05-r1a-1-4",text:"[1](4) 割合①（比の利用）の計算④",pts:5},
+{id:"ws-math-05-r1a-1-5",text:"[1](5) 割合①（比の利用）の計算⑤",pts:5},
+{id:"ws-math-05-r1a-1-6",text:"[1](6) 割合①（比の利用）の計算⑥",pts:5},
+{id:"ws-math-05-r1a-1-7",text:"[1](7) 割合①（比の利用）の計算⑦",pts:5},
+{id:"ws-math-05-r1a-1-8",text:"[1](8) 割合①（比の利用）の計算⑧",pts:5},
+{id:"ws-math-05-r1a-2-1",text:"[2](1) 割合①（比の利用）の応用①",pts:20},
+{id:"ws-math-05-r1a-2-2",text:"[2](2) 割合①（比の利用）のグラフ",pts:10},
+{id:"ws-math-05-r1a-3-1",text:"[3](1) 割合①（比の利用）の応用②",pts:10},
+{id:"ws-math-05-r1a-3-2",text:"[3](2) 割合①（比の利用）の応用③",pts:10},
+{id:"ws-math-05-r1a-4-1",text:"[4](1) 割合①（比の利用）の応用④",pts:10},
+{id:"ws-math-05-r1a-4-2",text:"[4](2) 割合①（比の利用）の応用⑤",pts:10}
+]},
+{id:"ws-math-05-r1b",label:"R1B（割合①（比の利用））基礎②",diff:1,cat:"R1B",problems:[
+{id:"ws-math-05-r1b-1-1",text:"[1](1) 平行線と角度①",pts:10},
+{id:"ws-math-05-r1b-1-2",text:"[1](2) 平行線と角度②",pts:10},
+{id:"ws-math-05-r1b-2-1",text:"[2](1) 割合①（比の利用）の斜線部分①",pts:10},
+{id:"ws-math-05-r1b-2-2",text:"[2](2) 割合①（比の利用）の斜線部分②",pts:10},
+{id:"ws-math-05-r1b-2-3",text:"[2](3) 割合①（比の利用）の斜線部分③",pts:10},
+{id:"ws-math-05-r1b-3-1",text:"[3](1) 正多角形の内角の和",pts:5},
+{id:"ws-math-05-r1b-3-2",text:"[3](2) 正多角形の1つの内角",pts:5},
+{id:"ws-math-05-r1b-3-3",text:"[3](3) 正多角形の1つの外角",pts:5},
+{id:"ws-math-05-r1b-3-4",text:"[3](4) 正多角形の外角の和",pts:5},
+{id:"ws-math-05-r1b-4-1",text:"[4](1) 台形の等積分割①",pts:10},
+{id:"ws-math-05-r1b-4-2",text:"[4](2) 台形の等積分割②",pts:10},
+{id:"ws-math-05-r1b-4-3",text:"[4](3) 台形の等積分割③",pts:10}
+]},
+{id:"ws-math-05-r1c",label:"R1C（割合①（比の利用））標準③",diff:2,cat:"R1C",problems:[
+{id:"ws-math-05-r1c-1-1",text:"[1](1) 割合①（比の利用）発展①",pts:20},
+{id:"ws-math-05-r1c-1-2",text:"[1](2) 割合①（比の利用）発展②（面積が300㎝²になる時刻）",pts:20},
+{id:"ws-math-05-r1c-2-1",text:"[2](1) 割合①（比の利用）発展③",pts:20},
+{id:"ws-math-05-r1c-2-2",text:"[2](2) 割合①（比の利用）発展④",pts:20},
+{id:"ws-math-05-r1c-2-3",text:"[2](3) 割合①（比の利用）発展⑤",pts:20}
+]},
+{id:"ws-math-05-r2a",label:"R2A（速さ②）応用①",diff:2,cat:"R2A",problems:[
+{id:"ws-math-05-r2a-1-1",text:"[1](1) 速さ②①",pts:10},
+{id:"ws-math-05-r2a-1-2",text:"[1](2) 速さ②②",pts:10},
+{id:"ws-math-05-r2a-1-3",text:"[1](3) 速さ②③",pts:10},
+{id:"ws-math-05-r2a-1-4",text:"[1](4) 速さ②④",pts:10},
+{id:"ws-math-05-r2a-1-5",text:"[1](5) 速さ②⑤",pts:10},
+{id:"ws-math-05-r2a-2-1",text:"[2](1) 速さ②⑥",pts:5},
+{id:"ws-math-05-r2a-2-2",text:"[2](2) 速さ②⑦",pts:5},
+{id:"ws-math-05-r2a-3-1",text:"[3](1) 速さ②最小公倍数①",pts:5},
+{id:"ws-math-05-r2a-3-2",text:"[3](2) 速さ②最小公倍数②",pts:5},
+{id:"ws-math-05-r2a-3-3",text:"[3](3) 速さ②最小公倍数③",pts:5},
+{id:"ws-math-05-r2a-3-4",text:"[3](4) 速さ②最小公倍数④",pts:5},
+{id:"ws-math-05-r2a-4-1",text:"[4](1) 速さ②立方体①",pts:10},
+{id:"ws-math-05-r2a-4-2",text:"[4](2) 速さ②立方体②",pts:10}
+]},
+{id:"ws-math-05-r2b",label:"R2B（速さ②）応用②",diff:2,cat:"R2B",problems:[
+{id:"ws-math-05-r2b-1-1",text:"[1](1) 速さ②⑧",pts:10},
+{id:"ws-math-05-r2b-1-2",text:"[1](2) 速さ②⑨",pts:10},
+{id:"ws-math-05-r2b-1-3",text:"[1](3) 速さ②⑩",pts:10},
+{id:"ws-math-05-r2b-2-1",text:"[2](1) 速さ②4けた①",pts:5},
+{id:"ws-math-05-r2b-2-2",text:"[2](2) 速さ②4けた②",pts:5},
+{id:"ws-math-05-r2b-2-3",text:"[2](3) 速さ②4けた③",pts:5},
+{id:"ws-math-05-r2b-3-1",text:"[3](1) ランプが同時点灯する時刻",pts:10},
+{id:"ws-math-05-r2b-3-2",text:"[3](2) ランプが同時点灯する回数",pts:10},
+{id:"ws-math-05-r2b-4-1",text:"[4](1) 余りが同じ整数①",pts:10},
+{id:"ws-math-05-r2b-4-2",text:"[4](2) 余りが同じ整数②",pts:10}
+]},
+{id:"ws-math-05-r2c",label:"R2C（速さ②）難問③",diff:3,cat:"R2C",problems:[
+{id:"ws-math-05-r2c-1",text:"[1] 速さ②難問①（25点）",pts:25},
+{id:"ws-math-05-r2c-2",text:"[2] 速さ②難問②（25点）",pts:25},
+{id:"ws-math-05-r2c-3",text:"[3] 速さ②難問③（25点）",pts:25},
+{id:"ws-math-05-r2c-4",text:"[4] 速さ②難問④（25点）",pts:25}
+]},
+{id:"ws-math-05-x1",label:"x-05① 発展①",diff:3,cat:"x①",problems:[
+{id:"ws-math-05-x1-1",text:"x①[1] カレンダー・曜日の計算（25点）",pts:25},
+{id:"ws-math-05-x1-2",text:"x①[2] 分数の数列で何番目か（25点）",pts:25},
+{id:"ws-math-05-x1-3",text:"x①[3] 整数を並べて700番目の数（25点）",pts:25},
+{id:"ws-math-05-x1-4",text:"x①[4] さいころの裏面の数の和（25点）",pts:25}
+]},
+{id:"ws-math-05-x2",label:"x-05② 発展②",diff:3,cat:"x②",problems:[
+{id:"ws-math-05-x2-1",text:"x②[1] 4月3日から100日目の曜日（25点）",pts:25},
+{id:"ws-math-05-x2-2",text:"x②[2] 分数の列で6/13は何番目（25点）",pts:25},
+{id:"ws-math-05-x2-3",text:"x②[3] 区切りの和が303になる番目（25点）",pts:25},
+{id:"ws-math-05-x2-4",text:"x②[4] 4個のさいころ積が60・裏面の和（25点）",pts:25}
+]},
+{id:"ws-math-05-z1",label:"Z-05① 最難問①",diff:3,cat:"Z①",problems:[
+{id:"ws-math-05-z1-1",text:"Z①[1](1) じゃんけん・階段①",pts:20},
+{id:"ws-math-05-z1-2",text:"Z①[1](2) じゃんけん・階段②",pts:20},
+{id:"ws-math-05-z1-3",text:"Z①[1](3) じゃんけん・考えられるだけ（20点）",pts:20},
+{id:"ws-math-05-z1-4",text:"Z①[2](1) 動点・三角形の面積（20点）",pts:20},
+{id:"ws-math-05-z1-5",text:"Z①[2](2) 動点・二等辺三角形になる時刻（20点）",pts:20},
+{id:"ws-math-05-z1-6",text:"Z①[3](1) 複合図形①",pts:20},
+{id:"ws-math-05-z1-7",text:"Z①[3](2) 複合図形②",pts:20},
+{id:"ws-math-05-z1-8",text:"Z①[3](3) 複合図形③",pts:20},
+{id:"ws-math-05-z1-9",text:"Z①[3](4) 複合図形④",pts:20}
+]},
+{id:"ws-math-05-z2",label:"Z-05② 最難問②",diff:3,cat:"Z②",problems:[
+{id:"ws-math-05-z2-4-1",text:"Z②[4](1) 折り返し図形①（三角形になるDE範囲）",pts:20},
+{id:"ws-math-05-z2-4-2",text:"Z②[4](2) 折り返し図形②（BE=4㎝の重なり面積）",pts:20},
+{id:"ws-math-05-z2-5-1",text:"Z②[5](1) 偶奇操作で15が1になる回数①",pts:20},
+{id:"ws-math-05-z2-5-2",text:"Z②[5](2) 偶奇操作で6になる最初の数すべて（20点）",pts:20},
+{id:"ws-math-05-z2-6",text:"Z②[6] 長方形の周囲の長さ（25点）",pts:25},
+{id:"ws-math-05-z2-7-1",text:"Z②[7](1) 装置A・C・DにIN=27（25点）",pts:25},
+{id:"ws-math-05-z2-7-2",text:"Z②[7](2) 逆順でOUT=35のIN（25点）",pts:25}
+]}
+],initialAnswers:{}},
+{id:"ws-math-06",code:"WS-06",title:"グラフ（面積変化・動点）・数の性質①",sections:[
+{id:"ws-math-06-r1a",label:"R1A（グラフ（面積変化・動点））基礎①",diff:1,cat:"R1A",problems:[
+{id:"ws-math-06-r1a-1-1",text:"[1](1) グラフ（面積変化・動点）の計算①",pts:5},
+{id:"ws-math-06-r1a-1-2",text:"[1](2) グラフ（面積変化・動点）の計算②",pts:5},
+{id:"ws-math-06-r1a-1-3",text:"[1](3) グラフ（面積変化・動点）の計算③",pts:5},
+{id:"ws-math-06-r1a-1-4",text:"[1](4) グラフ（面積変化・動点）の計算④",pts:5},
+{id:"ws-math-06-r1a-1-5",text:"[1](5) グラフ（面積変化・動点）の計算⑤",pts:5},
+{id:"ws-math-06-r1a-1-6",text:"[1](6) グラフ（面積変化・動点）の計算⑥",pts:5},
+{id:"ws-math-06-r1a-1-7",text:"[1](7) グラフ（面積変化・動点）の計算⑦",pts:5},
+{id:"ws-math-06-r1a-1-8",text:"[1](8) グラフ（面積変化・動点）の計算⑧",pts:5},
+{id:"ws-math-06-r1a-2-1",text:"[2](1) グラフ（面積変化・動点）の応用①",pts:20},
+{id:"ws-math-06-r1a-2-2",text:"[2](2) グラフ（面積変化・動点）のグラフ",pts:10},
+{id:"ws-math-06-r1a-3-1",text:"[3](1) グラフ（面積変化・動点）の応用②",pts:10},
+{id:"ws-math-06-r1a-3-2",text:"[3](2) グラフ（面積変化・動点）の応用③",pts:10},
+{id:"ws-math-06-r1a-4-1",text:"[4](1) グラフ（面積変化・動点）の応用④",pts:10},
+{id:"ws-math-06-r1a-4-2",text:"[4](2) グラフ（面積変化・動点）の応用⑤",pts:10}
+]},
+{id:"ws-math-06-r1b",label:"R1B（グラフ（面積変化・動点））基礎②",diff:1,cat:"R1B",problems:[
+{id:"ws-math-06-r1b-1-1",text:"[1](1) 平行線と角度①",pts:10},
+{id:"ws-math-06-r1b-1-2",text:"[1](2) 平行線と角度②",pts:10},
+{id:"ws-math-06-r1b-2-1",text:"[2](1) グラフ（面積変化・動点）の斜線部分①",pts:10},
+{id:"ws-math-06-r1b-2-2",text:"[2](2) グラフ（面積変化・動点）の斜線部分②",pts:10},
+{id:"ws-math-06-r1b-2-3",text:"[2](3) グラフ（面積変化・動点）の斜線部分③",pts:10},
+{id:"ws-math-06-r1b-3-1",text:"[3](1) 正多角形の内角の和",pts:5},
+{id:"ws-math-06-r1b-3-2",text:"[3](2) 正多角形の1つの内角",pts:5},
+{id:"ws-math-06-r1b-3-3",text:"[3](3) 正多角形の1つの外角",pts:5},
+{id:"ws-math-06-r1b-3-4",text:"[3](4) 正多角形の外角の和",pts:5},
+{id:"ws-math-06-r1b-4-1",text:"[4](1) 台形の等積分割①",pts:10},
+{id:"ws-math-06-r1b-4-2",text:"[4](2) 台形の等積分割②",pts:10},
+{id:"ws-math-06-r1b-4-3",text:"[4](3) 台形の等積分割③",pts:10}
+]},
+{id:"ws-math-06-r1c",label:"R1C（グラフ（面積変化・動点））標準③",diff:2,cat:"R1C",problems:[
+{id:"ws-math-06-r1c-1-1",text:"[1](1) グラフ（面積変化・動点）発展①",pts:20},
+{id:"ws-math-06-r1c-1-2",text:"[1](2) グラフ（面積変化・動点）発展②（面積が300㎝²になる時刻）",pts:20},
+{id:"ws-math-06-r1c-2-1",text:"[2](1) グラフ（面積変化・動点）発展③",pts:20},
+{id:"ws-math-06-r1c-2-2",text:"[2](2) グラフ（面積変化・動点）発展④",pts:20},
+{id:"ws-math-06-r1c-2-3",text:"[2](3) グラフ（面積変化・動点）発展⑤",pts:20}
+]},
+{id:"ws-math-06-r2a",label:"R2A（数の性質①）応用①",diff:2,cat:"R2A",problems:[
+{id:"ws-math-06-r2a-1-1",text:"[1](1) 数の性質①①",pts:10},
+{id:"ws-math-06-r2a-1-2",text:"[1](2) 数の性質①②",pts:10},
+{id:"ws-math-06-r2a-1-3",text:"[1](3) 数の性質①③",pts:10},
+{id:"ws-math-06-r2a-1-4",text:"[1](4) 数の性質①④",pts:10},
+{id:"ws-math-06-r2a-1-5",text:"[1](5) 数の性質①⑤",pts:10},
+{id:"ws-math-06-r2a-2-1",text:"[2](1) 数の性質①⑥",pts:5},
+{id:"ws-math-06-r2a-2-2",text:"[2](2) 数の性質①⑦",pts:5},
+{id:"ws-math-06-r2a-3-1",text:"[3](1) 数の性質①最小公倍数①",pts:5},
+{id:"ws-math-06-r2a-3-2",text:"[3](2) 数の性質①最小公倍数②",pts:5},
+{id:"ws-math-06-r2a-3-3",text:"[3](3) 数の性質①最小公倍数③",pts:5},
+{id:"ws-math-06-r2a-3-4",text:"[3](4) 数の性質①最小公倍数④",pts:5},
+{id:"ws-math-06-r2a-4-1",text:"[4](1) 数の性質①立方体①",pts:10},
+{id:"ws-math-06-r2a-4-2",text:"[4](2) 数の性質①立方体②",pts:10}
+]},
+{id:"ws-math-06-r2b",label:"R2B（数の性質①）応用②",diff:2,cat:"R2B",problems:[
+{id:"ws-math-06-r2b-1-1",text:"[1](1) 数の性質①⑧",pts:10},
+{id:"ws-math-06-r2b-1-2",text:"[1](2) 数の性質①⑨",pts:10},
+{id:"ws-math-06-r2b-1-3",text:"[1](3) 数の性質①⑩",pts:10},
+{id:"ws-math-06-r2b-2-1",text:"[2](1) 数の性質①4けた①",pts:5},
+{id:"ws-math-06-r2b-2-2",text:"[2](2) 数の性質①4けた②",pts:5},
+{id:"ws-math-06-r2b-2-3",text:"[2](3) 数の性質①4けた③",pts:5},
+{id:"ws-math-06-r2b-3-1",text:"[3](1) ランプが同時点灯する時刻",pts:10},
+{id:"ws-math-06-r2b-3-2",text:"[3](2) ランプが同時点灯する回数",pts:10},
+{id:"ws-math-06-r2b-4-1",text:"[4](1) 余りが同じ整数①",pts:10},
+{id:"ws-math-06-r2b-4-2",text:"[4](2) 余りが同じ整数②",pts:10}
+]},
+{id:"ws-math-06-r2c",label:"R2C（数の性質①）難問③",diff:3,cat:"R2C",problems:[
+{id:"ws-math-06-r2c-1",text:"[1] 数の性質①難問①（25点）",pts:25},
+{id:"ws-math-06-r2c-2",text:"[2] 数の性質①難問②（25点）",pts:25},
+{id:"ws-math-06-r2c-3",text:"[3] 数の性質①難問③（25点）",pts:25},
+{id:"ws-math-06-r2c-4",text:"[4] 数の性質①難問④（25点）",pts:25}
+]},
+{id:"ws-math-06-x1",label:"x-06① 発展①",diff:3,cat:"x①",problems:[
+{id:"ws-math-06-x1-1",text:"x①[1] カレンダー・曜日の計算（25点）",pts:25},
+{id:"ws-math-06-x1-2",text:"x①[2] 分数の数列で何番目か（25点）",pts:25},
+{id:"ws-math-06-x1-3",text:"x①[3] 整数を並べて700番目の数（25点）",pts:25},
+{id:"ws-math-06-x1-4",text:"x①[4] さいころの裏面の数の和（25点）",pts:25}
+]},
+{id:"ws-math-06-x2",label:"x-06② 発展②",diff:3,cat:"x②",problems:[
+{id:"ws-math-06-x2-1",text:"x②[1] 4月3日から100日目の曜日（25点）",pts:25},
+{id:"ws-math-06-x2-2",text:"x②[2] 分数の列で6/13は何番目（25点）",pts:25},
+{id:"ws-math-06-x2-3",text:"x②[3] 区切りの和が303になる番目（25点）",pts:25},
+{id:"ws-math-06-x2-4",text:"x②[4] 4個のさいころ積が60・裏面の和（25点）",pts:25}
+]},
+{id:"ws-math-06-z1",label:"Z-06① 最難問①",diff:3,cat:"Z①",problems:[
+{id:"ws-math-06-z1-1",text:"Z①[1](1) じゃんけん・階段①",pts:20},
+{id:"ws-math-06-z1-2",text:"Z①[1](2) じゃんけん・階段②",pts:20},
+{id:"ws-math-06-z1-3",text:"Z①[1](3) じゃんけん・考えられるだけ（20点）",pts:20},
+{id:"ws-math-06-z1-4",text:"Z①[2](1) 動点・三角形の面積（20点）",pts:20},
+{id:"ws-math-06-z1-5",text:"Z①[2](2) 動点・二等辺三角形になる時刻（20点）",pts:20},
+{id:"ws-math-06-z1-6",text:"Z①[3](1) 複合図形①",pts:20},
+{id:"ws-math-06-z1-7",text:"Z①[3](2) 複合図形②",pts:20},
+{id:"ws-math-06-z1-8",text:"Z①[3](3) 複合図形③",pts:20},
+{id:"ws-math-06-z1-9",text:"Z①[3](4) 複合図形④",pts:20}
+]},
+{id:"ws-math-06-z2",label:"Z-06② 最難問②",diff:3,cat:"Z②",problems:[
+{id:"ws-math-06-z2-4-1",text:"Z②[4](1) 折り返し図形①（三角形になるDE範囲）",pts:20},
+{id:"ws-math-06-z2-4-2",text:"Z②[4](2) 折り返し図形②（BE=4㎝の重なり面積）",pts:20},
+{id:"ws-math-06-z2-5-1",text:"Z②[5](1) 偶奇操作で15が1になる回数①",pts:20},
+{id:"ws-math-06-z2-5-2",text:"Z②[5](2) 偶奇操作で6になる最初の数すべて（20点）",pts:20},
+{id:"ws-math-06-z2-6",text:"Z②[6] 長方形の周囲の長さ（25点）",pts:25},
+{id:"ws-math-06-z2-7-1",text:"Z②[7](1) 装置A・C・DにIN=27（25点）",pts:25},
+{id:"ws-math-06-z2-7-2",text:"Z②[7](2) 逆順でOUT=35のIN（25点）",pts:25}
+]}
+],initialAnswers:{}},
+{id:"ws-math-07",code:"WS-07",title:"規則性①（数列・図形）・場合の数①",sections:[
+{id:"ws-math-07-r1a",label:"R1A（規則性①（数列・図形））基礎①",diff:1,cat:"R1A",problems:[
+{id:"ws-math-07-r1a-1-1",text:"[1](1) 規則性①（数列・図形）の計算①",pts:5},
+{id:"ws-math-07-r1a-1-2",text:"[1](2) 規則性①（数列・図形）の計算②",pts:5},
+{id:"ws-math-07-r1a-1-3",text:"[1](3) 規則性①（数列・図形）の計算③",pts:5},
+{id:"ws-math-07-r1a-1-4",text:"[1](4) 規則性①（数列・図形）の計算④",pts:5},
+{id:"ws-math-07-r1a-1-5",text:"[1](5) 規則性①（数列・図形）の計算⑤",pts:5},
+{id:"ws-math-07-r1a-1-6",text:"[1](6) 規則性①（数列・図形）の計算⑥",pts:5},
+{id:"ws-math-07-r1a-1-7",text:"[1](7) 規則性①（数列・図形）の計算⑦",pts:5},
+{id:"ws-math-07-r1a-1-8",text:"[1](8) 規則性①（数列・図形）の計算⑧",pts:5},
+{id:"ws-math-07-r1a-2-1",text:"[2](1) 規則性①（数列・図形）の応用①",pts:20},
+{id:"ws-math-07-r1a-2-2",text:"[2](2) 規則性①（数列・図形）のグラフ",pts:10},
+{id:"ws-math-07-r1a-3-1",text:"[3](1) 規則性①（数列・図形）の応用②",pts:10},
+{id:"ws-math-07-r1a-3-2",text:"[3](2) 規則性①（数列・図形）の応用③",pts:10},
+{id:"ws-math-07-r1a-4-1",text:"[4](1) 規則性①（数列・図形）の応用④",pts:10},
+{id:"ws-math-07-r1a-4-2",text:"[4](2) 規則性①（数列・図形）の応用⑤",pts:10}
+]},
+{id:"ws-math-07-r1b",label:"R1B（規則性①（数列・図形））基礎②",diff:1,cat:"R1B",problems:[
+{id:"ws-math-07-r1b-1-1",text:"[1](1) 平行線と角度①",pts:10},
+{id:"ws-math-07-r1b-1-2",text:"[1](2) 平行線と角度②",pts:10},
+{id:"ws-math-07-r1b-2-1",text:"[2](1) 規則性①（数列・図形）の斜線部分①",pts:10},
+{id:"ws-math-07-r1b-2-2",text:"[2](2) 規則性①（数列・図形）の斜線部分②",pts:10},
+{id:"ws-math-07-r1b-2-3",text:"[2](3) 規則性①（数列・図形）の斜線部分③",pts:10},
+{id:"ws-math-07-r1b-3-1",text:"[3](1) 正多角形の内角の和",pts:5},
+{id:"ws-math-07-r1b-3-2",text:"[3](2) 正多角形の1つの内角",pts:5},
+{id:"ws-math-07-r1b-3-3",text:"[3](3) 正多角形の1つの外角",pts:5},
+{id:"ws-math-07-r1b-3-4",text:"[3](4) 正多角形の外角の和",pts:5},
+{id:"ws-math-07-r1b-4-1",text:"[4](1) 台形の等積分割①",pts:10},
+{id:"ws-math-07-r1b-4-2",text:"[4](2) 台形の等積分割②",pts:10},
+{id:"ws-math-07-r1b-4-3",text:"[4](3) 台形の等積分割③",pts:10}
+]},
+{id:"ws-math-07-r1c",label:"R1C（規則性①（数列・図形））標準③",diff:2,cat:"R1C",problems:[
+{id:"ws-math-07-r1c-1-1",text:"[1](1) 規則性①（数列・図形）発展①",pts:20},
+{id:"ws-math-07-r1c-1-2",text:"[1](2) 規則性①（数列・図形）発展②（面積が300㎝²になる時刻）",pts:20},
+{id:"ws-math-07-r1c-2-1",text:"[2](1) 規則性①（数列・図形）発展③",pts:20},
+{id:"ws-math-07-r1c-2-2",text:"[2](2) 規則性①（数列・図形）発展④",pts:20},
+{id:"ws-math-07-r1c-2-3",text:"[2](3) 規則性①（数列・図形）発展⑤",pts:20}
+]},
+{id:"ws-math-07-r2a",label:"R2A（場合の数①）応用①",diff:2,cat:"R2A",problems:[
+{id:"ws-math-07-r2a-1-1",text:"[1](1) 場合の数①①",pts:10},
+{id:"ws-math-07-r2a-1-2",text:"[1](2) 場合の数①②",pts:10},
+{id:"ws-math-07-r2a-1-3",text:"[1](3) 場合の数①③",pts:10},
+{id:"ws-math-07-r2a-1-4",text:"[1](4) 場合の数①④",pts:10},
+{id:"ws-math-07-r2a-1-5",text:"[1](5) 場合の数①⑤",pts:10},
+{id:"ws-math-07-r2a-2-1",text:"[2](1) 場合の数①⑥",pts:5},
+{id:"ws-math-07-r2a-2-2",text:"[2](2) 場合の数①⑦",pts:5},
+{id:"ws-math-07-r2a-3-1",text:"[3](1) 場合の数①最小公倍数①",pts:5},
+{id:"ws-math-07-r2a-3-2",text:"[3](2) 場合の数①最小公倍数②",pts:5},
+{id:"ws-math-07-r2a-3-3",text:"[3](3) 場合の数①最小公倍数③",pts:5},
+{id:"ws-math-07-r2a-3-4",text:"[3](4) 場合の数①最小公倍数④",pts:5},
+{id:"ws-math-07-r2a-4-1",text:"[4](1) 場合の数①立方体①",pts:10},
+{id:"ws-math-07-r2a-4-2",text:"[4](2) 場合の数①立方体②",pts:10}
+]},
+{id:"ws-math-07-r2b",label:"R2B（場合の数①）応用②",diff:2,cat:"R2B",problems:[
+{id:"ws-math-07-r2b-1-1",text:"[1](1) 場合の数①⑧",pts:10},
+{id:"ws-math-07-r2b-1-2",text:"[1](2) 場合の数①⑨",pts:10},
+{id:"ws-math-07-r2b-1-3",text:"[1](3) 場合の数①⑩",pts:10},
+{id:"ws-math-07-r2b-2-1",text:"[2](1) 場合の数①4けた①",pts:5},
+{id:"ws-math-07-r2b-2-2",text:"[2](2) 場合の数①4けた②",pts:5},
+{id:"ws-math-07-r2b-2-3",text:"[2](3) 場合の数①4けた③",pts:5},
+{id:"ws-math-07-r2b-3-1",text:"[3](1) ランプが同時点灯する時刻",pts:10},
+{id:"ws-math-07-r2b-3-2",text:"[3](2) ランプが同時点灯する回数",pts:10},
+{id:"ws-math-07-r2b-4-1",text:"[4](1) 余りが同じ整数①",pts:10},
+{id:"ws-math-07-r2b-4-2",text:"[4](2) 余りが同じ整数②",pts:10}
+]},
+{id:"ws-math-07-r2c",label:"R2C（場合の数①）難問③",diff:3,cat:"R2C",problems:[
+{id:"ws-math-07-r2c-1",text:"[1] 場合の数①難問①（25点）",pts:25},
+{id:"ws-math-07-r2c-2",text:"[2] 場合の数①難問②（25点）",pts:25},
+{id:"ws-math-07-r2c-3",text:"[3] 場合の数①難問③（25点）",pts:25},
+{id:"ws-math-07-r2c-4",text:"[4] 場合の数①難問④（25点）",pts:25}
+]},
+{id:"ws-math-07-x1",label:"x-07① 発展①",diff:3,cat:"x①",problems:[
+{id:"ws-math-07-x1-1",text:"x①[1] カレンダー・曜日の計算（25点）",pts:25},
+{id:"ws-math-07-x1-2",text:"x①[2] 分数の数列で何番目か（25点）",pts:25},
+{id:"ws-math-07-x1-3",text:"x①[3] 整数を並べて700番目の数（25点）",pts:25},
+{id:"ws-math-07-x1-4",text:"x①[4] さいころの裏面の数の和（25点）",pts:25}
+]},
+{id:"ws-math-07-x2",label:"x-07② 発展②",diff:3,cat:"x②",problems:[
+{id:"ws-math-07-x2-1",text:"x②[1] 4月3日から100日目の曜日（25点）",pts:25},
+{id:"ws-math-07-x2-2",text:"x②[2] 分数の列で6/13は何番目（25点）",pts:25},
+{id:"ws-math-07-x2-3",text:"x②[3] 区切りの和が303になる番目（25点）",pts:25},
+{id:"ws-math-07-x2-4",text:"x②[4] 4個のさいころ積が60・裏面の和（25点）",pts:25}
+]},
+{id:"ws-math-07-z1",label:"Z-07① 最難問①",diff:3,cat:"Z①",problems:[
+{id:"ws-math-07-z1-1",text:"Z①[1](1) じゃんけん・階段①",pts:20},
+{id:"ws-math-07-z1-2",text:"Z①[1](2) じゃんけん・階段②",pts:20},
+{id:"ws-math-07-z1-3",text:"Z①[1](3) じゃんけん・考えられるだけ（20点）",pts:20},
+{id:"ws-math-07-z1-4",text:"Z①[2](1) 動点・三角形の面積（20点）",pts:20},
+{id:"ws-math-07-z1-5",text:"Z①[2](2) 動点・二等辺三角形になる時刻（20点）",pts:20},
+{id:"ws-math-07-z1-6",text:"Z①[3](1) 複合図形①",pts:20},
+{id:"ws-math-07-z1-7",text:"Z①[3](2) 複合図形②",pts:20},
+{id:"ws-math-07-z1-8",text:"Z①[3](3) 複合図形③",pts:20},
+{id:"ws-math-07-z1-9",text:"Z①[3](4) 複合図形④",pts:20}
+]},
+{id:"ws-math-07-z2",label:"Z-07② 最難問②",diff:3,cat:"Z②",problems:[
+{id:"ws-math-07-z2-4-1",text:"Z②[4](1) 折り返し図形①（三角形になるDE範囲）",pts:20},
+{id:"ws-math-07-z2-4-2",text:"Z②[4](2) 折り返し図形②（BE=4㎝の重なり面積）",pts:20},
+{id:"ws-math-07-z2-5-1",text:"Z②[5](1) 偶奇操作で15が1になる回数①",pts:20},
+{id:"ws-math-07-z2-5-2",text:"Z②[5](2) 偶奇操作で6になる最初の数すべて（20点）",pts:20},
+{id:"ws-math-07-z2-6",text:"Z②[6] 長方形の周囲の長さ（25点）",pts:25},
+{id:"ws-math-07-z2-7-1",text:"Z②[7](1) 装置A・C・DにIN=27（25点）",pts:25},
+{id:"ws-math-07-z2-7-2",text:"Z②[7](2) 逆順でOUT=35のIN（25点）",pts:25}
+]}
+],initialAnswers:{}},
+{id:"ws-math-08",code:"WS-08",title:"場合の数②（順列・組合せ）・数の性質②",sections:[
+{id:"ws-math-08-r1a",label:"R1A（場合の数②（順列・組合せ））基礎①",diff:1,cat:"R1A",problems:[
+{id:"ws-math-08-r1a-1-1",text:"[1](1) 場合の数②（順列・組合せ）の計算①",pts:5},
+{id:"ws-math-08-r1a-1-2",text:"[1](2) 場合の数②（順列・組合せ）の計算②",pts:5},
+{id:"ws-math-08-r1a-1-3",text:"[1](3) 場合の数②（順列・組合せ）の計算③",pts:5},
+{id:"ws-math-08-r1a-1-4",text:"[1](4) 場合の数②（順列・組合せ）の計算④",pts:5},
+{id:"ws-math-08-r1a-1-5",text:"[1](5) 場合の数②（順列・組合せ）の計算⑤",pts:5},
+{id:"ws-math-08-r1a-1-6",text:"[1](6) 場合の数②（順列・組合せ）の計算⑥",pts:5},
+{id:"ws-math-08-r1a-1-7",text:"[1](7) 場合の数②（順列・組合せ）の計算⑦",pts:5},
+{id:"ws-math-08-r1a-1-8",text:"[1](8) 場合の数②（順列・組合せ）の計算⑧",pts:5},
+{id:"ws-math-08-r1a-2-1",text:"[2](1) 場合の数②（順列・組合せ）の応用①",pts:20},
+{id:"ws-math-08-r1a-2-2",text:"[2](2) 場合の数②（順列・組合せ）のグラフ",pts:10},
+{id:"ws-math-08-r1a-3-1",text:"[3](1) 場合の数②（順列・組合せ）の応用②",pts:10},
+{id:"ws-math-08-r1a-3-2",text:"[3](2) 場合の数②（順列・組合せ）の応用③",pts:10},
+{id:"ws-math-08-r1a-4-1",text:"[4](1) 場合の数②（順列・組合せ）の応用④",pts:10},
+{id:"ws-math-08-r1a-4-2",text:"[4](2) 場合の数②（順列・組合せ）の応用⑤",pts:10}
+]},
+{id:"ws-math-08-r1b",label:"R1B（場合の数②（順列・組合せ））基礎②",diff:1,cat:"R1B",problems:[
+{id:"ws-math-08-r1b-1-1",text:"[1](1) 平行線と角度①",pts:10},
+{id:"ws-math-08-r1b-1-2",text:"[1](2) 平行線と角度②",pts:10},
+{id:"ws-math-08-r1b-2-1",text:"[2](1) 場合の数②（順列・組合せ）の斜線部分①",pts:10},
+{id:"ws-math-08-r1b-2-2",text:"[2](2) 場合の数②（順列・組合せ）の斜線部分②",pts:10},
+{id:"ws-math-08-r1b-2-3",text:"[2](3) 場合の数②（順列・組合せ）の斜線部分③",pts:10},
+{id:"ws-math-08-r1b-3-1",text:"[3](1) 正多角形の内角の和",pts:5},
+{id:"ws-math-08-r1b-3-2",text:"[3](2) 正多角形の1つの内角",pts:5},
+{id:"ws-math-08-r1b-3-3",text:"[3](3) 正多角形の1つの外角",pts:5},
+{id:"ws-math-08-r1b-3-4",text:"[3](4) 正多角形の外角の和",pts:5},
+{id:"ws-math-08-r1b-4-1",text:"[4](1) 台形の等積分割①",pts:10},
+{id:"ws-math-08-r1b-4-2",text:"[4](2) 台形の等積分割②",pts:10},
+{id:"ws-math-08-r1b-4-3",text:"[4](3) 台形の等積分割③",pts:10}
+]},
+{id:"ws-math-08-r1c",label:"R1C（場合の数②（順列・組合せ））標準③",diff:2,cat:"R1C",problems:[
+{id:"ws-math-08-r1c-1-1",text:"[1](1) 場合の数②（順列・組合せ）発展①",pts:20},
+{id:"ws-math-08-r1c-1-2",text:"[1](2) 場合の数②（順列・組合せ）発展②（面積が300㎝²になる時刻）",pts:20},
+{id:"ws-math-08-r1c-2-1",text:"[2](1) 場合の数②（順列・組合せ）発展③",pts:20},
+{id:"ws-math-08-r1c-2-2",text:"[2](2) 場合の数②（順列・組合せ）発展④",pts:20},
+{id:"ws-math-08-r1c-2-3",text:"[2](3) 場合の数②（順列・組合せ）発展⑤",pts:20}
+]},
+{id:"ws-math-08-r2a",label:"R2A（数の性質②）応用①",diff:2,cat:"R2A",problems:[
+{id:"ws-math-08-r2a-1-1",text:"[1](1) 数の性質②①",pts:10},
+{id:"ws-math-08-r2a-1-2",text:"[1](2) 数の性質②②",pts:10},
+{id:"ws-math-08-r2a-1-3",text:"[1](3) 数の性質②③",pts:10},
+{id:"ws-math-08-r2a-1-4",text:"[1](4) 数の性質②④",pts:10},
+{id:"ws-math-08-r2a-1-5",text:"[1](5) 数の性質②⑤",pts:10},
+{id:"ws-math-08-r2a-2-1",text:"[2](1) 数の性質②⑥",pts:5},
+{id:"ws-math-08-r2a-2-2",text:"[2](2) 数の性質②⑦",pts:5},
+{id:"ws-math-08-r2a-3-1",text:"[3](1) 数の性質②最小公倍数①",pts:5},
+{id:"ws-math-08-r2a-3-2",text:"[3](2) 数の性質②最小公倍数②",pts:5},
+{id:"ws-math-08-r2a-3-3",text:"[3](3) 数の性質②最小公倍数③",pts:5},
+{id:"ws-math-08-r2a-3-4",text:"[3](4) 数の性質②最小公倍数④",pts:5},
+{id:"ws-math-08-r2a-4-1",text:"[4](1) 数の性質②立方体①",pts:10},
+{id:"ws-math-08-r2a-4-2",text:"[4](2) 数の性質②立方体②",pts:10}
+]},
+{id:"ws-math-08-r2b",label:"R2B（数の性質②）応用②",diff:2,cat:"R2B",problems:[
+{id:"ws-math-08-r2b-1-1",text:"[1](1) 数の性質②⑧",pts:10},
+{id:"ws-math-08-r2b-1-2",text:"[1](2) 数の性質②⑨",pts:10},
+{id:"ws-math-08-r2b-1-3",text:"[1](3) 数の性質②⑩",pts:10},
+{id:"ws-math-08-r2b-2-1",text:"[2](1) 数の性質②4けた①",pts:5},
+{id:"ws-math-08-r2b-2-2",text:"[2](2) 数の性質②4けた②",pts:5},
+{id:"ws-math-08-r2b-2-3",text:"[2](3) 数の性質②4けた③",pts:5},
+{id:"ws-math-08-r2b-3-1",text:"[3](1) ランプが同時点灯する時刻",pts:10},
+{id:"ws-math-08-r2b-3-2",text:"[3](2) ランプが同時点灯する回数",pts:10},
+{id:"ws-math-08-r2b-4-1",text:"[4](1) 余りが同じ整数①",pts:10},
+{id:"ws-math-08-r2b-4-2",text:"[4](2) 余りが同じ整数②",pts:10}
+]},
+{id:"ws-math-08-r2c",label:"R2C（数の性質②）難問③",diff:3,cat:"R2C",problems:[
+{id:"ws-math-08-r2c-1",text:"[1] 数の性質②難問①（25点）",pts:25},
+{id:"ws-math-08-r2c-2",text:"[2] 数の性質②難問②（25点）",pts:25},
+{id:"ws-math-08-r2c-3",text:"[3] 数の性質②難問③（25点）",pts:25},
+{id:"ws-math-08-r2c-4",text:"[4] 数の性質②難問④（25点）",pts:25}
+]},
+{id:"ws-math-08-x1",label:"x-08① 発展①",diff:3,cat:"x①",problems:[
+{id:"ws-math-08-x1-1",text:"x①[1] カレンダー・曜日の計算（25点）",pts:25},
+{id:"ws-math-08-x1-2",text:"x①[2] 分数の数列で何番目か（25点）",pts:25},
+{id:"ws-math-08-x1-3",text:"x①[3] 整数を並べて700番目の数（25点）",pts:25},
+{id:"ws-math-08-x1-4",text:"x①[4] さいころの裏面の数の和（25点）",pts:25}
+]},
+{id:"ws-math-08-x2",label:"x-08② 発展②",diff:3,cat:"x②",problems:[
+{id:"ws-math-08-x2-1",text:"x②[1] 4月3日から100日目の曜日（25点）",pts:25},
+{id:"ws-math-08-x2-2",text:"x②[2] 分数の列で6/13は何番目（25点）",pts:25},
+{id:"ws-math-08-x2-3",text:"x②[3] 区切りの和が303になる番目（25点）",pts:25},
+{id:"ws-math-08-x2-4",text:"x②[4] 4個のさいころ積が60・裏面の和（25点）",pts:25}
+]},
+{id:"ws-math-08-z1",label:"Z-08① 最難問①",diff:3,cat:"Z①",problems:[
+{id:"ws-math-08-z1-1",text:"Z①[1](1) じゃんけん・階段①",pts:20},
+{id:"ws-math-08-z1-2",text:"Z①[1](2) じゃんけん・階段②",pts:20},
+{id:"ws-math-08-z1-3",text:"Z①[1](3) じゃんけん・考えられるだけ（20点）",pts:20},
+{id:"ws-math-08-z1-4",text:"Z①[2](1) 動点・三角形の面積（20点）",pts:20},
+{id:"ws-math-08-z1-5",text:"Z①[2](2) 動点・二等辺三角形になる時刻（20点）",pts:20},
+{id:"ws-math-08-z1-6",text:"Z①[3](1) 複合図形①",pts:20},
+{id:"ws-math-08-z1-7",text:"Z①[3](2) 複合図形②",pts:20},
+{id:"ws-math-08-z1-8",text:"Z①[3](3) 複合図形③",pts:20},
+{id:"ws-math-08-z1-9",text:"Z①[3](4) 複合図形④",pts:20}
+]},
+{id:"ws-math-08-z2",label:"Z-08② 最難問②",diff:3,cat:"Z②",problems:[
+{id:"ws-math-08-z2-4-1",text:"Z②[4](1) 折り返し図形①（三角形になるDE範囲）",pts:20},
+{id:"ws-math-08-z2-4-2",text:"Z②[4](2) 折り返し図形②（BE=4㎝の重なり面積）",pts:20},
+{id:"ws-math-08-z2-5-1",text:"Z②[5](1) 偶奇操作で15が1になる回数①",pts:20},
+{id:"ws-math-08-z2-5-2",text:"Z②[5](2) 偶奇操作で6になる最初の数すべて（20点）",pts:20},
+{id:"ws-math-08-z2-6",text:"Z②[6] 長方形の周囲の長さ（25点）",pts:25},
+{id:"ws-math-08-z2-7-1",text:"Z②[7](1) 装置A・C・DにIN=27（25点）",pts:25},
+{id:"ws-math-08-z2-7-2",text:"Z②[7](2) 逆順でOUT=35のIN（25点）",pts:25}
+]}
+],initialAnswers:{}},
+{id:"ws-math-09",code:"WS-09",title:"二量の関係（比例・反比例）・小数・分数計算",sections:[
+{id:"ws-math-09-r1a",label:"R1A（二量の関係（比例・反比例））基礎①",diff:1,cat:"R1A",problems:[
+{id:"ws-math-09-r1a-1-1",text:"[1](1) 二量の関係（比例・反比例）の計算①",pts:5},
+{id:"ws-math-09-r1a-1-2",text:"[1](2) 二量の関係（比例・反比例）の計算②",pts:5},
+{id:"ws-math-09-r1a-1-3",text:"[1](3) 二量の関係（比例・反比例）の計算③",pts:5},
+{id:"ws-math-09-r1a-1-4",text:"[1](4) 二量の関係（比例・反比例）の計算④",pts:5},
+{id:"ws-math-09-r1a-1-5",text:"[1](5) 二量の関係（比例・反比例）の計算⑤",pts:5},
+{id:"ws-math-09-r1a-1-6",text:"[1](6) 二量の関係（比例・反比例）の計算⑥",pts:5},
+{id:"ws-math-09-r1a-1-7",text:"[1](7) 二量の関係（比例・反比例）の計算⑦",pts:5},
+{id:"ws-math-09-r1a-1-8",text:"[1](8) 二量の関係（比例・反比例）の計算⑧",pts:5},
+{id:"ws-math-09-r1a-2-1",text:"[2](1) 二量の関係（比例・反比例）の応用①",pts:20},
+{id:"ws-math-09-r1a-2-2",text:"[2](2) 二量の関係（比例・反比例）のグラフ",pts:10},
+{id:"ws-math-09-r1a-3-1",text:"[3](1) 二量の関係（比例・反比例）の応用②",pts:10},
+{id:"ws-math-09-r1a-3-2",text:"[3](2) 二量の関係（比例・反比例）の応用③",pts:10},
+{id:"ws-math-09-r1a-4-1",text:"[4](1) 二量の関係（比例・反比例）の応用④",pts:10},
+{id:"ws-math-09-r1a-4-2",text:"[4](2) 二量の関係（比例・反比例）の応用⑤",pts:10}
+]},
+{id:"ws-math-09-r1b",label:"R1B（二量の関係（比例・反比例））基礎②",diff:1,cat:"R1B",problems:[
+{id:"ws-math-09-r1b-1-1",text:"[1](1) 平行線と角度①",pts:10},
+{id:"ws-math-09-r1b-1-2",text:"[1](2) 平行線と角度②",pts:10},
+{id:"ws-math-09-r1b-2-1",text:"[2](1) 二量の関係（比例・反比例）の斜線部分①",pts:10},
+{id:"ws-math-09-r1b-2-2",text:"[2](2) 二量の関係（比例・反比例）の斜線部分②",pts:10},
+{id:"ws-math-09-r1b-2-3",text:"[2](3) 二量の関係（比例・反比例）の斜線部分③",pts:10},
+{id:"ws-math-09-r1b-3-1",text:"[3](1) 正多角形の内角の和",pts:5},
+{id:"ws-math-09-r1b-3-2",text:"[3](2) 正多角形の1つの内角",pts:5},
+{id:"ws-math-09-r1b-3-3",text:"[3](3) 正多角形の1つの外角",pts:5},
+{id:"ws-math-09-r1b-3-4",text:"[3](4) 正多角形の外角の和",pts:5},
+{id:"ws-math-09-r1b-4-1",text:"[4](1) 台形の等積分割①",pts:10},
+{id:"ws-math-09-r1b-4-2",text:"[4](2) 台形の等積分割②",pts:10},
+{id:"ws-math-09-r1b-4-3",text:"[4](3) 台形の等積分割③",pts:10}
+]},
+{id:"ws-math-09-r1c",label:"R1C（二量の関係（比例・反比例））標準③",diff:2,cat:"R1C",problems:[
+{id:"ws-math-09-r1c-1-1",text:"[1](1) 二量の関係（比例・反比例）発展①",pts:20},
+{id:"ws-math-09-r1c-1-2",text:"[1](2) 二量の関係（比例・反比例）発展②（面積が300㎝²になる時刻）",pts:20},
+{id:"ws-math-09-r1c-2-1",text:"[2](1) 二量の関係（比例・反比例）発展③",pts:20},
+{id:"ws-math-09-r1c-2-2",text:"[2](2) 二量の関係（比例・反比例）発展④",pts:20},
+{id:"ws-math-09-r1c-2-3",text:"[2](3) 二量の関係（比例・反比例）発展⑤",pts:20}
+]},
+{id:"ws-math-09-r2a",label:"R2A（小数・分数計算）応用①",diff:2,cat:"R2A",problems:[
+{id:"ws-math-09-r2a-1-1",text:"[1](1) 小数・分数計算①",pts:10},
+{id:"ws-math-09-r2a-1-2",text:"[1](2) 小数・分数計算②",pts:10},
+{id:"ws-math-09-r2a-1-3",text:"[1](3) 小数・分数計算③",pts:10},
+{id:"ws-math-09-r2a-1-4",text:"[1](4) 小数・分数計算④",pts:10},
+{id:"ws-math-09-r2a-1-5",text:"[1](5) 小数・分数計算⑤",pts:10},
+{id:"ws-math-09-r2a-2-1",text:"[2](1) 小数・分数計算⑥",pts:5},
+{id:"ws-math-09-r2a-2-2",text:"[2](2) 小数・分数計算⑦",pts:5},
+{id:"ws-math-09-r2a-3-1",text:"[3](1) 小数・分数計算最小公倍数①",pts:5},
+{id:"ws-math-09-r2a-3-2",text:"[3](2) 小数・分数計算最小公倍数②",pts:5},
+{id:"ws-math-09-r2a-3-3",text:"[3](3) 小数・分数計算最小公倍数③",pts:5},
+{id:"ws-math-09-r2a-3-4",text:"[3](4) 小数・分数計算最小公倍数④",pts:5},
+{id:"ws-math-09-r2a-4-1",text:"[4](1) 小数・分数計算立方体①",pts:10},
+{id:"ws-math-09-r2a-4-2",text:"[4](2) 小数・分数計算立方体②",pts:10}
+]},
+{id:"ws-math-09-r2b",label:"R2B（小数・分数計算）応用②",diff:2,cat:"R2B",problems:[
+{id:"ws-math-09-r2b-1-1",text:"[1](1) 小数・分数計算⑧",pts:10},
+{id:"ws-math-09-r2b-1-2",text:"[1](2) 小数・分数計算⑨",pts:10},
+{id:"ws-math-09-r2b-1-3",text:"[1](3) 小数・分数計算⑩",pts:10},
+{id:"ws-math-09-r2b-2-1",text:"[2](1) 小数・分数計算4けた①",pts:5},
+{id:"ws-math-09-r2b-2-2",text:"[2](2) 小数・分数計算4けた②",pts:5},
+{id:"ws-math-09-r2b-2-3",text:"[2](3) 小数・分数計算4けた③",pts:5},
+{id:"ws-math-09-r2b-3-1",text:"[3](1) ランプが同時点灯する時刻",pts:10},
+{id:"ws-math-09-r2b-3-2",text:"[3](2) ランプが同時点灯する回数",pts:10},
+{id:"ws-math-09-r2b-4-1",text:"[4](1) 余りが同じ整数①",pts:10},
+{id:"ws-math-09-r2b-4-2",text:"[4](2) 余りが同じ整数②",pts:10}
+]},
+{id:"ws-math-09-r2c",label:"R2C（小数・分数計算）難問③",diff:3,cat:"R2C",problems:[
+{id:"ws-math-09-r2c-1",text:"[1] 小数・分数計算難問①（25点）",pts:25},
+{id:"ws-math-09-r2c-2",text:"[2] 小数・分数計算難問②（25点）",pts:25},
+{id:"ws-math-09-r2c-3",text:"[3] 小数・分数計算難問③（25点）",pts:25},
+{id:"ws-math-09-r2c-4",text:"[4] 小数・分数計算難問④（25点）",pts:25}
+]},
+{id:"ws-math-09-x1",label:"x-09① 発展①",diff:3,cat:"x①",problems:[
+{id:"ws-math-09-x1-1",text:"x①[1] カレンダー・曜日の計算（25点）",pts:25},
+{id:"ws-math-09-x1-2",text:"x①[2] 分数の数列で何番目か（25点）",pts:25},
+{id:"ws-math-09-x1-3",text:"x①[3] 整数を並べて700番目の数（25点）",pts:25},
+{id:"ws-math-09-x1-4",text:"x①[4] さいころの裏面の数の和（25点）",pts:25}
+]},
+{id:"ws-math-09-x2",label:"x-09② 発展②",diff:3,cat:"x②",problems:[
+{id:"ws-math-09-x2-1",text:"x②[1] 4月3日から100日目の曜日（25点）",pts:25},
+{id:"ws-math-09-x2-2",text:"x②[2] 分数の列で6/13は何番目（25点）",pts:25},
+{id:"ws-math-09-x2-3",text:"x②[3] 区切りの和が303になる番目（25点）",pts:25},
+{id:"ws-math-09-x2-4",text:"x②[4] 4個のさいころ積が60・裏面の和（25点）",pts:25}
+]},
+{id:"ws-math-09-z1",label:"Z-09① 最難問①",diff:3,cat:"Z①",problems:[
+{id:"ws-math-09-z1-1",text:"Z①[1](1) じゃんけん・階段①",pts:20},
+{id:"ws-math-09-z1-2",text:"Z①[1](2) じゃんけん・階段②",pts:20},
+{id:"ws-math-09-z1-3",text:"Z①[1](3) じゃんけん・考えられるだけ（20点）",pts:20},
+{id:"ws-math-09-z1-4",text:"Z①[2](1) 動点・三角形の面積（20点）",pts:20},
+{id:"ws-math-09-z1-5",text:"Z①[2](2) 動点・二等辺三角形になる時刻（20点）",pts:20},
+{id:"ws-math-09-z1-6",text:"Z①[3](1) 複合図形①",pts:20},
+{id:"ws-math-09-z1-7",text:"Z①[3](2) 複合図形②",pts:20},
+{id:"ws-math-09-z1-8",text:"Z①[3](3) 複合図形③",pts:20},
+{id:"ws-math-09-z1-9",text:"Z①[3](4) 複合図形④",pts:20}
+]},
+{id:"ws-math-09-z2",label:"Z-09② 最難問②",diff:3,cat:"Z②",problems:[
+{id:"ws-math-09-z2-4-1",text:"Z②[4](1) 折り返し図形①（三角形になるDE範囲）",pts:20},
+{id:"ws-math-09-z2-4-2",text:"Z②[4](2) 折り返し図形②（BE=4㎝の重なり面積）",pts:20},
+{id:"ws-math-09-z2-5-1",text:"Z②[5](1) 偶奇操作で15が1になる回数①",pts:20},
+{id:"ws-math-09-z2-5-2",text:"Z②[5](2) 偶奇操作で6になる最初の数すべて（20点）",pts:20},
+{id:"ws-math-09-z2-6",text:"Z②[6] 長方形の周囲の長さ（25点）",pts:25},
+{id:"ws-math-09-z2-7-1",text:"Z②[7](1) 装置A・C・DにIN=27（25点）",pts:25},
+{id:"ws-math-09-z2-7-2",text:"Z②[7](2) 逆順でOUT=35のIN（25点）",pts:25}
+]}
+],initialAnswers:{}},
+{id:"ws-math-10",code:"WS-10",title:"立体図形③（複合・水量）・平面図形③（相似・比）",sections:[
+{id:"ws-math-10-r1a",label:"R1A（立体図形③（複合・水量））基礎①",diff:1,cat:"R1A",problems:[
+{id:"ws-math-10-r1a-1-1",text:"[1](1) 立体図形③（複合・水量）の計算①",pts:5},
+{id:"ws-math-10-r1a-1-2",text:"[1](2) 立体図形③（複合・水量）の計算②",pts:5},
+{id:"ws-math-10-r1a-1-3",text:"[1](3) 立体図形③（複合・水量）の計算③",pts:5},
+{id:"ws-math-10-r1a-1-4",text:"[1](4) 立体図形③（複合・水量）の計算④",pts:5},
+{id:"ws-math-10-r1a-1-5",text:"[1](5) 立体図形③（複合・水量）の計算⑤",pts:5},
+{id:"ws-math-10-r1a-1-6",text:"[1](6) 立体図形③（複合・水量）の計算⑥",pts:5},
+{id:"ws-math-10-r1a-1-7",text:"[1](7) 立体図形③（複合・水量）の計算⑦",pts:5},
+{id:"ws-math-10-r1a-1-8",text:"[1](8) 立体図形③（複合・水量）の計算⑧",pts:5},
+{id:"ws-math-10-r1a-2-1",text:"[2](1) 立体図形③（複合・水量）の応用①",pts:20},
+{id:"ws-math-10-r1a-2-2",text:"[2](2) 立体図形③（複合・水量）のグラフ",pts:10},
+{id:"ws-math-10-r1a-3-1",text:"[3](1) 立体図形③（複合・水量）の応用②",pts:10},
+{id:"ws-math-10-r1a-3-2",text:"[3](2) 立体図形③（複合・水量）の応用③",pts:10},
+{id:"ws-math-10-r1a-4-1",text:"[4](1) 立体図形③（複合・水量）の応用④",pts:10},
+{id:"ws-math-10-r1a-4-2",text:"[4](2) 立体図形③（複合・水量）の応用⑤",pts:10}
+]},
+{id:"ws-math-10-r1b",label:"R1B（立体図形③（複合・水量））基礎②",diff:1,cat:"R1B",problems:[
+{id:"ws-math-10-r1b-1-1",text:"[1](1) 平行線と角度①",pts:10},
+{id:"ws-math-10-r1b-1-2",text:"[1](2) 平行線と角度②",pts:10},
+{id:"ws-math-10-r1b-2-1",text:"[2](1) 立体図形③（複合・水量）の斜線部分①",pts:10},
+{id:"ws-math-10-r1b-2-2",text:"[2](2) 立体図形③（複合・水量）の斜線部分②",pts:10},
+{id:"ws-math-10-r1b-2-3",text:"[2](3) 立体図形③（複合・水量）の斜線部分③",pts:10},
+{id:"ws-math-10-r1b-3-1",text:"[3](1) 正多角形の内角の和",pts:5},
+{id:"ws-math-10-r1b-3-2",text:"[3](2) 正多角形の1つの内角",pts:5},
+{id:"ws-math-10-r1b-3-3",text:"[3](3) 正多角形の1つの外角",pts:5},
+{id:"ws-math-10-r1b-3-4",text:"[3](4) 正多角形の外角の和",pts:5},
+{id:"ws-math-10-r1b-4-1",text:"[4](1) 台形の等積分割①",pts:10},
+{id:"ws-math-10-r1b-4-2",text:"[4](2) 台形の等積分割②",pts:10},
+{id:"ws-math-10-r1b-4-3",text:"[4](3) 台形の等積分割③",pts:10}
+]},
+{id:"ws-math-10-r1c",label:"R1C（立体図形③（複合・水量））標準③",diff:2,cat:"R1C",problems:[
+{id:"ws-math-10-r1c-1-1",text:"[1](1) 立体図形③（複合・水量）発展①",pts:20},
+{id:"ws-math-10-r1c-1-2",text:"[1](2) 立体図形③（複合・水量）発展②（面積が300㎝²になる時刻）",pts:20},
+{id:"ws-math-10-r1c-2-1",text:"[2](1) 立体図形③（複合・水量）発展③",pts:20},
+{id:"ws-math-10-r1c-2-2",text:"[2](2) 立体図形③（複合・水量）発展④",pts:20},
+{id:"ws-math-10-r1c-2-3",text:"[2](3) 立体図形③（複合・水量）発展⑤",pts:20}
+]},
+{id:"ws-math-10-r2a",label:"R2A（平面図形③（相似・比））応用①",diff:2,cat:"R2A",problems:[
+{id:"ws-math-10-r2a-1-1",text:"[1](1) 平面図形③（相似・比）①",pts:10},
+{id:"ws-math-10-r2a-1-2",text:"[1](2) 平面図形③（相似・比）②",pts:10},
+{id:"ws-math-10-r2a-1-3",text:"[1](3) 平面図形③（相似・比）③",pts:10},
+{id:"ws-math-10-r2a-1-4",text:"[1](4) 平面図形③（相似・比）④",pts:10},
+{id:"ws-math-10-r2a-1-5",text:"[1](5) 平面図形③（相似・比）⑤",pts:10},
+{id:"ws-math-10-r2a-2-1",text:"[2](1) 平面図形③（相似・比）⑥",pts:5},
+{id:"ws-math-10-r2a-2-2",text:"[2](2) 平面図形③（相似・比）⑦",pts:5},
+{id:"ws-math-10-r2a-3-1",text:"[3](1) 平面図形③（相似・比）最小公倍数①",pts:5},
+{id:"ws-math-10-r2a-3-2",text:"[3](2) 平面図形③（相似・比）最小公倍数②",pts:5},
+{id:"ws-math-10-r2a-3-3",text:"[3](3) 平面図形③（相似・比）最小公倍数③",pts:5},
+{id:"ws-math-10-r2a-3-4",text:"[3](4) 平面図形③（相似・比）最小公倍数④",pts:5},
+{id:"ws-math-10-r2a-4-1",text:"[4](1) 平面図形③（相似・比）立方体①",pts:10},
+{id:"ws-math-10-r2a-4-2",text:"[4](2) 平面図形③（相似・比）立方体②",pts:10}
+]},
+{id:"ws-math-10-r2b",label:"R2B（平面図形③（相似・比））応用②",diff:2,cat:"R2B",problems:[
+{id:"ws-math-10-r2b-1-1",text:"[1](1) 平面図形③（相似・比）⑧",pts:10},
+{id:"ws-math-10-r2b-1-2",text:"[1](2) 平面図形③（相似・比）⑨",pts:10},
+{id:"ws-math-10-r2b-1-3",text:"[1](3) 平面図形③（相似・比）⑩",pts:10},
+{id:"ws-math-10-r2b-2-1",text:"[2](1) 平面図形③（相似・比）4けた①",pts:5},
+{id:"ws-math-10-r2b-2-2",text:"[2](2) 平面図形③（相似・比）4けた②",pts:5},
+{id:"ws-math-10-r2b-2-3",text:"[2](3) 平面図形③（相似・比）4けた③",pts:5},
+{id:"ws-math-10-r2b-3-1",text:"[3](1) ランプが同時点灯する時刻",pts:10},
+{id:"ws-math-10-r2b-3-2",text:"[3](2) ランプが同時点灯する回数",pts:10},
+{id:"ws-math-10-r2b-4-1",text:"[4](1) 余りが同じ整数①",pts:10},
+{id:"ws-math-10-r2b-4-2",text:"[4](2) 余りが同じ整数②",pts:10}
+]},
+{id:"ws-math-10-r2c",label:"R2C（平面図形③（相似・比））難問③",diff:3,cat:"R2C",problems:[
+{id:"ws-math-10-r2c-1",text:"[1] 平面図形③（相似・比）難問①（25点）",pts:25},
+{id:"ws-math-10-r2c-2",text:"[2] 平面図形③（相似・比）難問②（25点）",pts:25},
+{id:"ws-math-10-r2c-3",text:"[3] 平面図形③（相似・比）難問③（25点）",pts:25},
+{id:"ws-math-10-r2c-4",text:"[4] 平面図形③（相似・比）難問④（25点）",pts:25}
+]},
+{id:"ws-math-10-x1",label:"x-10① 発展①",diff:3,cat:"x①",problems:[
+{id:"ws-math-10-x1-1",text:"x①[1] カレンダー・曜日の計算（25点）",pts:25},
+{id:"ws-math-10-x1-2",text:"x①[2] 分数の数列で何番目か（25点）",pts:25},
+{id:"ws-math-10-x1-3",text:"x①[3] 整数を並べて700番目の数（25点）",pts:25},
+{id:"ws-math-10-x1-4",text:"x①[4] さいころの裏面の数の和（25点）",pts:25}
+]},
+{id:"ws-math-10-x2",label:"x-10② 発展②",diff:3,cat:"x②",problems:[
+{id:"ws-math-10-x2-1",text:"x②[1] 4月3日から100日目の曜日（25点）",pts:25},
+{id:"ws-math-10-x2-2",text:"x②[2] 分数の列で6/13は何番目（25点）",pts:25},
+{id:"ws-math-10-x2-3",text:"x②[3] 区切りの和が303になる番目（25点）",pts:25},
+{id:"ws-math-10-x2-4",text:"x②[4] 4個のさいころ積が60・裏面の和（25点）",pts:25}
+]},
+{id:"ws-math-10-z1",label:"Z-10① 最難問①",diff:3,cat:"Z①",problems:[
+{id:"ws-math-10-z1-1",text:"Z①[1](1) じゃんけん・階段①",pts:20},
+{id:"ws-math-10-z1-2",text:"Z①[1](2) じゃんけん・階段②",pts:20},
+{id:"ws-math-10-z1-3",text:"Z①[1](3) じゃんけん・考えられるだけ（20点）",pts:20},
+{id:"ws-math-10-z1-4",text:"Z①[2](1) 動点・三角形の面積（20点）",pts:20},
+{id:"ws-math-10-z1-5",text:"Z①[2](2) 動点・二等辺三角形になる時刻（20点）",pts:20},
+{id:"ws-math-10-z1-6",text:"Z①[3](1) 複合図形①",pts:20},
+{id:"ws-math-10-z1-7",text:"Z①[3](2) 複合図形②",pts:20},
+{id:"ws-math-10-z1-8",text:"Z①[3](3) 複合図形③",pts:20},
+{id:"ws-math-10-z1-9",text:"Z①[3](4) 複合図形④",pts:20}
+]},
+{id:"ws-math-10-z2",label:"Z-10② 最難問②",diff:3,cat:"Z②",problems:[
+{id:"ws-math-10-z2-4-1",text:"Z②[4](1) 折り返し図形①（三角形になるDE範囲）",pts:20},
+{id:"ws-math-10-z2-4-2",text:"Z②[4](2) 折り返し図形②（BE=4㎝の重なり面積）",pts:20},
+{id:"ws-math-10-z2-5-1",text:"Z②[5](1) 偶奇操作で15が1になる回数①",pts:20},
+{id:"ws-math-10-z2-5-2",text:"Z②[5](2) 偶奇操作で6になる最初の数すべて（20点）",pts:20},
+{id:"ws-math-10-z2-6",text:"Z②[6] 長方形の周囲の長さ（25点）",pts:25},
+{id:"ws-math-10-z2-7-1",text:"Z②[7](1) 装置A・C・DにIN=27（25点）",pts:25},
+{id:"ws-math-10-z2-7-2",text:"Z②[7](2) 逆順でOUT=35のIN（25点）",pts:25}
+]}
+],initialAnswers:{}}
+],
+japanese: [
+{id:"ws-jp-01",code:"WS-01",title:"物語文①（心情・場面読解）",sections:[
+{id:"ws-jp-01-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
+{id:"ws-jp-01-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
+{id:"ws-jp-01-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
+{id:"ws-jp-01-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
+{id:"ws-jp-01-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
+{id:"ws-jp-01-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
+{id:"ws-jp-01-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
+{id:"ws-jp-01-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
+{id:"ws-jp-01-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
+{id:"ws-jp-01-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
+{id:"ws-jp-01-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
+{id:"ws-jp-01-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+]},
+{id:"ws-jp-01-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
+{id:"ws-jp-01-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
+{id:"ws-jp-01-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
+{id:"ws-jp-01-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
+{id:"ws-jp-01-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
+{id:"ws-jp-01-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
+{id:"ws-jp-01-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
+{id:"ws-jp-01-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
+{id:"ws-jp-01-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
+{id:"ws-jp-01-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
+{id:"ws-jp-01-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+]}
+],initialAnswers:{}},
+{id:"ws-jp-02",code:"WS-02",title:"説明文①（論旨・要旨読解）",sections:[
+{id:"ws-jp-02-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
+{id:"ws-jp-02-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
+{id:"ws-jp-02-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
+{id:"ws-jp-02-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
+{id:"ws-jp-02-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
+{id:"ws-jp-02-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
+{id:"ws-jp-02-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
+{id:"ws-jp-02-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
+{id:"ws-jp-02-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
+{id:"ws-jp-02-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
+{id:"ws-jp-02-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
+{id:"ws-jp-02-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+]},
+{id:"ws-jp-02-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
+{id:"ws-jp-02-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
+{id:"ws-jp-02-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
+{id:"ws-jp-02-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
+{id:"ws-jp-02-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
+{id:"ws-jp-02-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
+{id:"ws-jp-02-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
+{id:"ws-jp-02-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
+{id:"ws-jp-02-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
+{id:"ws-jp-02-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
+{id:"ws-jp-02-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+]}
+],initialAnswers:{}},
+{id:"ws-jp-04",code:"WS-04",title:"物語文②（人物・関係性読解）",sections:[
+{id:"ws-jp-04-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
+{id:"ws-jp-04-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
+{id:"ws-jp-04-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
+{id:"ws-jp-04-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
+{id:"ws-jp-04-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
+{id:"ws-jp-04-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
+{id:"ws-jp-04-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
+{id:"ws-jp-04-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
+{id:"ws-jp-04-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
+{id:"ws-jp-04-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
+{id:"ws-jp-04-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
+{id:"ws-jp-04-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+]},
+{id:"ws-jp-04-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
+{id:"ws-jp-04-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
+{id:"ws-jp-04-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
+{id:"ws-jp-04-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
+{id:"ws-jp-04-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
+{id:"ws-jp-04-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
+{id:"ws-jp-04-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
+{id:"ws-jp-04-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
+{id:"ws-jp-04-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
+{id:"ws-jp-04-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
+{id:"ws-jp-04-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+]}
+],initialAnswers:{}},
+{id:"ws-jp-05",code:"WS-05",title:"説明文②（具体例・主張読解）",sections:[
+{id:"ws-jp-05-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
+{id:"ws-jp-05-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
+{id:"ws-jp-05-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
+{id:"ws-jp-05-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
+{id:"ws-jp-05-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
+{id:"ws-jp-05-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
+{id:"ws-jp-05-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
+{id:"ws-jp-05-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
+{id:"ws-jp-05-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
+{id:"ws-jp-05-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
+{id:"ws-jp-05-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
+{id:"ws-jp-05-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+]},
+{id:"ws-jp-05-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
+{id:"ws-jp-05-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
+{id:"ws-jp-05-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
+{id:"ws-jp-05-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
+{id:"ws-jp-05-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
+{id:"ws-jp-05-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
+{id:"ws-jp-05-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
+{id:"ws-jp-05-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
+{id:"ws-jp-05-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
+{id:"ws-jp-05-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
+{id:"ws-jp-05-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+]}
+],initialAnswers:{}},
+{id:"ws-jp-06",code:"WS-06",title:"物語文③（心情変化・対比）",sections:[
+{id:"ws-jp-06-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
+{id:"ws-jp-06-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
+{id:"ws-jp-06-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
+{id:"ws-jp-06-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
+{id:"ws-jp-06-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
+{id:"ws-jp-06-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
+{id:"ws-jp-06-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
+{id:"ws-jp-06-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
+{id:"ws-jp-06-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
+{id:"ws-jp-06-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
+{id:"ws-jp-06-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
+{id:"ws-jp-06-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+]},
+{id:"ws-jp-06-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
+{id:"ws-jp-06-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
+{id:"ws-jp-06-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
+{id:"ws-jp-06-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
+{id:"ws-jp-06-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
+{id:"ws-jp-06-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
+{id:"ws-jp-06-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
+{id:"ws-jp-06-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
+{id:"ws-jp-06-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
+{id:"ws-jp-06-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
+{id:"ws-jp-06-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+]}
+],initialAnswers:{}},
+{id:"ws-jp-07",code:"WS-07",title:"物語文④（設問別読解）",sections:[
+{id:"ws-jp-07-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
+{id:"ws-jp-07-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
+{id:"ws-jp-07-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
+{id:"ws-jp-07-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
+{id:"ws-jp-07-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
+{id:"ws-jp-07-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
+{id:"ws-jp-07-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
+{id:"ws-jp-07-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
+{id:"ws-jp-07-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
+{id:"ws-jp-07-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
+{id:"ws-jp-07-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
+{id:"ws-jp-07-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+]},
+{id:"ws-jp-07-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
+{id:"ws-jp-07-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
+{id:"ws-jp-07-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
+{id:"ws-jp-07-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
+{id:"ws-jp-07-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
+{id:"ws-jp-07-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
+{id:"ws-jp-07-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
+{id:"ws-jp-07-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
+{id:"ws-jp-07-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
+{id:"ws-jp-07-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
+{id:"ws-jp-07-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+]}
+],initialAnswers:{}},
+{id:"ws-jp-08",code:"WS-08",title:"物語文⑤（視点・描写読解）",sections:[
+{id:"ws-jp-08-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
+{id:"ws-jp-08-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
+{id:"ws-jp-08-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
+{id:"ws-jp-08-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
+{id:"ws-jp-08-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
+{id:"ws-jp-08-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
+{id:"ws-jp-08-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
+{id:"ws-jp-08-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
+{id:"ws-jp-08-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
+{id:"ws-jp-08-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
+{id:"ws-jp-08-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
+{id:"ws-jp-08-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+]},
+{id:"ws-jp-08-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
+{id:"ws-jp-08-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
+{id:"ws-jp-08-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
+{id:"ws-jp-08-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
+{id:"ws-jp-08-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
+{id:"ws-jp-08-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
+{id:"ws-jp-08-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
+{id:"ws-jp-08-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
+{id:"ws-jp-08-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
+{id:"ws-jp-08-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
+{id:"ws-jp-08-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+]}
+],initialAnswers:{}},
+{id:"ws-jp-09",code:"WS-09",title:"説明文③（因果関係・論述）",sections:[
+{id:"ws-jp-09-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
+{id:"ws-jp-09-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
+{id:"ws-jp-09-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
+{id:"ws-jp-09-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
+{id:"ws-jp-09-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
+{id:"ws-jp-09-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
+{id:"ws-jp-09-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
+{id:"ws-jp-09-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
+{id:"ws-jp-09-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
+{id:"ws-jp-09-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
+{id:"ws-jp-09-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
+{id:"ws-jp-09-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+]},
+{id:"ws-jp-09-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
+{id:"ws-jp-09-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
+{id:"ws-jp-09-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
+{id:"ws-jp-09-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
+{id:"ws-jp-09-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
+{id:"ws-jp-09-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
+{id:"ws-jp-09-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
+{id:"ws-jp-09-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
+{id:"ws-jp-09-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
+{id:"ws-jp-09-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
+{id:"ws-jp-09-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+]}
+],initialAnswers:{}},
+{id:"ws-jp-10",code:"WS-10",title:"物語文⑥（総合・記述強化）",sections:[
+{id:"ws-jp-10-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
+{id:"ws-jp-10-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
+{id:"ws-jp-10-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
+{id:"ws-jp-10-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
+{id:"ws-jp-10-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
+{id:"ws-jp-10-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
+{id:"ws-jp-10-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
+{id:"ws-jp-10-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
+{id:"ws-jp-10-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
+{id:"ws-jp-10-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
+{id:"ws-jp-10-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
+{id:"ws-jp-10-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+]},
+{id:"ws-jp-10-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
+{id:"ws-jp-10-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
+{id:"ws-jp-10-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
+{id:"ws-jp-10-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
+{id:"ws-jp-10-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
+{id:"ws-jp-10-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
+{id:"ws-jp-10-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
+{id:"ws-jp-10-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
+{id:"ws-jp-10-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
+{id:"ws-jp-10-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
+{id:"ws-jp-10-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+]}
+],initialAnswers:{}}
+],
+science: [
+{id:"ws-sci-01",code:"WS-01",title:"水の三態と熱",sections:[
+{id:"ws-sci-01-x1",label:"X1（水の状態変化（融解・気化・凝固・液化））",diff:1,cat:"X",problems:[
+{id:"ws-sci-01-x1-1",text:"水の状態変化（融解・気化・凝固・液化）(1) 問題1",pts:10},
+{id:"ws-sci-01-x1-2",text:"水の状態変化（融解・気化・凝固・液化）(2) 問題2",pts:10},
+{id:"ws-sci-01-x1-3",text:"水の状態変化（融解・気化・凝固・液化）(3) 問題3",pts:10},
+{id:"ws-sci-01-x1-4",text:"水の状態変化（融解・気化・凝固・液化）(4) 問題4",pts:10},
+{id:"ws-sci-01-x1-5",text:"水の状態変化（融解・気化・凝固・液化）(5) 問題5",pts:10},
+{id:"ws-sci-01-x1-6",text:"水の状態変化（融解・気化・凝固・液化）(6) 問題6",pts:10},
+{id:"ws-sci-01-x1-7",text:"水の状態変化（融解・気化・凝固・液化）(7) 問題7",pts:10},
+{id:"ws-sci-01-x1-8",text:"水の状態変化（融解・気化・凝固・液化）(8) 問題8",pts:10}
+]},{id:"ws-sci-01-x2",label:"X2（熱の伝わり方（伝導・対流・放射））",diff:1,cat:"X",problems:[
+{id:"ws-sci-01-x2-1",text:"熱の伝わり方（伝導・対流・放射）(1) 問題1",pts:10},
+{id:"ws-sci-01-x2-2",text:"熱の伝わり方（伝導・対流・放射）(2) 問題2",pts:10},
+{id:"ws-sci-01-x2-3",text:"熱の伝わり方（伝導・対流・放射）(3) 問題3",pts:10},
+{id:"ws-sci-01-x2-4",text:"熱の伝わり方（伝導・対流・放射）(4) 問題4",pts:10},
+{id:"ws-sci-01-x2-5",text:"熱の伝わり方（伝導・対流・放射）(5) 問題5",pts:10},
+{id:"ws-sci-01-x2-6",text:"熱の伝わり方（伝導・対流・放射）(6) 問題6",pts:10},
+{id:"ws-sci-01-x2-7",text:"熱の伝わり方（伝導・対流・放射）(7) 問題7",pts:10},
+{id:"ws-sci-01-x2-8",text:"熱の伝わり方（伝導・対流・放射）(8) 問題8",pts:10}
+]},{id:"ws-sci-01-x3",label:"X3（温度変化グラフの読み取り）",diff:1,cat:"X",problems:[
+{id:"ws-sci-01-x3-1",text:"温度変化グラフの読み取り(1) 問題1",pts:10},
+{id:"ws-sci-01-x3-2",text:"温度変化グラフの読み取り(2) 問題2",pts:10},
+{id:"ws-sci-01-x3-3",text:"温度変化グラフの読み取り(3) 問題3",pts:10},
+{id:"ws-sci-01-x3-4",text:"温度変化グラフの読み取り(4) 問題4",pts:10},
+{id:"ws-sci-01-x3-5",text:"温度変化グラフの読み取り(5) 問題5",pts:10},
+{id:"ws-sci-01-x3-6",text:"温度変化グラフの読み取り(6) 問題6",pts:10},
+{id:"ws-sci-01-x3-7",text:"温度変化グラフの読み取り(7) 問題7",pts:10},
+{id:"ws-sci-01-x3-8",text:"温度変化グラフの読み取り(8) 問題8",pts:10}
+]},{id:"ws-sci-01-y1",label:"Y1（水の三態総合問題①）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-01-y1-1",text:"水の三態総合問題①(1) 問題1",pts:10},
+{id:"ws-sci-01-y1-2",text:"水の三態総合問題①(2) 問題2",pts:10},
+{id:"ws-sci-01-y1-3",text:"水の三態総合問題①(3) 問題3",pts:10},
+{id:"ws-sci-01-y1-4",text:"水の三態総合問題①(4) 問題4",pts:10},
+{id:"ws-sci-01-y1-5",text:"水の三態総合問題①(5) 問題5",pts:10},
+{id:"ws-sci-01-y1-6",text:"水の三態総合問題①(6) 問題6",pts:10},
+{id:"ws-sci-01-y1-7",text:"水の三態総合問題①(7) 問題7",pts:10},
+{id:"ws-sci-01-y1-8",text:"水の三態総合問題①(8) 問題8",pts:10}
+]},{id:"ws-sci-01-y2",label:"Y2（水と熱の計算問題）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-01-y2-1",text:"水と熱の計算問題(1) 問題1",pts:10},
+{id:"ws-sci-01-y2-2",text:"水と熱の計算問題(2) 問題2",pts:10},
+{id:"ws-sci-01-y2-3",text:"水と熱の計算問題(3) 問題3",pts:10},
+{id:"ws-sci-01-y2-4",text:"水と熱の計算問題(4) 問題4",pts:10},
+{id:"ws-sci-01-y2-5",text:"水と熱の計算問題(5) 問題5",pts:10},
+{id:"ws-sci-01-y2-6",text:"水と熱の計算問題(6) 問題6",pts:10},
+{id:"ws-sci-01-y2-7",text:"水と熱の計算問題(7) 問題7",pts:10},
+{id:"ws-sci-01-y2-8",text:"水と熱の計算問題(8) 問題8",pts:10}
+]},{id:"ws-sci-01-z1",label:"Z1（発展問題①（混合水の温度計算））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-01-z1-1",text:"発展問題①（混合水の温度計算）(1) 問題1",pts:10},
+{id:"ws-sci-01-z1-2",text:"発展問題①（混合水の温度計算）(2) 問題2",pts:10},
+{id:"ws-sci-01-z1-3",text:"発展問題①（混合水の温度計算）(3) 問題3",pts:10},
+{id:"ws-sci-01-z1-4",text:"発展問題①（混合水の温度計算）(4) 問題4",pts:10},
+{id:"ws-sci-01-z1-5",text:"発展問題①（混合水の温度計算）(5) 問題5",pts:10},
+{id:"ws-sci-01-z1-6",text:"発展問題①（混合水の温度計算）(6) 問題6",pts:10}
+]},{id:"ws-sci-01-z2",label:"Z2（発展問題②（状態変化の応用））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-01-z2-1",text:"発展問題②（状態変化の応用）(1) 問題1",pts:10},
+{id:"ws-sci-01-z2-2",text:"発展問題②（状態変化の応用）(2) 問題2",pts:10},
+{id:"ws-sci-01-z2-3",text:"発展問題②（状態変化の応用）(3) 問題3",pts:10},
+{id:"ws-sci-01-z2-4",text:"発展問題②（状態変化の応用）(4) 問題4",pts:10},
+{id:"ws-sci-01-z2-5",text:"発展問題②（状態変化の応用）(5) 問題5",pts:10},
+{id:"ws-sci-01-z2-6",text:"発展問題②（状態変化の応用）(6) 問題6",pts:10}
+]},{id:"ws-sci-01-z3",label:"Z3（最難問（複合計算））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-01-z3-1",text:"最難問（複合計算）(1) 問題1",pts:10},
+{id:"ws-sci-01-z3-2",text:"最難問（複合計算）(2) 問題2",pts:10},
+{id:"ws-sci-01-z3-3",text:"最難問（複合計算）(3) 問題3",pts:10},
+{id:"ws-sci-01-z3-4",text:"最難問（複合計算）(4) 問題4",pts:10},
+{id:"ws-sci-01-z3-5",text:"最難問（複合計算）(5) 問題5",pts:10},
+{id:"ws-sci-01-z3-6",text:"最難問（複合計算）(6) 問題6",pts:10}
+]}
+],initialAnswers:{}},
+{id:"ws-sci-02",code:"WS-02",title:"植物の成長・光合成・蒸散",sections:[
+{id:"ws-sci-02-x1",label:"X1（葉のつくり（葉脈・維管束・気孔・細胞））",diff:1,cat:"X",problems:[
+{id:"ws-sci-02-x1-1",text:"葉のつくり（葉脈・維管束・気孔・細胞）(1) 問題1",pts:10},
+{id:"ws-sci-02-x1-2",text:"葉のつくり（葉脈・維管束・気孔・細胞）(2) 問題2",pts:10},
+{id:"ws-sci-02-x1-3",text:"葉のつくり（葉脈・維管束・気孔・細胞）(3) 問題3",pts:10},
+{id:"ws-sci-02-x1-4",text:"葉のつくり（葉脈・維管束・気孔・細胞）(4) 問題4",pts:10},
+{id:"ws-sci-02-x1-5",text:"葉のつくり（葉脈・維管束・気孔・細胞）(5) 問題5",pts:10},
+{id:"ws-sci-02-x1-6",text:"葉のつくり（葉脈・維管束・気孔・細胞）(6) 問題6",pts:10},
+{id:"ws-sci-02-x1-7",text:"葉のつくり（葉脈・維管束・気孔・細胞）(7) 問題7",pts:10},
+{id:"ws-sci-02-x1-8",text:"葉のつくり（葉脈・維管束・気孔・細胞）(8) 問題8",pts:10}
+]},{id:"ws-sci-02-x2",label:"X2（茎・根のつくり（道管・師管・形成層））",diff:1,cat:"X",problems:[
+{id:"ws-sci-02-x2-1",text:"茎・根のつくり（道管・師管・形成層）(1) 問題1",pts:10},
+{id:"ws-sci-02-x2-2",text:"茎・根のつくり（道管・師管・形成層）(2) 問題2",pts:10},
+{id:"ws-sci-02-x2-3",text:"茎・根のつくり（道管・師管・形成層）(3) 問題3",pts:10},
+{id:"ws-sci-02-x2-4",text:"茎・根のつくり（道管・師管・形成層）(4) 問題4",pts:10},
+{id:"ws-sci-02-x2-5",text:"茎・根のつくり（道管・師管・形成層）(5) 問題5",pts:10},
+{id:"ws-sci-02-x2-6",text:"茎・根のつくり（道管・師管・形成層）(6) 問題6",pts:10},
+{id:"ws-sci-02-x2-7",text:"茎・根のつくり（道管・師管・形成層）(7) 問題7",pts:10},
+{id:"ws-sci-02-x2-8",text:"茎・根のつくり（道管・師管・形成層）(8) 問題8",pts:10}
+]},{id:"ws-sci-02-x3",label:"X3（種子植物の分類（単子葉・双子葉・裸子））",diff:1,cat:"X",problems:[
+{id:"ws-sci-02-x3-1",text:"種子植物の分類（単子葉・双子葉・裸子）(1) 問題1",pts:10},
+{id:"ws-sci-02-x3-2",text:"種子植物の分類（単子葉・双子葉・裸子）(2) 問題2",pts:10},
+{id:"ws-sci-02-x3-3",text:"種子植物の分類（単子葉・双子葉・裸子）(3) 問題3",pts:10},
+{id:"ws-sci-02-x3-4",text:"種子植物の分類（単子葉・双子葉・裸子）(4) 問題4",pts:10},
+{id:"ws-sci-02-x3-5",text:"種子植物の分類（単子葉・双子葉・裸子）(5) 問題5",pts:10},
+{id:"ws-sci-02-x3-6",text:"種子植物の分類（単子葉・双子葉・裸子）(6) 問題6",pts:10},
+{id:"ws-sci-02-x3-7",text:"種子植物の分類（単子葉・双子葉・裸子）(7) 問題7",pts:10},
+{id:"ws-sci-02-x3-8",text:"種子植物の分類（単子葉・双子葉・裸子）(8) 問題8",pts:10}
+]},{id:"ws-sci-02-y1",label:"Y1（食品・植物の利用（12種類の食材分類））",diff:2,cat:"Y",problems:[
+{id:"ws-sci-02-y1-1",text:"食品・植物の利用（12種類の食材分類）(1) 問題1",pts:10},
+{id:"ws-sci-02-y1-2",text:"食品・植物の利用（12種類の食材分類）(2) 問題2",pts:10},
+{id:"ws-sci-02-y1-3",text:"食品・植物の利用（12種類の食材分類）(3) 問題3",pts:10},
+{id:"ws-sci-02-y1-4",text:"食品・植物の利用（12種類の食材分類）(4) 問題4",pts:10},
+{id:"ws-sci-02-y1-5",text:"食品・植物の利用（12種類の食材分類）(5) 問題5",pts:10},
+{id:"ws-sci-02-y1-6",text:"食品・植物の利用（12種類の食材分類）(6) 問題6",pts:10},
+{id:"ws-sci-02-y1-7",text:"食品・植物の利用（12種類の食材分類）(7) 問題7",pts:10},
+{id:"ws-sci-02-y1-8",text:"食品・植物の利用（12種類の食材分類）(8) 問題8",pts:10}
+]},{id:"ws-sci-02-y2",label:"Y2（植物の観察（ダイコン・カブの比較））",diff:2,cat:"Y",problems:[
+{id:"ws-sci-02-y2-1",text:"植物の観察（ダイコン・カブの比較）(1) 問題1",pts:10},
+{id:"ws-sci-02-y2-2",text:"植物の観察（ダイコン・カブの比較）(2) 問題2",pts:10},
+{id:"ws-sci-02-y2-3",text:"植物の観察（ダイコン・カブの比較）(3) 問題3",pts:10},
+{id:"ws-sci-02-y2-4",text:"植物の観察（ダイコン・カブの比較）(4) 問題4",pts:10},
+{id:"ws-sci-02-y2-5",text:"植物の観察（ダイコン・カブの比較）(5) 問題5",pts:10},
+{id:"ws-sci-02-y2-6",text:"植物の観察（ダイコン・カブの比較）(6) 問題6",pts:10},
+{id:"ws-sci-02-y2-7",text:"植物の観察（ダイコン・カブの比較）(7) 問題7",pts:10},
+{id:"ws-sci-02-y2-8",text:"植物の観察（ダイコン・カブの比較）(8) 問題8",pts:10}
+]},{id:"ws-sci-02-z1",label:"Z1（単子葉と双子葉の比較（年輪・茎断面））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-02-z1-1",text:"単子葉と双子葉の比較（年輪・茎断面）(1) 問題1",pts:10},
+{id:"ws-sci-02-z1-2",text:"単子葉と双子葉の比較（年輪・茎断面）(2) 問題2",pts:10},
+{id:"ws-sci-02-z1-3",text:"単子葉と双子葉の比較（年輪・茎断面）(3) 問題3",pts:10},
+{id:"ws-sci-02-z1-4",text:"単子葉と双子葉の比較（年輪・茎断面）(4) 問題4",pts:10},
+{id:"ws-sci-02-z1-5",text:"単子葉と双子葉の比較（年輪・茎断面）(5) 問題5",pts:10},
+{id:"ws-sci-02-z1-6",text:"単子葉と双子葉の比較（年輪・茎断面）(6) 問題6",pts:10}
+]},{id:"ws-sci-02-z2",label:"Z2（光合成と呼吸の計算問題）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-02-z2-1",text:"光合成と呼吸の計算問題(1) 問題1",pts:10},
+{id:"ws-sci-02-z2-2",text:"光合成と呼吸の計算問題(2) 問題2",pts:10},
+{id:"ws-sci-02-z2-3",text:"光合成と呼吸の計算問題(3) 問題3",pts:10},
+{id:"ws-sci-02-z2-4",text:"光合成と呼吸の計算問題(4) 問題4",pts:10},
+{id:"ws-sci-02-z2-5",text:"光合成と呼吸の計算問題(5) 問題5",pts:10},
+{id:"ws-sci-02-z2-6",text:"光合成と呼吸の計算問題(6) 問題6",pts:10}
+]},{id:"ws-sci-02-z3",label:"Z3（植物総合難問）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-02-z3-1",text:"植物総合難問(1) 問題1",pts:10},
+{id:"ws-sci-02-z3-2",text:"植物総合難問(2) 問題2",pts:10},
+{id:"ws-sci-02-z3-3",text:"植物総合難問(3) 問題3",pts:10},
+{id:"ws-sci-02-z3-4",text:"植物総合難問(4) 問題4",pts:10},
+{id:"ws-sci-02-z3-5",text:"植物総合難問(5) 問題5",pts:10},
+{id:"ws-sci-02-z3-6",text:"植物総合難問(6) 問題6",pts:10}
+]}
+],initialAnswers:{}},
+{id:"ws-sci-03",code:"WS-03",title:"花と受粉",sections:[
+{id:"ws-sci-03-x1",label:"X1（花のつくり（めしべ・おしべ・花びら・がく））",diff:1,cat:"X",problems:[
+{id:"ws-sci-03-x1-1",text:"花のつくり（めしべ・おしべ・花びら・がく）(1) 問題1",pts:10},
+{id:"ws-sci-03-x1-2",text:"花のつくり（めしべ・おしべ・花びら・がく）(2) 問題2",pts:10},
+{id:"ws-sci-03-x1-3",text:"花のつくり（めしべ・おしべ・花びら・がく）(3) 問題3",pts:10},
+{id:"ws-sci-03-x1-4",text:"花のつくり（めしべ・おしべ・花びら・がく）(4) 問題4",pts:10},
+{id:"ws-sci-03-x1-5",text:"花のつくり（めしべ・おしべ・花びら・がく）(5) 問題5",pts:10},
+{id:"ws-sci-03-x1-6",text:"花のつくり（めしべ・おしべ・花びら・がく）(6) 問題6",pts:10},
+{id:"ws-sci-03-x1-7",text:"花のつくり（めしべ・おしべ・花びら・がく）(7) 問題7",pts:10},
+{id:"ws-sci-03-x1-8",text:"花のつくり（めしべ・おしべ・花びら・がく）(8) 問題8",pts:10}
+]},{id:"ws-sci-03-x2",label:"X2（受粉の仕組み（虫媒花・風媒花・自家受粉））",diff:1,cat:"X",problems:[
+{id:"ws-sci-03-x2-1",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(1) 問題1",pts:10},
+{id:"ws-sci-03-x2-2",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(2) 問題2",pts:10},
+{id:"ws-sci-03-x2-3",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(3) 問題3",pts:10},
+{id:"ws-sci-03-x2-4",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(4) 問題4",pts:10},
+{id:"ws-sci-03-x2-5",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(5) 問題5",pts:10},
+{id:"ws-sci-03-x2-6",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(6) 問題6",pts:10},
+{id:"ws-sci-03-x2-7",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(7) 問題7",pts:10},
+{id:"ws-sci-03-x2-8",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(8) 問題8",pts:10}
+]},{id:"ws-sci-03-x3",label:"X3（果実と種子の形成）",diff:1,cat:"X",problems:[
+{id:"ws-sci-03-x3-1",text:"果実と種子の形成(1) 問題1",pts:10},
+{id:"ws-sci-03-x3-2",text:"果実と種子の形成(2) 問題2",pts:10},
+{id:"ws-sci-03-x3-3",text:"果実と種子の形成(3) 問題3",pts:10},
+{id:"ws-sci-03-x3-4",text:"果実と種子の形成(4) 問題4",pts:10},
+{id:"ws-sci-03-x3-5",text:"果実と種子の形成(5) 問題5",pts:10},
+{id:"ws-sci-03-x3-6",text:"果実と種子の形成(6) 問題6",pts:10},
+{id:"ws-sci-03-x3-7",text:"果実と種子の形成(7) 問題7",pts:10},
+{id:"ws-sci-03-x3-8",text:"果実と種子の形成(8) 問題8",pts:10}
+]},{id:"ws-sci-03-y1",label:"Y1（受粉実験の考察問題）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-03-y1-1",text:"受粉実験の考察問題(1) 問題1",pts:10},
+{id:"ws-sci-03-y1-2",text:"受粉実験の考察問題(2) 問題2",pts:10},
+{id:"ws-sci-03-y1-3",text:"受粉実験の考察問題(3) 問題3",pts:10},
+{id:"ws-sci-03-y1-4",text:"受粉実験の考察問題(4) 問題4",pts:10},
+{id:"ws-sci-03-y1-5",text:"受粉実験の考察問題(5) 問題5",pts:10},
+{id:"ws-sci-03-y1-6",text:"受粉実験の考察問題(6) 問題6",pts:10},
+{id:"ws-sci-03-y1-7",text:"受粉実験の考察問題(7) 問題7",pts:10},
+{id:"ws-sci-03-y1-8",text:"受粉実験の考察問題(8) 問題8",pts:10}
+]},{id:"ws-sci-03-y2",label:"Y2（花と受粉の総合問題）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-03-y2-1",text:"花と受粉の総合問題(1) 問題1",pts:10},
+{id:"ws-sci-03-y2-2",text:"花と受粉の総合問題(2) 問題2",pts:10},
+{id:"ws-sci-03-y2-3",text:"花と受粉の総合問題(3) 問題3",pts:10},
+{id:"ws-sci-03-y2-4",text:"花と受粉の総合問題(4) 問題4",pts:10},
+{id:"ws-sci-03-y2-5",text:"花と受粉の総合問題(5) 問題5",pts:10},
+{id:"ws-sci-03-y2-6",text:"花と受粉の総合問題(6) 問題6",pts:10},
+{id:"ws-sci-03-y2-7",text:"花と受粉の総合問題(7) 問題7",pts:10},
+{id:"ws-sci-03-y2-8",text:"花と受粉の総合問題(8) 問題8",pts:10}
+]},{id:"ws-sci-03-z1",label:"Z1（発展問題①（人工授粉・DNA））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-03-z1-1",text:"発展問題①（人工授粉・DNA）(1) 問題1",pts:10},
+{id:"ws-sci-03-z1-2",text:"発展問題①（人工授粉・DNA）(2) 問題2",pts:10},
+{id:"ws-sci-03-z1-3",text:"発展問題①（人工授粉・DNA）(3) 問題3",pts:10},
+{id:"ws-sci-03-z1-4",text:"発展問題①（人工授粉・DNA）(4) 問題4",pts:10},
+{id:"ws-sci-03-z1-5",text:"発展問題①（人工授粉・DNA）(5) 問題5",pts:10},
+{id:"ws-sci-03-z1-6",text:"発展問題①（人工授粉・DNA）(6) 問題6",pts:10}
+]},{id:"ws-sci-03-z2",label:"Z2（発展問題②）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-03-z2-1",text:"発展問題②(1) 問題1",pts:10},
+{id:"ws-sci-03-z2-2",text:"発展問題②(2) 問題2",pts:10},
+{id:"ws-sci-03-z2-3",text:"発展問題②(3) 問題3",pts:10},
+{id:"ws-sci-03-z2-4",text:"発展問題②(4) 問題4",pts:10},
+{id:"ws-sci-03-z2-5",text:"発展問題②(5) 問題5",pts:10},
+{id:"ws-sci-03-z2-6",text:"発展問題②(6) 問題6",pts:10}
+]},{id:"ws-sci-03-z3",label:"Z3（最難問）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-03-z3-1",text:"最難問(1) 問題1",pts:10},
+{id:"ws-sci-03-z3-2",text:"最難問(2) 問題2",pts:10},
+{id:"ws-sci-03-z3-3",text:"最難問(3) 問題3",pts:10},
+{id:"ws-sci-03-z3-4",text:"最難問(4) 問題4",pts:10},
+{id:"ws-sci-03-z3-5",text:"最難問(5) 問題5",pts:10},
+{id:"ws-sci-03-z3-6",text:"最難問(6) 問題6",pts:10}
+]}
+],initialAnswers:{}},
+{id:"ws-sci-04",code:"WS-04",title:"岩石・地層",sections:[
+{id:"ws-sci-04-x1",label:"X1（火成岩の種類と特徴（花こう岩・玄武岩・安山岩））",diff:1,cat:"X",problems:[
+{id:"ws-sci-04-x1-1",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(1) 問題1",pts:10},
+{id:"ws-sci-04-x1-2",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(2) 問題2",pts:10},
+{id:"ws-sci-04-x1-3",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(3) 問題3",pts:10},
+{id:"ws-sci-04-x1-4",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(4) 問題4",pts:10},
+{id:"ws-sci-04-x1-5",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(5) 問題5",pts:10},
+{id:"ws-sci-04-x1-6",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(6) 問題6",pts:10},
+{id:"ws-sci-04-x1-7",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(7) 問題7",pts:10},
+{id:"ws-sci-04-x1-8",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(8) 問題8",pts:10}
+]},{id:"ws-sci-04-x2",label:"X2（堆積岩の種類（砂岩・泥岩・石灰岩・チャート））",diff:1,cat:"X",problems:[
+{id:"ws-sci-04-x2-1",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(1) 問題1",pts:10},
+{id:"ws-sci-04-x2-2",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(2) 問題2",pts:10},
+{id:"ws-sci-04-x2-3",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(3) 問題3",pts:10},
+{id:"ws-sci-04-x2-4",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(4) 問題4",pts:10},
+{id:"ws-sci-04-x2-5",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(5) 問題5",pts:10},
+{id:"ws-sci-04-x2-6",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(6) 問題6",pts:10},
+{id:"ws-sci-04-x2-7",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(7) 問題7",pts:10},
+{id:"ws-sci-04-x2-8",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(8) 問題8",pts:10}
+]},{id:"ws-sci-04-x3",label:"X3（地層の読み取り（かぎ層・傾き・化石））",diff:1,cat:"X",problems:[
+{id:"ws-sci-04-x3-1",text:"地層の読み取り（かぎ層・傾き・化石）(1) 問題1",pts:10},
+{id:"ws-sci-04-x3-2",text:"地層の読み取り（かぎ層・傾き・化石）(2) 問題2",pts:10},
+{id:"ws-sci-04-x3-3",text:"地層の読み取り（かぎ層・傾き・化石）(3) 問題3",pts:10},
+{id:"ws-sci-04-x3-4",text:"地層の読み取り（かぎ層・傾き・化石）(4) 問題4",pts:10},
+{id:"ws-sci-04-x3-5",text:"地層の読み取り（かぎ層・傾き・化石）(5) 問題5",pts:10},
+{id:"ws-sci-04-x3-6",text:"地層の読み取り（かぎ層・傾き・化石）(6) 問題6",pts:10},
+{id:"ws-sci-04-x3-7",text:"地層の読み取り（かぎ層・傾き・化石）(7) 問題7",pts:10},
+{id:"ws-sci-04-x3-8",text:"地層の読み取り（かぎ層・傾き・化石）(8) 問題8",pts:10}
+]},{id:"ws-sci-04-y1",label:"Y1（ボーリング調査の読み取り問題）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-04-y1-1",text:"ボーリング調査の読み取り問題(1) 問題1",pts:10},
+{id:"ws-sci-04-y1-2",text:"ボーリング調査の読み取り問題(2) 問題2",pts:10},
+{id:"ws-sci-04-y1-3",text:"ボーリング調査の読み取り問題(3) 問題3",pts:10},
+{id:"ws-sci-04-y1-4",text:"ボーリング調査の読み取り問題(4) 問題4",pts:10},
+{id:"ws-sci-04-y1-5",text:"ボーリング調査の読み取り問題(5) 問題5",pts:10},
+{id:"ws-sci-04-y1-6",text:"ボーリング調査の読み取り問題(6) 問題6",pts:10},
+{id:"ws-sci-04-y1-7",text:"ボーリング調査の読み取り問題(7) 問題7",pts:10},
+{id:"ws-sci-04-y1-8",text:"ボーリング調査の読み取り問題(8) 問題8",pts:10}
+]},{id:"ws-sci-04-y2",label:"Y2（岩石・地層の総合問題）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-04-y2-1",text:"岩石・地層の総合問題(1) 問題1",pts:10},
+{id:"ws-sci-04-y2-2",text:"岩石・地層の総合問題(2) 問題2",pts:10},
+{id:"ws-sci-04-y2-3",text:"岩石・地層の総合問題(3) 問題3",pts:10},
+{id:"ws-sci-04-y2-4",text:"岩石・地層の総合問題(4) 問題4",pts:10},
+{id:"ws-sci-04-y2-5",text:"岩石・地層の総合問題(5) 問題5",pts:10},
+{id:"ws-sci-04-y2-6",text:"岩石・地層の総合問題(6) 問題6",pts:10},
+{id:"ws-sci-04-y2-7",text:"岩石・地層の総合問題(7) 問題7",pts:10},
+{id:"ws-sci-04-y2-8",text:"岩石・地層の総合問題(8) 問題8",pts:10}
+]},{id:"ws-sci-04-z1",label:"Z1（断層・しゅう曲・侵食の発展問題①）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-04-z1-1",text:"断層・しゅう曲・侵食の発展問題①(1) 問題1",pts:10},
+{id:"ws-sci-04-z1-2",text:"断層・しゅう曲・侵食の発展問題①(2) 問題2",pts:10},
+{id:"ws-sci-04-z1-3",text:"断層・しゅう曲・侵食の発展問題①(3) 問題3",pts:10},
+{id:"ws-sci-04-z1-4",text:"断層・しゅう曲・侵食の発展問題①(4) 問題4",pts:10},
+{id:"ws-sci-04-z1-5",text:"断層・しゅう曲・侵食の発展問題①(5) 問題5",pts:10},
+{id:"ws-sci-04-z1-6",text:"断層・しゅう曲・侵食の発展問題①(6) 問題6",pts:10}
+]},{id:"ws-sci-04-z2",label:"Z2（地質時代・示準化石の問題②）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-04-z2-1",text:"地質時代・示準化石の問題②(1) 問題1",pts:10},
+{id:"ws-sci-04-z2-2",text:"地質時代・示準化石の問題②(2) 問題2",pts:10},
+{id:"ws-sci-04-z2-3",text:"地質時代・示準化石の問題②(3) 問題3",pts:10},
+{id:"ws-sci-04-z2-4",text:"地質時代・示準化石の問題②(4) 問題4",pts:10},
+{id:"ws-sci-04-z2-5",text:"地質時代・示準化石の問題②(5) 問題5",pts:10},
+{id:"ws-sci-04-z2-6",text:"地質時代・示準化石の問題②(6) 問題6",pts:10}
+]},{id:"ws-sci-04-z3",label:"Z3（最難問）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-04-z3-1",text:"最難問(1) 問題1",pts:10},
+{id:"ws-sci-04-z3-2",text:"最難問(2) 問題2",pts:10},
+{id:"ws-sci-04-z3-3",text:"最難問(3) 問題3",pts:10},
+{id:"ws-sci-04-z3-4",text:"最難問(4) 問題4",pts:10},
+{id:"ws-sci-04-z3-5",text:"最難問(5) 問題5",pts:10},
+{id:"ws-sci-04-z3-6",text:"最難問(6) 問題6",pts:10}
+]}
+],initialAnswers:{}},
+{id:"ws-sci-05",code:"WS-05",title:"人体・消化",sections:[
+{id:"ws-sci-05-x1",label:"X1（消化器官の名前と役割（口・食道・胃・小腸・大腸））",diff:1,cat:"X",problems:[
+{id:"ws-sci-05-x1-1",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(1) 問題1",pts:10},
+{id:"ws-sci-05-x1-2",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(2) 問題2",pts:10},
+{id:"ws-sci-05-x1-3",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(3) 問題3",pts:10},
+{id:"ws-sci-05-x1-4",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(4) 問題4",pts:10},
+{id:"ws-sci-05-x1-5",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(5) 問題5",pts:10},
+{id:"ws-sci-05-x1-6",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(6) 問題6",pts:10},
+{id:"ws-sci-05-x1-7",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(7) 問題7",pts:10},
+{id:"ws-sci-05-x1-8",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(8) 問題8",pts:10}
+]},{id:"ws-sci-05-x2",label:"X2（消化液と消化酵素（アミラーゼ・ペプシン・胆汁））",diff:1,cat:"X",problems:[
+{id:"ws-sci-05-x2-1",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(1) 問題1",pts:10},
+{id:"ws-sci-05-x2-2",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(2) 問題2",pts:10},
+{id:"ws-sci-05-x2-3",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(3) 問題3",pts:10},
+{id:"ws-sci-05-x2-4",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(4) 問題4",pts:10},
+{id:"ws-sci-05-x2-5",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(5) 問題5",pts:10},
+{id:"ws-sci-05-x2-6",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(6) 問題6",pts:10},
+{id:"ws-sci-05-x2-7",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(7) 問題7",pts:10},
+{id:"ws-sci-05-x2-8",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(8) 問題8",pts:10}
+]},{id:"ws-sci-05-x3",label:"X3（栄養素の吸収（柔毛・毛細血管・リンパ管））",diff:1,cat:"X",problems:[
+{id:"ws-sci-05-x3-1",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(1) 問題1",pts:10},
+{id:"ws-sci-05-x3-2",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(2) 問題2",pts:10},
+{id:"ws-sci-05-x3-3",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(3) 問題3",pts:10},
+{id:"ws-sci-05-x3-4",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(4) 問題4",pts:10},
+{id:"ws-sci-05-x3-5",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(5) 問題5",pts:10},
+{id:"ws-sci-05-x3-6",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(6) 問題6",pts:10},
+{id:"ws-sci-05-x3-7",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(7) 問題7",pts:10},
+{id:"ws-sci-05-x3-8",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(8) 問題8",pts:10}
+]},{id:"ws-sci-05-y1",label:"Y1（消化実験の考察問題）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-05-y1-1",text:"消化実験の考察問題(1) 問題1",pts:10},
+{id:"ws-sci-05-y1-2",text:"消化実験の考察問題(2) 問題2",pts:10},
+{id:"ws-sci-05-y1-3",text:"消化実験の考察問題(3) 問題3",pts:10},
+{id:"ws-sci-05-y1-4",text:"消化実験の考察問題(4) 問題4",pts:10},
+{id:"ws-sci-05-y1-5",text:"消化実験の考察問題(5) 問題5",pts:10},
+{id:"ws-sci-05-y1-6",text:"消化実験の考察問題(6) 問題6",pts:10},
+{id:"ws-sci-05-y1-7",text:"消化実験の考察問題(7) 問題7",pts:10},
+{id:"ws-sci-05-y1-8",text:"消化実験の考察問題(8) 問題8",pts:10}
+]},{id:"ws-sci-05-y2",label:"Y2（人体消化の総合問題）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-05-y2-1",text:"人体消化の総合問題(1) 問題1",pts:10},
+{id:"ws-sci-05-y2-2",text:"人体消化の総合問題(2) 問題2",pts:10},
+{id:"ws-sci-05-y2-3",text:"人体消化の総合問題(3) 問題3",pts:10},
+{id:"ws-sci-05-y2-4",text:"人体消化の総合問題(4) 問題4",pts:10},
+{id:"ws-sci-05-y2-5",text:"人体消化の総合問題(5) 問題5",pts:10},
+{id:"ws-sci-05-y2-6",text:"人体消化の総合問題(6) 問題6",pts:10},
+{id:"ws-sci-05-y2-7",text:"人体消化の総合問題(7) 問題7",pts:10},
+{id:"ws-sci-05-y2-8",text:"人体消化の総合問題(8) 問題8",pts:10}
+]},{id:"ws-sci-05-z1",label:"Z1（消化の計算問題①（デンプンの分解量））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-05-z1-1",text:"消化の計算問題①（デンプンの分解量）(1) 問題1",pts:10},
+{id:"ws-sci-05-z1-2",text:"消化の計算問題①（デンプンの分解量）(2) 問題2",pts:10},
+{id:"ws-sci-05-z1-3",text:"消化の計算問題①（デンプンの分解量）(3) 問題3",pts:10},
+{id:"ws-sci-05-z1-4",text:"消化の計算問題①（デンプンの分解量）(4) 問題4",pts:10},
+{id:"ws-sci-05-z1-5",text:"消化の計算問題①（デンプンの分解量）(5) 問題5",pts:10},
+{id:"ws-sci-05-z1-6",text:"消化の計算問題①（デンプンの分解量）(6) 問題6",pts:10}
+]},{id:"ws-sci-05-z2",label:"Z2（消化の計算問題②）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-05-z2-1",text:"消化の計算問題②(1) 問題1",pts:10},
+{id:"ws-sci-05-z2-2",text:"消化の計算問題②(2) 問題2",pts:10},
+{id:"ws-sci-05-z2-3",text:"消化の計算問題②(3) 問題3",pts:10},
+{id:"ws-sci-05-z2-4",text:"消化の計算問題②(4) 問題4",pts:10},
+{id:"ws-sci-05-z2-5",text:"消化の計算問題②(5) 問題5",pts:10},
+{id:"ws-sci-05-z2-6",text:"消化の計算問題②(6) 問題6",pts:10}
+]},{id:"ws-sci-05-z3",label:"Z3（最難問（複合））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-05-z3-1",text:"最難問（複合）(1) 問題1",pts:10},
+{id:"ws-sci-05-z3-2",text:"最難問（複合）(2) 問題2",pts:10},
+{id:"ws-sci-05-z3-3",text:"最難問（複合）(3) 問題3",pts:10},
+{id:"ws-sci-05-z3-4",text:"最難問（複合）(4) 問題4",pts:10},
+{id:"ws-sci-05-z3-5",text:"最難問（複合）(5) 問題5",pts:10},
+{id:"ws-sci-05-z3-6",text:"最難問（複合）(6) 問題6",pts:10}
+]}
+],initialAnswers:{}},
+{id:"ws-sci-06",code:"WS-06",title:"動物の分類",sections:[
+{id:"ws-sci-06-x1",label:"X1（脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類））",diff:1,cat:"X",problems:[
+{id:"ws-sci-06-x1-1",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(1) 問題1",pts:10},
+{id:"ws-sci-06-x1-2",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(2) 問題2",pts:10},
+{id:"ws-sci-06-x1-3",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(3) 問題3",pts:10},
+{id:"ws-sci-06-x1-4",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(4) 問題4",pts:10},
+{id:"ws-sci-06-x1-5",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(5) 問題5",pts:10},
+{id:"ws-sci-06-x1-6",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(6) 問題6",pts:10},
+{id:"ws-sci-06-x1-7",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(7) 問題7",pts:10},
+{id:"ws-sci-06-x1-8",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(8) 問題8",pts:10}
+]},{id:"ws-sci-06-x2",label:"X2（昆虫の体のつくり（頭・胸・腹・複眼・単眼））",diff:1,cat:"X",problems:[
+{id:"ws-sci-06-x2-1",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(1) 問題1",pts:10},
+{id:"ws-sci-06-x2-2",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(2) 問題2",pts:10},
+{id:"ws-sci-06-x2-3",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(3) 問題3",pts:10},
+{id:"ws-sci-06-x2-4",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(4) 問題4",pts:10},
+{id:"ws-sci-06-x2-5",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(5) 問題5",pts:10},
+{id:"ws-sci-06-x2-6",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(6) 問題6",pts:10},
+{id:"ws-sci-06-x2-7",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(7) 問題7",pts:10},
+{id:"ws-sci-06-x2-8",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(8) 問題8",pts:10}
+]},{id:"ws-sci-06-x3",label:"X3（無脊椎動物（甲殻類・軟体動物・節足動物））",diff:1,cat:"X",problems:[
+{id:"ws-sci-06-x3-1",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(1) 問題1",pts:10},
+{id:"ws-sci-06-x3-2",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(2) 問題2",pts:10},
+{id:"ws-sci-06-x3-3",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(3) 問題3",pts:10},
+{id:"ws-sci-06-x3-4",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(4) 問題4",pts:10},
+{id:"ws-sci-06-x3-5",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(5) 問題5",pts:10},
+{id:"ws-sci-06-x3-6",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(6) 問題6",pts:10},
+{id:"ws-sci-06-x3-7",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(7) 問題7",pts:10},
+{id:"ws-sci-06-x3-8",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(8) 問題8",pts:10}
+]},{id:"ws-sci-06-y1",label:"Y1（動物の特徴比較問題（表を使った分類））",diff:2,cat:"Y",problems:[
+{id:"ws-sci-06-y1-1",text:"動物の特徴比較問題（表を使った分類）(1) 問題1",pts:10},
+{id:"ws-sci-06-y1-2",text:"動物の特徴比較問題（表を使った分類）(2) 問題2",pts:10},
+{id:"ws-sci-06-y1-3",text:"動物の特徴比較問題（表を使った分類）(3) 問題3",pts:10},
+{id:"ws-sci-06-y1-4",text:"動物の特徴比較問題（表を使った分類）(4) 問題4",pts:10},
+{id:"ws-sci-06-y1-5",text:"動物の特徴比較問題（表を使った分類）(5) 問題5",pts:10},
+{id:"ws-sci-06-y1-6",text:"動物の特徴比較問題（表を使った分類）(6) 問題6",pts:10},
+{id:"ws-sci-06-y1-7",text:"動物の特徴比較問題（表を使った分類）(7) 問題7",pts:10},
+{id:"ws-sci-06-y1-8",text:"動物の特徴比較問題（表を使った分類）(8) 問題8",pts:10}
+]},{id:"ws-sci-06-y2",label:"Y2（動物の生態と環境の総合問題）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-06-y2-1",text:"動物の生態と環境の総合問題(1) 問題1",pts:10},
+{id:"ws-sci-06-y2-2",text:"動物の生態と環境の総合問題(2) 問題2",pts:10},
+{id:"ws-sci-06-y2-3",text:"動物の生態と環境の総合問題(3) 問題3",pts:10},
+{id:"ws-sci-06-y2-4",text:"動物の生態と環境の総合問題(4) 問題4",pts:10},
+{id:"ws-sci-06-y2-5",text:"動物の生態と環境の総合問題(5) 問題5",pts:10},
+{id:"ws-sci-06-y2-6",text:"動物の生態と環境の総合問題(6) 問題6",pts:10},
+{id:"ws-sci-06-y2-7",text:"動物の生態と環境の総合問題(7) 問題7",pts:10},
+{id:"ws-sci-06-y2-8",text:"動物の生態と環境の総合問題(8) 問題8",pts:10}
+]},{id:"ws-sci-06-z1",label:"Z1（動物の分類難問①）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-06-z1-1",text:"動物の分類難問①(1) 問題1",pts:10},
+{id:"ws-sci-06-z1-2",text:"動物の分類難問①(2) 問題2",pts:10},
+{id:"ws-sci-06-z1-3",text:"動物の分類難問①(3) 問題3",pts:10},
+{id:"ws-sci-06-z1-4",text:"動物の分類難問①(4) 問題4",pts:10},
+{id:"ws-sci-06-z1-5",text:"動物の分類難問①(5) 問題5",pts:10},
+{id:"ws-sci-06-z1-6",text:"動物の分類難問①(6) 問題6",pts:10}
+]},{id:"ws-sci-06-z2",label:"Z2（動物の進化・食物連鎖②）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-06-z2-1",text:"動物の進化・食物連鎖②(1) 問題1",pts:10},
+{id:"ws-sci-06-z2-2",text:"動物の進化・食物連鎖②(2) 問題2",pts:10},
+{id:"ws-sci-06-z2-3",text:"動物の進化・食物連鎖②(3) 問題3",pts:10},
+{id:"ws-sci-06-z2-4",text:"動物の進化・食物連鎖②(4) 問題4",pts:10},
+{id:"ws-sci-06-z2-5",text:"動物の進化・食物連鎖②(5) 問題5",pts:10},
+{id:"ws-sci-06-z2-6",text:"動物の進化・食物連鎖②(6) 問題6",pts:10}
+]},{id:"ws-sci-06-z3",label:"Z3（最難問）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-06-z3-1",text:"最難問(1) 問題1",pts:10},
+{id:"ws-sci-06-z3-2",text:"最難問(2) 問題2",pts:10},
+{id:"ws-sci-06-z3-3",text:"最難問(3) 問題3",pts:10},
+{id:"ws-sci-06-z3-4",text:"最難問(4) 問題4",pts:10},
+{id:"ws-sci-06-z3-5",text:"最難問(5) 問題5",pts:10},
+{id:"ws-sci-06-z3-6",text:"最難問(6) 問題6",pts:10}
+]}
+],initialAnswers:{}},
+{id:"ws-sci-07",code:"WS-07",title:"電流・電気回路",sections:[
+{id:"ws-sci-07-x1",label:"X1（直列・並列回路の電流と電圧）",diff:1,cat:"X",problems:[
+{id:"ws-sci-07-x1-1",text:"直列・並列回路の電流と電圧(1) 問題1",pts:10},
+{id:"ws-sci-07-x1-2",text:"直列・並列回路の電流と電圧(2) 問題2",pts:10},
+{id:"ws-sci-07-x1-3",text:"直列・並列回路の電流と電圧(3) 問題3",pts:10},
+{id:"ws-sci-07-x1-4",text:"直列・並列回路の電流と電圧(4) 問題4",pts:10},
+{id:"ws-sci-07-x1-5",text:"直列・並列回路の電流と電圧(5) 問題5",pts:10},
+{id:"ws-sci-07-x1-6",text:"直列・並列回路の電流と電圧(6) 問題6",pts:10},
+{id:"ws-sci-07-x1-7",text:"直列・並列回路の電流と電圧(7) 問題7",pts:10},
+{id:"ws-sci-07-x1-8",text:"直列・並列回路の電流と電圧(8) 問題8",pts:10}
+]},{id:"ws-sci-07-x2",label:"X2（電磁石のはたらきと強さを変える方法）",diff:1,cat:"X",problems:[
+{id:"ws-sci-07-x2-1",text:"電磁石のはたらきと強さを変える方法(1) 問題1",pts:10},
+{id:"ws-sci-07-x2-2",text:"電磁石のはたらきと強さを変える方法(2) 問題2",pts:10},
+{id:"ws-sci-07-x2-3",text:"電磁石のはたらきと強さを変える方法(3) 問題3",pts:10},
+{id:"ws-sci-07-x2-4",text:"電磁石のはたらきと強さを変える方法(4) 問題4",pts:10},
+{id:"ws-sci-07-x2-5",text:"電磁石のはたらきと強さを変える方法(5) 問題5",pts:10},
+{id:"ws-sci-07-x2-6",text:"電磁石のはたらきと強さを変える方法(6) 問題6",pts:10},
+{id:"ws-sci-07-x2-7",text:"電磁石のはたらきと強さを変える方法(7) 問題7",pts:10},
+{id:"ws-sci-07-x2-8",text:"電磁石のはたらきと強さを変える方法(8) 問題8",pts:10}
+]},{id:"ws-sci-07-x3",label:"X3（電熱線の発熱と電流・抵抗の関係）",diff:1,cat:"X",problems:[
+{id:"ws-sci-07-x3-1",text:"電熱線の発熱と電流・抵抗の関係(1) 問題1",pts:10},
+{id:"ws-sci-07-x3-2",text:"電熱線の発熱と電流・抵抗の関係(2) 問題2",pts:10},
+{id:"ws-sci-07-x3-3",text:"電熱線の発熱と電流・抵抗の関係(3) 問題3",pts:10},
+{id:"ws-sci-07-x3-4",text:"電熱線の発熱と電流・抵抗の関係(4) 問題4",pts:10},
+{id:"ws-sci-07-x3-5",text:"電熱線の発熱と電流・抵抗の関係(5) 問題5",pts:10},
+{id:"ws-sci-07-x3-6",text:"電熱線の発熱と電流・抵抗の関係(6) 問題6",pts:10},
+{id:"ws-sci-07-x3-7",text:"電熱線の発熱と電流・抵抗の関係(7) 問題7",pts:10},
+{id:"ws-sci-07-x3-8",text:"電熱線の発熱と電流・抵抗の関係(8) 問題8",pts:10}
+]},{id:"ws-sci-07-y1",label:"Y1（複合回路の電流計算問題）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-07-y1-1",text:"複合回路の電流計算問題(1) 問題1",pts:10},
+{id:"ws-sci-07-y1-2",text:"複合回路の電流計算問題(2) 問題2",pts:10},
+{id:"ws-sci-07-y1-3",text:"複合回路の電流計算問題(3) 問題3",pts:10},
+{id:"ws-sci-07-y1-4",text:"複合回路の電流計算問題(4) 問題4",pts:10},
+{id:"ws-sci-07-y1-5",text:"複合回路の電流計算問題(5) 問題5",pts:10},
+{id:"ws-sci-07-y1-6",text:"複合回路の電流計算問題(6) 問題6",pts:10},
+{id:"ws-sci-07-y1-7",text:"複合回路の電流計算問題(7) 問題7",pts:10},
+{id:"ws-sci-07-y1-8",text:"複合回路の電流計算問題(8) 問題8",pts:10}
+]},{id:"ws-sci-07-y2",label:"Y2（電流総合問題）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-07-y2-1",text:"電流総合問題(1) 問題1",pts:10},
+{id:"ws-sci-07-y2-2",text:"電流総合問題(2) 問題2",pts:10},
+{id:"ws-sci-07-y2-3",text:"電流総合問題(3) 問題3",pts:10},
+{id:"ws-sci-07-y2-4",text:"電流総合問題(4) 問題4",pts:10},
+{id:"ws-sci-07-y2-5",text:"電流総合問題(5) 問題5",pts:10},
+{id:"ws-sci-07-y2-6",text:"電流総合問題(6) 問題6",pts:10},
+{id:"ws-sci-07-y2-7",text:"電流総合問題(7) 問題7",pts:10},
+{id:"ws-sci-07-y2-8",text:"電流総合問題(8) 問題8",pts:10}
+]},{id:"ws-sci-07-z1",label:"Z1（複雑回路の計算①）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-07-z1-1",text:"複雑回路の計算①(1) 問題1",pts:10},
+{id:"ws-sci-07-z1-2",text:"複雑回路の計算①(2) 問題2",pts:10},
+{id:"ws-sci-07-z1-3",text:"複雑回路の計算①(3) 問題3",pts:10},
+{id:"ws-sci-07-z1-4",text:"複雑回路の計算①(4) 問題4",pts:10},
+{id:"ws-sci-07-z1-5",text:"複雑回路の計算①(5) 問題5",pts:10},
+{id:"ws-sci-07-z1-6",text:"複雑回路の計算①(6) 問題6",pts:10}
+]},{id:"ws-sci-07-z2",label:"Z2（ダイオード・LED回路②）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-07-z2-1",text:"ダイオード・LED回路②(1) 問題1",pts:10},
+{id:"ws-sci-07-z2-2",text:"ダイオード・LED回路②(2) 問題2",pts:10},
+{id:"ws-sci-07-z2-3",text:"ダイオード・LED回路②(3) 問題3",pts:10},
+{id:"ws-sci-07-z2-4",text:"ダイオード・LED回路②(4) 問題4",pts:10},
+{id:"ws-sci-07-z2-5",text:"ダイオード・LED回路②(5) 問題5",pts:10},
+{id:"ws-sci-07-z2-6",text:"ダイオード・LED回路②(6) 問題6",pts:10}
+]},{id:"ws-sci-07-z3",label:"Z3（最難問（スイッチ複合回路））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-07-z3-1",text:"最難問（スイッチ複合回路）(1) 問題1",pts:10},
+{id:"ws-sci-07-z3-2",text:"最難問（スイッチ複合回路）(2) 問題2",pts:10},
+{id:"ws-sci-07-z3-3",text:"最難問（スイッチ複合回路）(3) 問題3",pts:10},
+{id:"ws-sci-07-z3-4",text:"最難問（スイッチ複合回路）(4) 問題4",pts:10},
+{id:"ws-sci-07-z3-5",text:"最難問（スイッチ複合回路）(5) 問題5",pts:10},
+{id:"ws-sci-07-z3-6",text:"最難問（スイッチ複合回路）(6) 問題6",pts:10}
+]}
+],initialAnswers:{}},
+{id:"ws-sci-08",code:"WS-08",title:"星と宇宙",sections:[
+{id:"ws-sci-08-x1",label:"X1（星の種類・等級・色と温度）",diff:1,cat:"X",problems:[
+{id:"ws-sci-08-x1-1",text:"星の種類・等級・色と温度(1) 問題1",pts:10},
+{id:"ws-sci-08-x1-2",text:"星の種類・等級・色と温度(2) 問題2",pts:10},
+{id:"ws-sci-08-x1-3",text:"星の種類・等級・色と温度(3) 問題3",pts:10},
+{id:"ws-sci-08-x1-4",text:"星の種類・等級・色と温度(4) 問題4",pts:10},
+{id:"ws-sci-08-x1-5",text:"星の種類・等級・色と温度(5) 問題5",pts:10},
+{id:"ws-sci-08-x1-6",text:"星の種類・等級・色と温度(6) 問題6",pts:10},
+{id:"ws-sci-08-x1-7",text:"星の種類・等級・色と温度(7) 問題7",pts:10},
+{id:"ws-sci-08-x1-8",text:"星の種類・等級・色と温度(8) 問題8",pts:10}
+]},{id:"ws-sci-08-x2",label:"X2（星座と季節の変化・北極星の観察）",diff:1,cat:"X",problems:[
+{id:"ws-sci-08-x2-1",text:"星座と季節の変化・北極星の観察(1) 問題1",pts:10},
+{id:"ws-sci-08-x2-2",text:"星座と季節の変化・北極星の観察(2) 問題2",pts:10},
+{id:"ws-sci-08-x2-3",text:"星座と季節の変化・北極星の観察(3) 問題3",pts:10},
+{id:"ws-sci-08-x2-4",text:"星座と季節の変化・北極星の観察(4) 問題4",pts:10},
+{id:"ws-sci-08-x2-5",text:"星座と季節の変化・北極星の観察(5) 問題5",pts:10},
+{id:"ws-sci-08-x2-6",text:"星座と季節の変化・北極星の観察(6) 問題6",pts:10},
+{id:"ws-sci-08-x2-7",text:"星座と季節の変化・北極星の観察(7) 問題7",pts:10},
+{id:"ws-sci-08-x2-8",text:"星座と季節の変化・北極星の観察(8) 問題8",pts:10}
+]},{id:"ws-sci-08-x3",label:"X3（月の満ち欠けと月食・日食）",diff:1,cat:"X",problems:[
+{id:"ws-sci-08-x3-1",text:"月の満ち欠けと月食・日食(1) 問題1",pts:10},
+{id:"ws-sci-08-x3-2",text:"月の満ち欠けと月食・日食(2) 問題2",pts:10},
+{id:"ws-sci-08-x3-3",text:"月の満ち欠けと月食・日食(3) 問題3",pts:10},
+{id:"ws-sci-08-x3-4",text:"月の満ち欠けと月食・日食(4) 問題4",pts:10},
+{id:"ws-sci-08-x3-5",text:"月の満ち欠けと月食・日食(5) 問題5",pts:10},
+{id:"ws-sci-08-x3-6",text:"月の満ち欠けと月食・日食(6) 問題6",pts:10},
+{id:"ws-sci-08-x3-7",text:"月の満ち欠けと月食・日食(7) 問題7",pts:10},
+{id:"ws-sci-08-x3-8",text:"月の満ち欠けと月食・日食(8) 問題8",pts:10}
+]},{id:"ws-sci-08-y1",label:"Y1（天球図と星の動きの計算）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-08-y1-1",text:"天球図と星の動きの計算(1) 問題1",pts:10},
+{id:"ws-sci-08-y1-2",text:"天球図と星の動きの計算(2) 問題2",pts:10},
+{id:"ws-sci-08-y1-3",text:"天球図と星の動きの計算(3) 問題3",pts:10},
+{id:"ws-sci-08-y1-4",text:"天球図と星の動きの計算(4) 問題4",pts:10},
+{id:"ws-sci-08-y1-5",text:"天球図と星の動きの計算(5) 問題5",pts:10},
+{id:"ws-sci-08-y1-6",text:"天球図と星の動きの計算(6) 問題6",pts:10},
+{id:"ws-sci-08-y1-7",text:"天球図と星の動きの計算(7) 問題7",pts:10},
+{id:"ws-sci-08-y1-8",text:"天球図と星の動きの計算(8) 問題8",pts:10}
+]},{id:"ws-sci-08-y2",label:"Y2（宇宙総合問題）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-08-y2-1",text:"宇宙総合問題(1) 問題1",pts:10},
+{id:"ws-sci-08-y2-2",text:"宇宙総合問題(2) 問題2",pts:10},
+{id:"ws-sci-08-y2-3",text:"宇宙総合問題(3) 問題3",pts:10},
+{id:"ws-sci-08-y2-4",text:"宇宙総合問題(4) 問題4",pts:10},
+{id:"ws-sci-08-y2-5",text:"宇宙総合問題(5) 問題5",pts:10},
+{id:"ws-sci-08-y2-6",text:"宇宙総合問題(6) 問題6",pts:10},
+{id:"ws-sci-08-y2-7",text:"宇宙総合問題(7) 問題7",pts:10},
+{id:"ws-sci-08-y2-8",text:"宇宙総合問題(8) 問題8",pts:10}
+]},{id:"ws-sci-08-z1",label:"Z1（発展問題①（星の運動計算））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-08-z1-1",text:"発展問題①（星の運動計算）(1) 問題1",pts:10},
+{id:"ws-sci-08-z1-2",text:"発展問題①（星の運動計算）(2) 問題2",pts:10},
+{id:"ws-sci-08-z1-3",text:"発展問題①（星の運動計算）(3) 問題3",pts:10},
+{id:"ws-sci-08-z1-4",text:"発展問題①（星の運動計算）(4) 問題4",pts:10},
+{id:"ws-sci-08-z1-5",text:"発展問題①（星の運動計算）(5) 問題5",pts:10},
+{id:"ws-sci-08-z1-6",text:"発展問題①（星の運動計算）(6) 問題6",pts:10}
+]},{id:"ws-sci-08-z2",label:"Z2（発展問題②（月食・日食の計算））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-08-z2-1",text:"発展問題②（月食・日食の計算）(1) 問題1",pts:10},
+{id:"ws-sci-08-z2-2",text:"発展問題②（月食・日食の計算）(2) 問題2",pts:10},
+{id:"ws-sci-08-z2-3",text:"発展問題②（月食・日食の計算）(3) 問題3",pts:10},
+{id:"ws-sci-08-z2-4",text:"発展問題②（月食・日食の計算）(4) 問題4",pts:10},
+{id:"ws-sci-08-z2-5",text:"発展問題②（月食・日食の計算）(5) 問題5",pts:10},
+{id:"ws-sci-08-z2-6",text:"発展問題②（月食・日食の計算）(6) 問題6",pts:10}
+]},{id:"ws-sci-08-z3",label:"Z3（最難問）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-08-z3-1",text:"最難問(1) 問題1",pts:10},
+{id:"ws-sci-08-z3-2",text:"最難問(2) 問題2",pts:10},
+{id:"ws-sci-08-z3-3",text:"最難問(3) 問題3",pts:10},
+{id:"ws-sci-08-z3-4",text:"最難問(4) 問題4",pts:10},
+{id:"ws-sci-08-z3-5",text:"最難問(5) 問題5",pts:10},
+{id:"ws-sci-08-z3-6",text:"最難問(6) 問題6",pts:10}
+]}
+],initialAnswers:{}},
+{id:"ws-sci-09",code:"WS-09",title:"気体の発生計算・金属の燃焼計算",sections:[
+{id:"ws-sci-09-x1",label:"X1（塩酸と金属（鉄・アルミニウム・亜鉛）の反応）",diff:1,cat:"X",problems:[
+{id:"ws-sci-09-x1-1",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(1) 問題1",pts:10},
+{id:"ws-sci-09-x1-2",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(2) 問題2",pts:10},
+{id:"ws-sci-09-x1-3",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(3) 問題3",pts:10},
+{id:"ws-sci-09-x1-4",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(4) 問題4",pts:10},
+{id:"ws-sci-09-x1-5",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(5) 問題5",pts:10},
+{id:"ws-sci-09-x1-6",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(6) 問題6",pts:10},
+{id:"ws-sci-09-x1-7",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(7) 問題7",pts:10},
+{id:"ws-sci-09-x1-8",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(8) 問題8",pts:10}
+]},{id:"ws-sci-09-x2",label:"X2（石灰石と塩酸の反応（二酸化炭素発生））",diff:1,cat:"X",problems:[
+{id:"ws-sci-09-x2-1",text:"石灰石と塩酸の反応（二酸化炭素発生）(1) 問題1",pts:10},
+{id:"ws-sci-09-x2-2",text:"石灰石と塩酸の反応（二酸化炭素発生）(2) 問題2",pts:10},
+{id:"ws-sci-09-x2-3",text:"石灰石と塩酸の反応（二酸化炭素発生）(3) 問題3",pts:10},
+{id:"ws-sci-09-x2-4",text:"石灰石と塩酸の反応（二酸化炭素発生）(4) 問題4",pts:10},
+{id:"ws-sci-09-x2-5",text:"石灰石と塩酸の反応（二酸化炭素発生）(5) 問題5",pts:10},
+{id:"ws-sci-09-x2-6",text:"石灰石と塩酸の反応（二酸化炭素発生）(6) 問題6",pts:10},
+{id:"ws-sci-09-x2-7",text:"石灰石と塩酸の反応（二酸化炭素発生）(7) 問題7",pts:10},
+{id:"ws-sci-09-x2-8",text:"石灰石と塩酸の反応（二酸化炭素発生）(8) 問題8",pts:10}
+]},{id:"ws-sci-09-x3",label:"X3（炭素・マグネシウム・銅の燃焼計算）",diff:1,cat:"X",problems:[
+{id:"ws-sci-09-x3-1",text:"炭素・マグネシウム・銅の燃焼計算(1) 問題1",pts:10},
+{id:"ws-sci-09-x3-2",text:"炭素・マグネシウム・銅の燃焼計算(2) 問題2",pts:10},
+{id:"ws-sci-09-x3-3",text:"炭素・マグネシウム・銅の燃焼計算(3) 問題3",pts:10},
+{id:"ws-sci-09-x3-4",text:"炭素・マグネシウム・銅の燃焼計算(4) 問題4",pts:10},
+{id:"ws-sci-09-x3-5",text:"炭素・マグネシウム・銅の燃焼計算(5) 問題5",pts:10},
+{id:"ws-sci-09-x3-6",text:"炭素・マグネシウム・銅の燃焼計算(6) 問題6",pts:10},
+{id:"ws-sci-09-x3-7",text:"炭素・マグネシウム・銅の燃焼計算(7) 問題7",pts:10},
+{id:"ws-sci-09-x3-8",text:"炭素・マグネシウム・銅の燃焼計算(8) 問題8",pts:10}
+]},{id:"ws-sci-09-y1",label:"Y1（気体発生のグラフ読取り問題①）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-09-y1-1",text:"気体発生のグラフ読取り問題①(1) 問題1",pts:10},
+{id:"ws-sci-09-y1-2",text:"気体発生のグラフ読取り問題①(2) 問題2",pts:10},
+{id:"ws-sci-09-y1-3",text:"気体発生のグラフ読取り問題①(3) 問題3",pts:10},
+{id:"ws-sci-09-y1-4",text:"気体発生のグラフ読取り問題①(4) 問題4",pts:10},
+{id:"ws-sci-09-y1-5",text:"気体発生のグラフ読取り問題①(5) 問題5",pts:10},
+{id:"ws-sci-09-y1-6",text:"気体発生のグラフ読取り問題①(6) 問題6",pts:10},
+{id:"ws-sci-09-y1-7",text:"気体発生のグラフ読取り問題①(7) 問題7",pts:10},
+{id:"ws-sci-09-y1-8",text:"気体発生のグラフ読取り問題①(8) 問題8",pts:10}
+]},{id:"ws-sci-09-y2",label:"Y2（気体発生のグラフ読取り問題②）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-09-y2-1",text:"気体発生のグラフ読取り問題②(1) 問題1",pts:10},
+{id:"ws-sci-09-y2-2",text:"気体発生のグラフ読取り問題②(2) 問題2",pts:10},
+{id:"ws-sci-09-y2-3",text:"気体発生のグラフ読取り問題②(3) 問題3",pts:10},
+{id:"ws-sci-09-y2-4",text:"気体発生のグラフ読取り問題②(4) 問題4",pts:10},
+{id:"ws-sci-09-y2-5",text:"気体発生のグラフ読取り問題②(5) 問題5",pts:10},
+{id:"ws-sci-09-y2-6",text:"気体発生のグラフ読取り問題②(6) 問題6",pts:10},
+{id:"ws-sci-09-y2-7",text:"気体発生のグラフ読取り問題②(7) 問題7",pts:10},
+{id:"ws-sci-09-y2-8",text:"気体発生のグラフ読取り問題②(8) 問題8",pts:10}
+]},{id:"ws-sci-09-y3",label:"Y3（金属燃焼の計算問題③）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-09-y3-1",text:"金属燃焼の計算問題③(1) 問題1",pts:10},
+{id:"ws-sci-09-y3-2",text:"金属燃焼の計算問題③(2) 問題2",pts:10},
+{id:"ws-sci-09-y3-3",text:"金属燃焼の計算問題③(3) 問題3",pts:10},
+{id:"ws-sci-09-y3-4",text:"金属燃焼の計算問題③(4) 問題4",pts:10},
+{id:"ws-sci-09-y3-5",text:"金属燃焼の計算問題③(5) 問題5",pts:10},
+{id:"ws-sci-09-y3-6",text:"金属燃焼の計算問題③(6) 問題6",pts:10},
+{id:"ws-sci-09-y3-7",text:"金属燃焼の計算問題③(7) 問題7",pts:10},
+{id:"ws-sci-09-y3-8",text:"金属燃焼の計算問題③(8) 問題8",pts:10}
+]},{id:"ws-sci-09-y4",label:"Y4（過不足計算問題④）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-09-y4-1",text:"過不足計算問題④(1) 問題1",pts:10},
+{id:"ws-sci-09-y4-2",text:"過不足計算問題④(2) 問題2",pts:10},
+{id:"ws-sci-09-y4-3",text:"過不足計算問題④(3) 問題3",pts:10},
+{id:"ws-sci-09-y4-4",text:"過不足計算問題④(4) 問題4",pts:10},
+{id:"ws-sci-09-y4-5",text:"過不足計算問題④(5) 問題5",pts:10},
+{id:"ws-sci-09-y4-6",text:"過不足計算問題④(6) 問題6",pts:10},
+{id:"ws-sci-09-y4-7",text:"過不足計算問題④(7) 問題7",pts:10},
+{id:"ws-sci-09-y4-8",text:"過不足計算問題④(8) 問題8",pts:10}
+]},{id:"ws-sci-09-z1",label:"Z1（発展計算①（混合気体））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-09-z1-1",text:"発展計算①（混合気体）(1) 問題1",pts:10},
+{id:"ws-sci-09-z1-2",text:"発展計算①（混合気体）(2) 問題2",pts:10},
+{id:"ws-sci-09-z1-3",text:"発展計算①（混合気体）(3) 問題3",pts:10},
+{id:"ws-sci-09-z1-4",text:"発展計算①（混合気体）(4) 問題4",pts:10},
+{id:"ws-sci-09-z1-5",text:"発展計算①（混合気体）(5) 問題5",pts:10},
+{id:"ws-sci-09-z1-6",text:"発展計算①（混合気体）(6) 問題6",pts:10}
+]},{id:"ws-sci-09-z2",label:"Z2（発展計算②（混合金属））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-09-z2-1",text:"発展計算②（混合金属）(1) 問題1",pts:10},
+{id:"ws-sci-09-z2-2",text:"発展計算②（混合金属）(2) 問題2",pts:10},
+{id:"ws-sci-09-z2-3",text:"発展計算②（混合金属）(3) 問題3",pts:10},
+{id:"ws-sci-09-z2-4",text:"発展計算②（混合金属）(4) 問題4",pts:10},
+{id:"ws-sci-09-z2-5",text:"発展計算②（混合金属）(5) 問題5",pts:10},
+{id:"ws-sci-09-z2-6",text:"発展計算②（混合金属）(6) 問題6",pts:10}
+]},{id:"ws-sci-09-z3",label:"Z3（最難問）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-09-z3-1",text:"最難問(1) 問題1",pts:10},
+{id:"ws-sci-09-z3-2",text:"最難問(2) 問題2",pts:10},
+{id:"ws-sci-09-z3-3",text:"最難問(3) 問題3",pts:10},
+{id:"ws-sci-09-z3-4",text:"最難問(4) 問題4",pts:10},
+{id:"ws-sci-09-z3-5",text:"最難問(5) 問題5",pts:10},
+{id:"ws-sci-09-z3-6",text:"最難問(6) 問題6",pts:10}
+]}
+],initialAnswers:{}},
+{id:"ws-sci-10",code:"WS-10",title:"てこのつり合い",sections:[
+{id:"ws-sci-10-x1",label:"X1（てこの基本（支点・力点・作用点・モーメント））",diff:1,cat:"X",problems:[
+{id:"ws-sci-10-x1-1",text:"てこの基本（支点・力点・作用点・モーメント）(1) 問題1",pts:10},
+{id:"ws-sci-10-x1-2",text:"てこの基本（支点・力点・作用点・モーメント）(2) 問題2",pts:10},
+{id:"ws-sci-10-x1-3",text:"てこの基本（支点・力点・作用点・モーメント）(3) 問題3",pts:10},
+{id:"ws-sci-10-x1-4",text:"てこの基本（支点・力点・作用点・モーメント）(4) 問題4",pts:10},
+{id:"ws-sci-10-x1-5",text:"てこの基本（支点・力点・作用点・モーメント）(5) 問題5",pts:10},
+{id:"ws-sci-10-x1-6",text:"てこの基本（支点・力点・作用点・モーメント）(6) 問題6",pts:10},
+{id:"ws-sci-10-x1-7",text:"てこの基本（支点・力点・作用点・モーメント）(7) 問題7",pts:10},
+{id:"ws-sci-10-x1-8",text:"てこの基本（支点・力点・作用点・モーメント）(8) 問題8",pts:10}
+]},{id:"ws-sci-10-x2",label:"X2（棒の重さを考えたてこのつり合い）",diff:1,cat:"X",problems:[
+{id:"ws-sci-10-x2-1",text:"棒の重さを考えたてこのつり合い(1) 問題1",pts:10},
+{id:"ws-sci-10-x2-2",text:"棒の重さを考えたてこのつり合い(2) 問題2",pts:10},
+{id:"ws-sci-10-x2-3",text:"棒の重さを考えたてこのつり合い(3) 問題3",pts:10},
+{id:"ws-sci-10-x2-4",text:"棒の重さを考えたてこのつり合い(4) 問題4",pts:10},
+{id:"ws-sci-10-x2-5",text:"棒の重さを考えたてこのつり合い(5) 問題5",pts:10},
+{id:"ws-sci-10-x2-6",text:"棒の重さを考えたてこのつり合い(6) 問題6",pts:10},
+{id:"ws-sci-10-x2-7",text:"棒の重さを考えたてこのつり合い(7) 問題7",pts:10},
+{id:"ws-sci-10-x2-8",text:"棒の重さを考えたてこのつり合い(8) 問題8",pts:10}
+]},{id:"ws-sci-10-x3",label:"X3（複合てこ・モービルのつり合い）",diff:1,cat:"X",problems:[
+{id:"ws-sci-10-x3-1",text:"複合てこ・モービルのつり合い(1) 問題1",pts:10},
+{id:"ws-sci-10-x3-2",text:"複合てこ・モービルのつり合い(2) 問題2",pts:10},
+{id:"ws-sci-10-x3-3",text:"複合てこ・モービルのつり合い(3) 問題3",pts:10},
+{id:"ws-sci-10-x3-4",text:"複合てこ・モービルのつり合い(4) 問題4",pts:10},
+{id:"ws-sci-10-x3-5",text:"複合てこ・モービルのつり合い(5) 問題5",pts:10},
+{id:"ws-sci-10-x3-6",text:"複合てこ・モービルのつり合い(6) 問題6",pts:10},
+{id:"ws-sci-10-x3-7",text:"複合てこ・モービルのつり合い(7) 問題7",pts:10},
+{id:"ws-sci-10-x3-8",text:"複合てこ・モービルのつり合い(8) 問題8",pts:10}
+]},{id:"ws-sci-10-y1",label:"Y1（滑車・輪軸との組み合わせ①）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-10-y1-1",text:"滑車・輪軸との組み合わせ①(1) 問題1",pts:10},
+{id:"ws-sci-10-y1-2",text:"滑車・輪軸との組み合わせ①(2) 問題2",pts:10},
+{id:"ws-sci-10-y1-3",text:"滑車・輪軸との組み合わせ①(3) 問題3",pts:10},
+{id:"ws-sci-10-y1-4",text:"滑車・輪軸との組み合わせ①(4) 問題4",pts:10},
+{id:"ws-sci-10-y1-5",text:"滑車・輪軸との組み合わせ①(5) 問題5",pts:10},
+{id:"ws-sci-10-y1-6",text:"滑車・輪軸との組み合わせ①(6) 問題6",pts:10},
+{id:"ws-sci-10-y1-7",text:"滑車・輪軸との組み合わせ①(7) 問題7",pts:10},
+{id:"ws-sci-10-y1-8",text:"滑車・輪軸との組み合わせ①(8) 問題8",pts:10}
+]},{id:"ws-sci-10-y2",label:"Y2（てこ総合計算②）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-10-y2-1",text:"てこ総合計算②(1) 問題1",pts:10},
+{id:"ws-sci-10-y2-2",text:"てこ総合計算②(2) 問題2",pts:10},
+{id:"ws-sci-10-y2-3",text:"てこ総合計算②(3) 問題3",pts:10},
+{id:"ws-sci-10-y2-4",text:"てこ総合計算②(4) 問題4",pts:10},
+{id:"ws-sci-10-y2-5",text:"てこ総合計算②(5) 問題5",pts:10},
+{id:"ws-sci-10-y2-6",text:"てこ総合計算②(6) 問題6",pts:10},
+{id:"ws-sci-10-y2-7",text:"てこ総合計算②(7) 問題7",pts:10},
+{id:"ws-sci-10-y2-8",text:"てこ総合計算②(8) 問題8",pts:10}
+]},{id:"ws-sci-10-y3",label:"Y3（複雑なつり合い問題③）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-10-y3-1",text:"複雑なつり合い問題③(1) 問題1",pts:10},
+{id:"ws-sci-10-y3-2",text:"複雑なつり合い問題③(2) 問題2",pts:10},
+{id:"ws-sci-10-y3-3",text:"複雑なつり合い問題③(3) 問題3",pts:10},
+{id:"ws-sci-10-y3-4",text:"複雑なつり合い問題③(4) 問題4",pts:10},
+{id:"ws-sci-10-y3-5",text:"複雑なつり合い問題③(5) 問題5",pts:10},
+{id:"ws-sci-10-y3-6",text:"複雑なつり合い問題③(6) 問題6",pts:10},
+{id:"ws-sci-10-y3-7",text:"複雑なつり合い問題③(7) 問題7",pts:10},
+{id:"ws-sci-10-y3-8",text:"複雑なつり合い問題③(8) 問題8",pts:10}
+]},{id:"ws-sci-10-y4",label:"Y4（棒ABの3本使いの問題④）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-10-y4-1",text:"棒ABの3本使いの問題④(1) 問題1",pts:10},
+{id:"ws-sci-10-y4-2",text:"棒ABの3本使いの問題④(2) 問題2",pts:10},
+{id:"ws-sci-10-y4-3",text:"棒ABの3本使いの問題④(3) 問題3",pts:10},
+{id:"ws-sci-10-y4-4",text:"棒ABの3本使いの問題④(4) 問題4",pts:10},
+{id:"ws-sci-10-y4-5",text:"棒ABの3本使いの問題④(5) 問題5",pts:10},
+{id:"ws-sci-10-y4-6",text:"棒ABの3本使いの問題④(6) 問題6",pts:10},
+{id:"ws-sci-10-y4-7",text:"棒ABの3本使いの問題④(7) 問題7",pts:10},
+{id:"ws-sci-10-y4-8",text:"棒ABの3本使いの問題④(8) 問題8",pts:10}
+]},{id:"ws-sci-10-z1",label:"Z1（発展問題①（定規と三角形のつり合い））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-10-z1-1",text:"発展問題①（定規と三角形のつり合い）(1) 問題1",pts:10},
+{id:"ws-sci-10-z1-2",text:"発展問題①（定規と三角形のつり合い）(2) 問題2",pts:10},
+{id:"ws-sci-10-z1-3",text:"発展問題①（定規と三角形のつり合い）(3) 問題3",pts:10},
+{id:"ws-sci-10-z1-4",text:"発展問題①（定規と三角形のつり合い）(4) 問題4",pts:10},
+{id:"ws-sci-10-z1-5",text:"発展問題①（定規と三角形のつり合い）(5) 問題5",pts:10},
+{id:"ws-sci-10-z1-6",text:"発展問題①（定規と三角形のつり合い）(6) 問題6",pts:10}
+]},{id:"ws-sci-10-z2",label:"Z2（発展問題②（バット・ひもの問題））",diff:3,cat:"Z",problems:[
+{id:"ws-sci-10-z2-1",text:"発展問題②（バット・ひもの問題）(1) 問題1",pts:10},
+{id:"ws-sci-10-z2-2",text:"発展問題②（バット・ひもの問題）(2) 問題2",pts:10},
+{id:"ws-sci-10-z2-3",text:"発展問題②（バット・ひもの問題）(3) 問題3",pts:10},
+{id:"ws-sci-10-z2-4",text:"発展問題②（バット・ひもの問題）(4) 問題4",pts:10},
+{id:"ws-sci-10-z2-5",text:"発展問題②（バット・ひもの問題）(5) 問題5",pts:10},
+{id:"ws-sci-10-z2-6",text:"発展問題②（バット・ひもの問題）(6) 問題6",pts:10}
+]},{id:"ws-sci-10-z3",label:"Z3（最難問①）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-10-z3-1",text:"最難問①(1) 問題1",pts:10},
+{id:"ws-sci-10-z3-2",text:"最難問①(2) 問題2",pts:10},
+{id:"ws-sci-10-z3-3",text:"最難問①(3) 問題3",pts:10},
+{id:"ws-sci-10-z3-4",text:"最難問①(4) 問題4",pts:10},
+{id:"ws-sci-10-z3-5",text:"最難問①(5) 問題5",pts:10},
+{id:"ws-sci-10-z3-6",text:"最難問①(6) 問題6",pts:10}
+]},{id:"ws-sci-10-z4",label:"Z4（最難問②）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-10-z4-1",text:"最難問②(1) 問題1",pts:10},
+{id:"ws-sci-10-z4-2",text:"最難問②(2) 問題2",pts:10},
+{id:"ws-sci-10-z4-3",text:"最難問②(3) 問題3",pts:10},
+{id:"ws-sci-10-z4-4",text:"最難問②(4) 問題4",pts:10},
+{id:"ws-sci-10-z4-5",text:"最難問②(5) 問題5",pts:10},
+{id:"ws-sci-10-z4-6",text:"最難問②(6) 問題6",pts:10}
+]}
+],initialAnswers:{}}
+],
+social: [
+{id:"ws-soc-01",code:"WS-01",title:"日本の国土と人口／中部地方",sections:[
+{id:"ws-soc-01-chishiki",label:"1. 知識の総完成（空欄補充）",diff:1,cat:"知識の総完成",problems:[
+{id:"ws-soc-01-c1",text:"重要地名①（山地・山脈・火山の名前）",pts:5},
+{id:"ws-soc-01-c2",text:"重要地名②（川・平野・盆地の名前）",pts:5},
+{id:"ws-soc-01-c3",text:"重要地名③（半島・湾・島の名前）",pts:5},
+{id:"ws-soc-01-c4",text:"気候①（雨温図の読み取り・都市を選ぶ）",pts:5},
+{id:"ws-soc-01-c5",text:"気候②（季節風・降水量の特徴）",pts:5},
+{id:"ws-soc-01-c6",text:"第1次産業①（農業・主な農作物・産地）",pts:5},
+{id:"ws-soc-01-c7",text:"第1次産業②（水産業・主な漁港・養殖）",pts:5},
+{id:"ws-soc-01-c8",text:"第2次産業①（主な工業都市・工業製品）",pts:5},
+{id:"ws-soc-01-c9",text:"第2次産業②（工業地帯の名前・特色）",pts:5},
+{id:"ws-soc-01-c10",text:"統計・記号（地形図の記号・地図の読み方）",pts:5}
+]},
+{id:"ws-soc-01-a1",label:"2. 入試実戦演習 A1（長文・下線部①〜空欄補充）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-01-a1-1",text:"(1) 文中の（1）〜（3）に当てはまる語句や数字",pts:3},
+{id:"ws-soc-01-a1-2",text:"(2) 下線部①の雨温図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-01-a1-3",text:"(3) 下線部②について植えられた木々の名前",pts:3},
+{id:"ws-soc-01-a1-4",text:"(4) 下線部③の水源となった湖を答える",pts:3},
+{id:"ws-soc-01-a1-5",text:"(5) 下線部④の地形図記号を描く",pts:4},
+{id:"ws-soc-01-a1-6",text:"(6) 下線部④の「やませ」とはどのような風か説明",pts:4},
+{id:"ws-soc-01-a1-7",text:"(7) 下線部⑤の車窓から見える地形の組み合わせをア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-01-a2",label:"2. 入試実戦演習 A2（地図・統計・設問①〜⑧）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-01-a2-1",text:"(1) 地図中AとBの半島・川の名前",pts:3},
+{id:"ws-soc-01-a2-2",text:"(2) 地図中Cの水域で多く取れる魚をア〜エから選ぶ",pts:3},
+{id:"ws-soc-01-a2-3",text:"(3) 地図中Dの水域では真珠の養殖→自然条件から理由を説明",pts:4},
+{id:"ws-soc-01-a2-4",text:"(4) 地図中E（新幹線）の沿線地域の説明として間違っているものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-01-a2-5",text:"(5) 断面図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-01-a2-6",text:"(6) 気温と降水量のグラフとして正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-01-a2-7",text:"(7) グラフ（空港利用外国人）から福岡空港はどれか",pts:3},
+{id:"ws-soc-01-a2-8",text:"(8) 鹿児島県の県章をア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-01-b",label:"3. 入試実戦演習 Bタイプ（長文・記述）",diff:3,cat:"Bタイプ",problems:[
+{id:"ws-soc-01-b1",text:"(1) 文中の（1）〜（5）に当てはまる語句を選ぶ（（2）は漢字3字）",pts:2},
+{id:"ws-soc-01-b2",text:"(2) 下線部①の「エネルギー革命」の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-01-b3",text:"(3) 下線部②の変化を何と呼ぶか",pts:3},
+{id:"ws-soc-01-b4",text:"(4) 下線部③の原因の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-01-b5",text:"(5) 下線部④を輸送する専用の船として正しいものをア〜エから選ぶ",pts:2}
+]}
+],initialAnswers:{}},
+{id:"ws-soc-02",code:"WS-02",title:"九州地方",sections:[
+{id:"ws-soc-02-chishiki",label:"1. 知識の総完成（空欄補充）",diff:1,cat:"知識の総完成",problems:[
+{id:"ws-soc-02-c1",text:"重要地名①（山地・山脈・火山の名前）",pts:5},
+{id:"ws-soc-02-c2",text:"重要地名②（川・平野・盆地の名前）",pts:5},
+{id:"ws-soc-02-c3",text:"重要地名③（半島・湾・島の名前）",pts:5},
+{id:"ws-soc-02-c4",text:"気候①（雨温図の読み取り・都市を選ぶ）",pts:5},
+{id:"ws-soc-02-c5",text:"気候②（季節風・降水量の特徴）",pts:5},
+{id:"ws-soc-02-c6",text:"第1次産業①（農業・主な農作物・産地）",pts:5},
+{id:"ws-soc-02-c7",text:"第1次産業②（水産業・主な漁港・養殖）",pts:5},
+{id:"ws-soc-02-c8",text:"第2次産業①（主な工業都市・工業製品）",pts:5},
+{id:"ws-soc-02-c9",text:"第2次産業②（工業地帯の名前・特色）",pts:5},
+{id:"ws-soc-02-c10",text:"統計・記号（地形図の記号・地図の読み方）",pts:5}
+]},
+{id:"ws-soc-02-a1",label:"2. 入試実戦演習 A1（長文・下線部①〜空欄補充）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-02-a1-1",text:"(1) 文中の（1）〜（3）に当てはまる語句や数字",pts:3},
+{id:"ws-soc-02-a1-2",text:"(2) 下線部①の雨温図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-02-a1-3",text:"(3) 下線部②について植えられた木々の名前",pts:3},
+{id:"ws-soc-02-a1-4",text:"(4) 下線部③の水源となった湖を答える",pts:3},
+{id:"ws-soc-02-a1-5",text:"(5) 下線部④の地形図記号を描く",pts:4},
+{id:"ws-soc-02-a1-6",text:"(6) 下線部④の「やませ」とはどのような風か説明",pts:4},
+{id:"ws-soc-02-a1-7",text:"(7) 下線部⑤の車窓から見える地形の組み合わせをア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-02-a2",label:"2. 入試実戦演習 A2（地図・統計・設問①〜⑧）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-02-a2-1",text:"(1) 地図中AとBの半島・川の名前",pts:3},
+{id:"ws-soc-02-a2-2",text:"(2) 地図中Cの水域で多く取れる魚をア〜エから選ぶ",pts:3},
+{id:"ws-soc-02-a2-3",text:"(3) 地図中Dの水域では真珠の養殖→自然条件から理由を説明",pts:4},
+{id:"ws-soc-02-a2-4",text:"(4) 地図中E（新幹線）の沿線地域の説明として間違っているものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-02-a2-5",text:"(5) 断面図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-02-a2-6",text:"(6) 気温と降水量のグラフとして正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-02-a2-7",text:"(7) グラフ（空港利用外国人）から福岡空港はどれか",pts:3},
+{id:"ws-soc-02-a2-8",text:"(8) 鹿児島県の県章をア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-02-b",label:"3. 入試実戦演習 Bタイプ（長文・記述）",diff:3,cat:"Bタイプ",problems:[
+{id:"ws-soc-02-b1",text:"(1) 文中の（1）〜（5）に当てはまる語句を選ぶ（（2）は漢字3字）",pts:2},
+{id:"ws-soc-02-b2",text:"(2) 下線部①の「エネルギー革命」の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-02-b3",text:"(3) 下線部②の変化を何と呼ぶか",pts:3},
+{id:"ws-soc-02-b4",text:"(4) 下線部③の原因の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-02-b5",text:"(5) 下線部④を輸送する専用の船として正しいものをア〜エから選ぶ",pts:2}
+]}
+],initialAnswers:{}},
+{id:"ws-soc-03",code:"WS-03",title:"北海道地方",sections:[
+{id:"ws-soc-03-chishiki",label:"1. 知識の総完成（空欄補充）",diff:1,cat:"知識の総完成",problems:[
+{id:"ws-soc-03-c1",text:"重要地名①（山地・山脈・火山の名前）",pts:5},
+{id:"ws-soc-03-c2",text:"重要地名②（川・平野・盆地の名前）",pts:5},
+{id:"ws-soc-03-c3",text:"重要地名③（半島・湾・島の名前）",pts:5},
+{id:"ws-soc-03-c4",text:"気候①（雨温図の読み取り・都市を選ぶ）",pts:5},
+{id:"ws-soc-03-c5",text:"気候②（季節風・降水量の特徴）",pts:5},
+{id:"ws-soc-03-c6",text:"第1次産業①（農業・主な農作物・産地）",pts:5},
+{id:"ws-soc-03-c7",text:"第1次産業②（水産業・主な漁港・養殖）",pts:5},
+{id:"ws-soc-03-c8",text:"第2次産業①（主な工業都市・工業製品）",pts:5},
+{id:"ws-soc-03-c9",text:"第2次産業②（工業地帯の名前・特色）",pts:5},
+{id:"ws-soc-03-c10",text:"統計・記号（地形図の記号・地図の読み方）",pts:5}
+]},
+{id:"ws-soc-03-a1",label:"2. 入試実戦演習 A1（長文・下線部①〜空欄補充）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-03-a1-1",text:"(1) 文中の（1）〜（3）に当てはまる語句や数字",pts:3},
+{id:"ws-soc-03-a1-2",text:"(2) 下線部①の雨温図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-03-a1-3",text:"(3) 下線部②について植えられた木々の名前",pts:3},
+{id:"ws-soc-03-a1-4",text:"(4) 下線部③の水源となった湖を答える",pts:3},
+{id:"ws-soc-03-a1-5",text:"(5) 下線部④の地形図記号を描く",pts:4},
+{id:"ws-soc-03-a1-6",text:"(6) 下線部④の「やませ」とはどのような風か説明",pts:4},
+{id:"ws-soc-03-a1-7",text:"(7) 下線部⑤の車窓から見える地形の組み合わせをア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-03-a2",label:"2. 入試実戦演習 A2（地図・統計・設問①〜⑧）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-03-a2-1",text:"(1) 地図中AとBの半島・川の名前",pts:3},
+{id:"ws-soc-03-a2-2",text:"(2) 地図中Cの水域で多く取れる魚をア〜エから選ぶ",pts:3},
+{id:"ws-soc-03-a2-3",text:"(3) 地図中Dの水域では真珠の養殖→自然条件から理由を説明",pts:4},
+{id:"ws-soc-03-a2-4",text:"(4) 地図中E（新幹線）の沿線地域の説明として間違っているものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-03-a2-5",text:"(5) 断面図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-03-a2-6",text:"(6) 気温と降水量のグラフとして正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-03-a2-7",text:"(7) グラフ（空港利用外国人）から福岡空港はどれか",pts:3},
+{id:"ws-soc-03-a2-8",text:"(8) 鹿児島県の県章をア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-03-b",label:"3. 入試実戦演習 Bタイプ（長文・記述）",diff:3,cat:"Bタイプ",problems:[
+{id:"ws-soc-03-b1",text:"(1) 文中の（1）〜（5）に当てはまる語句を選ぶ（（2）は漢字3字）",pts:2},
+{id:"ws-soc-03-b2",text:"(2) 下線部①の「エネルギー革命」の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-03-b3",text:"(3) 下線部②の変化を何と呼ぶか",pts:3},
+{id:"ws-soc-03-b4",text:"(4) 下線部③の原因の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-03-b5",text:"(5) 下線部④を輸送する専用の船として正しいものをア〜エから選ぶ",pts:2}
+]}
+],initialAnswers:{}},
+{id:"ws-soc-04",code:"WS-04",title:"東北地方",sections:[
+{id:"ws-soc-04-chishiki",label:"1. 知識の総完成（空欄補充）",diff:1,cat:"知識の総完成",problems:[
+{id:"ws-soc-04-c1",text:"重要地名①（山地・山脈・火山の名前）",pts:5},
+{id:"ws-soc-04-c2",text:"重要地名②（川・平野・盆地の名前）",pts:5},
+{id:"ws-soc-04-c3",text:"重要地名③（半島・湾・島の名前）",pts:5},
+{id:"ws-soc-04-c4",text:"気候①（雨温図の読み取り・都市を選ぶ）",pts:5},
+{id:"ws-soc-04-c5",text:"気候②（季節風・降水量の特徴）",pts:5},
+{id:"ws-soc-04-c6",text:"第1次産業①（農業・主な農作物・産地）",pts:5},
+{id:"ws-soc-04-c7",text:"第1次産業②（水産業・主な漁港・養殖）",pts:5},
+{id:"ws-soc-04-c8",text:"第2次産業①（主な工業都市・工業製品）",pts:5},
+{id:"ws-soc-04-c9",text:"第2次産業②（工業地帯の名前・特色）",pts:5},
+{id:"ws-soc-04-c10",text:"統計・記号（地形図の記号・地図の読み方）",pts:5}
+]},
+{id:"ws-soc-04-a1",label:"2. 入試実戦演習 A1（長文・下線部①〜空欄補充）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-04-a1-1",text:"(1) 文中の（1）〜（3）に当てはまる語句や数字",pts:3},
+{id:"ws-soc-04-a1-2",text:"(2) 下線部①の雨温図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-04-a1-3",text:"(3) 下線部②について植えられた木々の名前",pts:3},
+{id:"ws-soc-04-a1-4",text:"(4) 下線部③の水源となった湖を答える",pts:3},
+{id:"ws-soc-04-a1-5",text:"(5) 下線部④の地形図記号を描く",pts:4},
+{id:"ws-soc-04-a1-6",text:"(6) 下線部④の「やませ」とはどのような風か説明",pts:4},
+{id:"ws-soc-04-a1-7",text:"(7) 下線部⑤の車窓から見える地形の組み合わせをア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-04-a2",label:"2. 入試実戦演習 A2（地図・統計・設問①〜⑧）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-04-a2-1",text:"(1) 地図中AとBの半島・川の名前",pts:3},
+{id:"ws-soc-04-a2-2",text:"(2) 地図中Cの水域で多く取れる魚をア〜エから選ぶ",pts:3},
+{id:"ws-soc-04-a2-3",text:"(3) 地図中Dの水域では真珠の養殖→自然条件から理由を説明",pts:4},
+{id:"ws-soc-04-a2-4",text:"(4) 地図中E（新幹線）の沿線地域の説明として間違っているものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-04-a2-5",text:"(5) 断面図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-04-a2-6",text:"(6) 気温と降水量のグラフとして正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-04-a2-7",text:"(7) グラフ（空港利用外国人）から福岡空港はどれか",pts:3},
+{id:"ws-soc-04-a2-8",text:"(8) 鹿児島県の県章をア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-04-b",label:"3. 入試実戦演習 Bタイプ（長文・記述）",diff:3,cat:"Bタイプ",problems:[
+{id:"ws-soc-04-b1",text:"(1) 文中の（1）〜（5）に当てはまる語句を選ぶ（（2）は漢字3字）",pts:2},
+{id:"ws-soc-04-b2",text:"(2) 下線部①の「エネルギー革命」の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-04-b3",text:"(3) 下線部②の変化を何と呼ぶか",pts:3},
+{id:"ws-soc-04-b4",text:"(4) 下線部③の原因の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-04-b5",text:"(5) 下線部④を輸送する専用の船として正しいものをア〜エから選ぶ",pts:2}
+]}
+],initialAnswers:{}},
+{id:"ws-soc-05",code:"WS-05",title:"関東地方",sections:[
+{id:"ws-soc-05-chishiki",label:"1. 知識の総完成（空欄補充）",diff:1,cat:"知識の総完成",problems:[
+{id:"ws-soc-05-c1",text:"重要地名①（山地・山脈・火山の名前）",pts:5},
+{id:"ws-soc-05-c2",text:"重要地名②（川・平野・盆地の名前）",pts:5},
+{id:"ws-soc-05-c3",text:"重要地名③（半島・湾・島の名前）",pts:5},
+{id:"ws-soc-05-c4",text:"気候①（雨温図の読み取り・都市を選ぶ）",pts:5},
+{id:"ws-soc-05-c5",text:"気候②（季節風・降水量の特徴）",pts:5},
+{id:"ws-soc-05-c6",text:"第1次産業①（農業・主な農作物・産地）",pts:5},
+{id:"ws-soc-05-c7",text:"第1次産業②（水産業・主な漁港・養殖）",pts:5},
+{id:"ws-soc-05-c8",text:"第2次産業①（主な工業都市・工業製品）",pts:5},
+{id:"ws-soc-05-c9",text:"第2次産業②（工業地帯の名前・特色）",pts:5},
+{id:"ws-soc-05-c10",text:"統計・記号（地形図の記号・地図の読み方）",pts:5}
+]},
+{id:"ws-soc-05-a1",label:"2. 入試実戦演習 A1（長文・下線部①〜空欄補充）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-05-a1-1",text:"(1) 文中の（1）〜（3）に当てはまる語句や数字",pts:3},
+{id:"ws-soc-05-a1-2",text:"(2) 下線部①の雨温図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-05-a1-3",text:"(3) 下線部②について植えられた木々の名前",pts:3},
+{id:"ws-soc-05-a1-4",text:"(4) 下線部③の水源となった湖を答える",pts:3},
+{id:"ws-soc-05-a1-5",text:"(5) 下線部④の地形図記号を描く",pts:4},
+{id:"ws-soc-05-a1-6",text:"(6) 下線部④の「やませ」とはどのような風か説明",pts:4},
+{id:"ws-soc-05-a1-7",text:"(7) 下線部⑤の車窓から見える地形の組み合わせをア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-05-a2",label:"2. 入試実戦演習 A2（地図・統計・設問①〜⑧）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-05-a2-1",text:"(1) 地図中AとBの半島・川の名前",pts:3},
+{id:"ws-soc-05-a2-2",text:"(2) 地図中Cの水域で多く取れる魚をア〜エから選ぶ",pts:3},
+{id:"ws-soc-05-a2-3",text:"(3) 地図中Dの水域では真珠の養殖→自然条件から理由を説明",pts:4},
+{id:"ws-soc-05-a2-4",text:"(4) 地図中E（新幹線）の沿線地域の説明として間違っているものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-05-a2-5",text:"(5) 断面図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-05-a2-6",text:"(6) 気温と降水量のグラフとして正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-05-a2-7",text:"(7) グラフ（空港利用外国人）から福岡空港はどれか",pts:3},
+{id:"ws-soc-05-a2-8",text:"(8) 鹿児島県の県章をア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-05-b",label:"3. 入試実戦演習 Bタイプ（長文・記述）",diff:3,cat:"Bタイプ",problems:[
+{id:"ws-soc-05-b1",text:"(1) 文中の（1）〜（5）に当てはまる語句を選ぶ（（2）は漢字3字）",pts:2},
+{id:"ws-soc-05-b2",text:"(2) 下線部①の「エネルギー革命」の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-05-b3",text:"(3) 下線部②の変化を何と呼ぶか",pts:3},
+{id:"ws-soc-05-b4",text:"(4) 下線部③の原因の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-05-b5",text:"(5) 下線部④を輸送する専用の船として正しいものをア〜エから選ぶ",pts:2}
+]}
+],initialAnswers:{}},
+{id:"ws-soc-06",code:"WS-06",title:"近畿地方",sections:[
+{id:"ws-soc-06-chishiki",label:"1. 知識の総完成（空欄補充）",diff:1,cat:"知識の総完成",problems:[
+{id:"ws-soc-06-c1",text:"重要地名①（山地・山脈・火山の名前）",pts:5},
+{id:"ws-soc-06-c2",text:"重要地名②（川・平野・盆地の名前）",pts:5},
+{id:"ws-soc-06-c3",text:"重要地名③（半島・湾・島の名前）",pts:5},
+{id:"ws-soc-06-c4",text:"気候①（雨温図の読み取り・都市を選ぶ）",pts:5},
+{id:"ws-soc-06-c5",text:"気候②（季節風・降水量の特徴）",pts:5},
+{id:"ws-soc-06-c6",text:"第1次産業①（農業・主な農作物・産地）",pts:5},
+{id:"ws-soc-06-c7",text:"第1次産業②（水産業・主な漁港・養殖）",pts:5},
+{id:"ws-soc-06-c8",text:"第2次産業①（主な工業都市・工業製品）",pts:5},
+{id:"ws-soc-06-c9",text:"第2次産業②（工業地帯の名前・特色）",pts:5},
+{id:"ws-soc-06-c10",text:"統計・記号（地形図の記号・地図の読み方）",pts:5}
+]},
+{id:"ws-soc-06-a1",label:"2. 入試実戦演習 A1（長文・下線部①〜空欄補充）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-06-a1-1",text:"(1) 文中の（1）〜（3）に当てはまる語句や数字",pts:3},
+{id:"ws-soc-06-a1-2",text:"(2) 下線部①の雨温図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-06-a1-3",text:"(3) 下線部②について植えられた木々の名前",pts:3},
+{id:"ws-soc-06-a1-4",text:"(4) 下線部③の水源となった湖を答える",pts:3},
+{id:"ws-soc-06-a1-5",text:"(5) 下線部④の地形図記号を描く",pts:4},
+{id:"ws-soc-06-a1-6",text:"(6) 下線部④の「やませ」とはどのような風か説明",pts:4},
+{id:"ws-soc-06-a1-7",text:"(7) 下線部⑤の車窓から見える地形の組み合わせをア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-06-a2",label:"2. 入試実戦演習 A2（地図・統計・設問①〜⑧）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-06-a2-1",text:"(1) 地図中AとBの半島・川の名前",pts:3},
+{id:"ws-soc-06-a2-2",text:"(2) 地図中Cの水域で多く取れる魚をア〜エから選ぶ",pts:3},
+{id:"ws-soc-06-a2-3",text:"(3) 地図中Dの水域では真珠の養殖→自然条件から理由を説明",pts:4},
+{id:"ws-soc-06-a2-4",text:"(4) 地図中E（新幹線）の沿線地域の説明として間違っているものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-06-a2-5",text:"(5) 断面図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-06-a2-6",text:"(6) 気温と降水量のグラフとして正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-06-a2-7",text:"(7) グラフ（空港利用外国人）から福岡空港はどれか",pts:3},
+{id:"ws-soc-06-a2-8",text:"(8) 鹿児島県の県章をア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-06-b",label:"3. 入試実戦演習 Bタイプ（長文・記述）",diff:3,cat:"Bタイプ",problems:[
+{id:"ws-soc-06-b1",text:"(1) 文中の（1）〜（5）に当てはまる語句を選ぶ（（2）は漢字3字）",pts:2},
+{id:"ws-soc-06-b2",text:"(2) 下線部①の「エネルギー革命」の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-06-b3",text:"(3) 下線部②の変化を何と呼ぶか",pts:3},
+{id:"ws-soc-06-b4",text:"(4) 下線部③の原因の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-06-b5",text:"(5) 下線部④を輸送する専用の船として正しいものをア〜エから選ぶ",pts:2}
+]}
+],initialAnswers:{}},
+{id:"ws-soc-07",code:"WS-07",title:"中国・四国地方",sections:[
+{id:"ws-soc-07-chishiki",label:"1. 知識の総完成（空欄補充）",diff:1,cat:"知識の総完成",problems:[
+{id:"ws-soc-07-c1",text:"重要地名①（山地・山脈・火山の名前）",pts:5},
+{id:"ws-soc-07-c2",text:"重要地名②（川・平野・盆地の名前）",pts:5},
+{id:"ws-soc-07-c3",text:"重要地名③（半島・湾・島の名前）",pts:5},
+{id:"ws-soc-07-c4",text:"気候①（雨温図の読み取り・都市を選ぶ）",pts:5},
+{id:"ws-soc-07-c5",text:"気候②（季節風・降水量の特徴）",pts:5},
+{id:"ws-soc-07-c6",text:"第1次産業①（農業・主な農作物・産地）",pts:5},
+{id:"ws-soc-07-c7",text:"第1次産業②（水産業・主な漁港・養殖）",pts:5},
+{id:"ws-soc-07-c8",text:"第2次産業①（主な工業都市・工業製品）",pts:5},
+{id:"ws-soc-07-c9",text:"第2次産業②（工業地帯の名前・特色）",pts:5},
+{id:"ws-soc-07-c10",text:"統計・記号（地形図の記号・地図の読み方）",pts:5}
+]},
+{id:"ws-soc-07-a1",label:"2. 入試実戦演習 A1（長文・下線部①〜空欄補充）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-07-a1-1",text:"(1) 文中の（1）〜（3）に当てはまる語句や数字",pts:3},
+{id:"ws-soc-07-a1-2",text:"(2) 下線部①の雨温図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-07-a1-3",text:"(3) 下線部②について植えられた木々の名前",pts:3},
+{id:"ws-soc-07-a1-4",text:"(4) 下線部③の水源となった湖を答える",pts:3},
+{id:"ws-soc-07-a1-5",text:"(5) 下線部④の地形図記号を描く",pts:4},
+{id:"ws-soc-07-a1-6",text:"(6) 下線部④の「やませ」とはどのような風か説明",pts:4},
+{id:"ws-soc-07-a1-7",text:"(7) 下線部⑤の車窓から見える地形の組み合わせをア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-07-a2",label:"2. 入試実戦演習 A2（地図・統計・設問①〜⑧）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-07-a2-1",text:"(1) 地図中AとBの半島・川の名前",pts:3},
+{id:"ws-soc-07-a2-2",text:"(2) 地図中Cの水域で多く取れる魚をア〜エから選ぶ",pts:3},
+{id:"ws-soc-07-a2-3",text:"(3) 地図中Dの水域では真珠の養殖→自然条件から理由を説明",pts:4},
+{id:"ws-soc-07-a2-4",text:"(4) 地図中E（新幹線）の沿線地域の説明として間違っているものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-07-a2-5",text:"(5) 断面図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-07-a2-6",text:"(6) 気温と降水量のグラフとして正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-07-a2-7",text:"(7) グラフ（空港利用外国人）から福岡空港はどれか",pts:3},
+{id:"ws-soc-07-a2-8",text:"(8) 鹿児島県の県章をア〜エから選ぶ",pts:3}
+]},
+{id:"ws-soc-07-b",label:"3. 入試実戦演習 Bタイプ（長文・記述）",diff:3,cat:"Bタイプ",problems:[
+{id:"ws-soc-07-b1",text:"(1) 文中の（1）〜（5）に当てはまる語句を選ぶ（（2）は漢字3字）",pts:2},
+{id:"ws-soc-07-b2",text:"(2) 下線部①の「エネルギー革命」の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-07-b3",text:"(3) 下線部②の変化を何と呼ぶか",pts:3},
+{id:"ws-soc-07-b4",text:"(4) 下線部③の原因の組み合わせをア〜エから選ぶ",pts:2},
+{id:"ws-soc-07-b5",text:"(5) 下線部④を輸送する専用の船として正しいものをア〜エから選ぶ",pts:2}
+]}
+],initialAnswers:{}},
+{id:"ws-soc-08",code:"WS-08",title:"政治史（古墳〜室町）",sections:[
+{id:"ws-soc-08-chishiki",label:"1. 知識の総完成（空欄補充）",diff:1,cat:"知識の総完成",problems:[
+{id:"ws-soc-08-c1",text:"年表①（古代〜鎌倉・主な出来事の語句）",pts:5},
+{id:"ws-soc-08-c2",text:"年表②（室町〜安土桃山・語句）",pts:5},
+{id:"ws-soc-08-c3",text:"年表③（江戸時代・語句）",pts:5},
+{id:"ws-soc-08-c4",text:"年表④（明治〜大正・語句）",pts:5},
+{id:"ws-soc-08-c5",text:"年表⑤（昭和〜現代・語句）",pts:5},
+{id:"ws-soc-08-c6",text:"人物①（各時代の主要人物と功績）",pts:5},
+{id:"ws-soc-08-c7",text:"人物②（政治・文化・外交の人物）",pts:5},
+{id:"ws-soc-08-c8",text:"史料①（史料・写真から時代を判断）",pts:5},
+{id:"ws-soc-08-c9",text:"史料②（史料の空欄補充）",pts:5},
+{id:"ws-soc-08-c10",text:"制度・文化（各時代の制度・文化・宗教）",pts:5}
+]},
+{id:"ws-soc-08-a1",label:"2. 入試実戦演習 A1（年表・語句空欄補充と下線部設問）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-08-a1-1",text:"(1) （A）〜（C）に当てはまる年代・[1]〜[6]の語句",pts:2},
+{id:"ws-soc-08-a1-2",text:"(2) ①〜⑩の文が年表中ア〜コのどの出来事と関係するか",pts:3},
+{id:"ws-soc-08-a1-3",text:"(3) ①〜⑥の文は年表のあ〜えのどの時期か",pts:3}
+]},
+{id:"ws-soc-08-a2",label:"2. 入試実戦演習 A2（史料A〜H・絵・写真を見て答える）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-08-a2-1",text:"(1)① Aの史料の時代に使われた金肥を1つ答える",pts:2},
+{id:"ws-soc-08-a2-2",text:"(1)② Bの史料の空欄を漢字2字で答える",pts:2},
+{id:"ws-soc-08-a2-3",text:"(1)③ Cの史料の法律が出た後の私有地の名前",pts:2},
+{id:"ws-soc-08-a2-4",text:"(1)④ Dの史料がつくられた時代について正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-08-a2-5",text:"(1)⑤ Eの史料の空欄を漢字2字で答える",pts:2},
+{id:"ws-soc-08-a2-6",text:"(1)⑥ Fの史料の命令による制度を答える",pts:2},
+{id:"ws-soc-08-a2-7",text:"(1)⑦ Gの太閤検地で農民の権利と義務を一文で説明",pts:3},
+{id:"ws-soc-08-a2-8",text:"(1)⑧ Hの地券が発行されて税の納め方がどう変わったか",pts:3},
+{id:"ws-soc-08-a2-9",text:"(2) A〜Hを古い順に並べる",pts:4}
+]},
+{id:"ws-soc-08-b",label:"3. 入試実戦演習 Bタイプ（長文・記述）",diff:3,cat:"Bタイプ",problems:[
+{id:"ws-soc-08-b1",text:"(1) 空らん（A）〜（C）に当てはまる語句を漢字で答える",pts:6},
+{id:"ws-soc-08-b2",text:"(2) 下線部aの都で流通した貨幣をア〜エから選ぶ",pts:3},
+{id:"ws-soc-08-b3",text:"(3) 下線部bについて「都・庸」を使って説明",pts:6},
+{id:"ws-soc-08-b4",text:"(4) 下線部cの①〜④について正誤（○×）",pts:2},
+{id:"ws-soc-08-b5",text:"(5) 下線部dと江戸時代の関所の違いを説明",pts:6},
+{id:"ws-soc-08-b6",text:"(6) 下線部eで1582年に亡くなった人物の出身地を国名で",pts:3},
+{id:"ws-soc-08-b7",text:"(7) 下線部fで中山道が東海道より優れていた点を説明",pts:6}
+]}
+],initialAnswers:{}},
+{id:"ws-soc-09",code:"WS-09",title:"政治史（室町〜江戸）",sections:[
+{id:"ws-soc-09-chishiki",label:"1. 知識の総完成（空欄補充）",diff:1,cat:"知識の総完成",problems:[
+{id:"ws-soc-09-c1",text:"年表①（古代〜鎌倉・主な出来事の語句）",pts:5},
+{id:"ws-soc-09-c2",text:"年表②（室町〜安土桃山・語句）",pts:5},
+{id:"ws-soc-09-c3",text:"年表③（江戸時代・語句）",pts:5},
+{id:"ws-soc-09-c4",text:"年表④（明治〜大正・語句）",pts:5},
+{id:"ws-soc-09-c5",text:"年表⑤（昭和〜現代・語句）",pts:5},
+{id:"ws-soc-09-c6",text:"人物①（各時代の主要人物と功績）",pts:5},
+{id:"ws-soc-09-c7",text:"人物②（政治・文化・外交の人物）",pts:5},
+{id:"ws-soc-09-c8",text:"史料①（史料・写真から時代を判断）",pts:5},
+{id:"ws-soc-09-c9",text:"史料②（史料の空欄補充）",pts:5},
+{id:"ws-soc-09-c10",text:"制度・文化（各時代の制度・文化・宗教）",pts:5}
+]},
+{id:"ws-soc-09-a1",label:"2. 入試実戦演習 A1（年表・語句空欄補充と下線部設問）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-09-a1-1",text:"(1) （A）〜（C）に当てはまる年代・[1]〜[6]の語句",pts:2},
+{id:"ws-soc-09-a1-2",text:"(2) ①〜⑩の文が年表中ア〜コのどの出来事と関係するか",pts:3},
+{id:"ws-soc-09-a1-3",text:"(3) ①〜⑥の文は年表のあ〜えのどの時期か",pts:3}
+]},
+{id:"ws-soc-09-a2",label:"2. 入試実戦演習 A2（史料A〜H・絵・写真を見て答える）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-09-a2-1",text:"(1)① Aの史料の時代に使われた金肥を1つ答える",pts:2},
+{id:"ws-soc-09-a2-2",text:"(1)② Bの史料の空欄を漢字2字で答える",pts:2},
+{id:"ws-soc-09-a2-3",text:"(1)③ Cの史料の法律が出た後の私有地の名前",pts:2},
+{id:"ws-soc-09-a2-4",text:"(1)④ Dの史料がつくられた時代について正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-09-a2-5",text:"(1)⑤ Eの史料の空欄を漢字2字で答える",pts:2},
+{id:"ws-soc-09-a2-6",text:"(1)⑥ Fの史料の命令による制度を答える",pts:2},
+{id:"ws-soc-09-a2-7",text:"(1)⑦ Gの太閤検地で農民の権利と義務を一文で説明",pts:3},
+{id:"ws-soc-09-a2-8",text:"(1)⑧ Hの地券が発行されて税の納め方がどう変わったか",pts:3},
+{id:"ws-soc-09-a2-9",text:"(2) A〜Hを古い順に並べる",pts:4}
+]},
+{id:"ws-soc-09-b",label:"3. 入試実戦演習 Bタイプ（長文・記述）",diff:3,cat:"Bタイプ",problems:[
+{id:"ws-soc-09-b1",text:"(1) 空らん（A）〜（C）に当てはまる語句を漢字で答える",pts:6},
+{id:"ws-soc-09-b2",text:"(2) 下線部aの都で流通した貨幣をア〜エから選ぶ",pts:3},
+{id:"ws-soc-09-b3",text:"(3) 下線部bについて「都・庸」を使って説明",pts:6},
+{id:"ws-soc-09-b4",text:"(4) 下線部cの①〜④について正誤（○×）",pts:2},
+{id:"ws-soc-09-b5",text:"(5) 下線部dと江戸時代の関所の違いを説明",pts:6},
+{id:"ws-soc-09-b6",text:"(6) 下線部eで1582年に亡くなった人物の出身地を国名で",pts:3},
+{id:"ws-soc-09-b7",text:"(7) 下線部fで中山道が東海道より優れていた点を説明",pts:6}
+]}
+],initialAnswers:{}}
+],
+},
+WS_PDFS: {
+"ws-math-01":"算WS01.pdf","ws-math-02":"算WS02.pdf","ws-math-03":"算WS03.pdf",
+"ws-math-04":"算WS04.pdf","ws-math-05":"算WS05.pdf","ws-math-06":"算WS06.pdf",
+"ws-math-07":"算WS07.pdf","ws-math-08":"算WS08.pdf","ws-math-09":"算WS09.pdf","ws-math-10":"算WS10.pdf",
+"ws-jp-01":"国WS01.pdf","ws-jp-02":"国WS02.pdf","ws-jp-04":"国WS04.pdf",
+"ws-jp-05":"国WS05.pdf","ws-jp-06":"国WS06.pdf","ws-jp-07":"国WS07.pdf",
+"ws-jp-08":"国WS08.pdf","ws-jp-09":"国WS09.pdf","ws-jp-10":"国WS10.pdf",
+"ws-sci-01":"理WS01水の三態.pdf","ws-sci-02":"理WS02植物.pdf","ws-sci-03":"理WS03花と受粉.pdf",
+"ws-sci-04":"理WS04岩石.pdf","ws-sci-05":"理WS05人体消化.pdf","ws-sci-06":"理WS06動物.pdf",
+"ws-sci-07":"理WS07電流.pdf","ws-sci-08":"理WS08星.pdf","ws-sci-09":"理WS09.pdf","ws-sci-10":"理WS10.pdf",
+"ws-soc-01":"社WS01中部.pdf","ws-soc-02":"社WS02九州.pdf","ws-soc-03":"社WS03北海道.pdf",
+"ws-soc-04":"社WS04東北.pdf","ws-soc-05":"社WS05関東.pdf","ws-soc-06":"社WS06近畿.pdf",
+"ws-soc-07":"社WS07中国四国.pdf","ws-soc-08":"社WS08古墳_室町.pdf","ws-soc-09":"社WS09室町_江戸.pdf",
+}
 };
+
+</script>
+<script>setLoadMsg("ライブラリ読み込み中...");</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script>
+setLoadMsg("アプリ起動中...");
+const _w=console.warn;console.warn=function(){const m=arguments[0]||"";if(typeof m==="string"&&m.includes("in-browser Babel"))return;_w.apply(console,arguments);};
+</script>
+<script type="text/babel" data-presets="react">
+class ErrorBoundary extends React.Component {
+  constructor(p){super(p);this.state={error:null};}
+  static getDerivedStateFromError(e){return{error:e};}
+  render(){
+    if(this.state.error)return(
+      <div style={{background:"#0f172a",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24,flexDirection:"column",gap:16}}>
+        <div style={{fontSize:32}}>⚠️</div>
+        <div style={{color:"#f87171",fontSize:15,fontWeight:700}}>エラーが発生しました</div>
+        <pre style={{color:"#94a3b8",fontSize:11,background:"rgba(0,0,0,.3)",padding:12,borderRadius:8,maxWidth:"100%",overflow:"auto"}}>{this.state.error.message}</pre>
+        <button onClick={()=>window.location.reload()} style={{background:"#3b82f6",color:"white",border:"none",padding:"12px 24px",borderRadius:12,fontSize:14,cursor:"pointer"}}>再読み込み</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+// Reactはグローバル変数として利用
+const { useState, useEffect, useCallback } = React;
+
+// ============================================================
+// データ定義：科目・回・問題
+// ============================================================
+// ============================================================
+// ストレージ抽象化レイヤー（永続化保証版）
+// 優先順位: window.storage → localStorage → IndexedDB
+// ユーザーデータを絶対にリセットしない
+// ============================================================
+const Storage = (() => {
+  // ── 1. window.storage（Claude artifact API）──
+  const ws = {
+    available: () => {
+      try {
+        return typeof window !== 'undefined' &&
+          window.storage != null &&
+          typeof window.storage.get === 'function' &&
+          typeof window.storage.set === 'function';
+      } catch { return false; }
+    },
+    get: async (key) => { try { return await window.storage.get(key, true); } catch { return null; } },
+    set: async (key, value) => { try { return await window.storage.set(key, value, true); } catch { return null; } },
+    delete: async (key) => { try { return await window.storage.delete(key, true); } catch { return null; } },
+    list: async (prefix) => { try { return await window.storage.list(prefix, true); } catch { return { keys: [] }; } },
+  };
+
+  // ── 2. localStorage ──
+  const ls = {
+    available: () => { try { localStorage.setItem('_t','1'); localStorage.removeItem('_t'); return true; } catch { return false; } },
+    get: async (key) => { try { const v = localStorage.getItem(key); return v != null ? { key, value: v } : null; } catch { return null; } },
+    set: async (key, value) => { try { localStorage.setItem(key, value); return { key, value }; } catch { return null; } },
+    delete: async (key) => { try { localStorage.removeItem(key); return { key, deleted: true }; } catch { return null; } },
+    list: async (prefix = '') => {
+      try {
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith(prefix)) keys.push(k);
+        }
+        return { keys };
+      } catch { return { keys: [] }; }
+    },
+  };
+
+  // ── 3. IndexedDB（最終フォールバック）──
+  const idb = (() => {
+    const DB = 'sapix_db', STORE = 'kv';
+    let _db = null;
+    const open = () => new Promise((res, rej) => {
+      if (_db) { res(_db); return; }
+      const r = indexedDB.open(DB, 1);
+      r.onupgradeneeded = e => e.target.result.createObjectStore(STORE);
+      r.onsuccess = e => { _db = e.target.result; res(_db); };
+      r.onerror = () => rej(r.error);
+    });
+    const tx = async (mode, fn) => {
+      const db = await open();
+      return new Promise((res, rej) => {
+        const t = db.transaction(STORE, mode);
+        const s = t.objectStore(STORE);
+        const r = fn(s);
+        if (r) { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }
+        else { t.oncomplete = () => res(); t.onerror = () => rej(t.error); }
+      });
+    };
+    return {
+      available: () => typeof indexedDB !== 'undefined',
+      get: async (key) => { try { const v = await tx('readonly', s => s.get(key)); return v != null ? { key, value: v } : null; } catch { return null; } },
+      set: async (key, value) => { try { await tx('readwrite', s => s.put(value, key)); return { key, value }; } catch { return null; } },
+      delete: async (key) => { try { await tx('readwrite', s => s.delete(key)); return { key, deleted: true }; } catch { return null; } },
+      list: async (prefix = '') => {
+        try {
+          const keys = await tx('readonly', s => s.getAllKeys());
+          return { keys: (keys || []).filter(k => typeof k === 'string' && k.startsWith(prefix)) };
+        } catch { return { keys: [] }; }
+      },
+    };
+  })();
+
+  // 利用可能なストレージを選択（複数に同時書き込みして確実に保存）
+  const getBackends = () => {
+    const backends = [];
+    if (ws.available()) backends.push(ws);
+    if (ls.available()) backends.push(ls);
+    if (idb.available()) backends.push(idb);
+    return backends.length > 0 ? backends : [idb]; // 最低限idb
+  };
+
+  return {
+    get: async (key) => {
+      // 全バックエンドから順に試して最初に見つかった値を返す
+      for (const b of getBackends()) {
+        const r = await b.get(key);
+        if (r != null) return r;
+      }
+      return null;
+    },
+    set: async (key, value) => {
+      // 全バックエンドに並行書き込み（冗長保存）
+      const backends = getBackends();
+      const results = await Promise.allSettled(backends.map(b => b.set(key, value)));
+      const success = results.find(r => r.status === 'fulfilled' && r.value != null);
+      return success ? success.value : null;
+    },
+    delete: async (key) => {
+      const backends = getBackends();
+      await Promise.allSettled(backends.map(b => b.delete(key)));
+      return { key, deleted: true };
+    },
+    list: async (prefix = '') => {
+      for (const b of getBackends()) {
+        const r = await b.list(prefix);
+        if (r && r.keys && r.keys.length > 0) return r;
+      }
+      // 全バックエンドを集約
+      const allKeys = new Set();
+      for (const b of getBackends()) {
+        const r = await b.list(prefix);
+        if (r && r.keys) r.keys.forEach(k => allKeys.add(k));
+      }
+      return { keys: [...allKeys] };
+    },
+  };
+})();
+
+// ============================================================
+// 単元データ整合性チェック＆自動修復
+// 起動時・UNITS変更時に実行して常に安全な状態を保つ
+// ============================================================
+function sanitizeUnit(unit) {
+  if (!unit || typeof unit !== 'object') return null;
+  // sections が配列でない場合は空配列に
+  if (!Array.isArray(unit.sections)) unit.sections = [];
+  // 各sectionのproblemsが配列でない場合は空配列に
+  unit.sections = unit.sections.map(sec => {
+    if (!sec || typeof sec !== 'object') return null;
+    if (!Array.isArray(sec.problems)) sec.problems = [];
+    // 必須フィールドの保証
+    return {
+      id: sec.id || `sec-${Math.random().toString(36).slice(2,7)}`,
+      label: sec.label || '問題',
+      diff: sec.diff || 2,
+      cat: sec.cat || '問題',
+      problems: sec.problems.filter(p => p && p.id).map(p => ({
+        id: p.id,
+        text: p.text || '',
+        pts: typeof p.pts === 'number' ? p.pts : 5,
+      })),
+    };
+  }).filter(Boolean);
+  return unit;
+}
+
+function sanitizeAllUnits(units) {
+  const result = {};
+  for (const [subjId, arr] of Object.entries(units)) {
+    if (!Array.isArray(arr)) { result[subjId] = []; continue; }
+    result[subjId] = arr.map(sanitizeUnit).filter(Boolean);
+  }
+  return result;
+}
+
+// ============================================================
+// Supabase クライアント（クラウド自動同期）
+// 設定後は正誤データが自動でクラウド保存されます
+// ============================================================
+const SUPABASE_URL = "https://cliztnbsxqecwrrzasaq.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsaXp0bmJzeHFlY3dycnphc2FxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NDkxMDksImV4cCI6MjA5MzAyNTEwOX0.Qnk8JTmkPO95aIMfBlpH0nKKwnl-_2XElkFXgr6r2ow";
+
+const supabase = (() => {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+
+  const headers = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": `Bearer ${SUPABASE_KEY}`,
+    "Content-Type": "application/json",
+    "Prefer": "return=minimal",
+  };
+
+  const USER_ID = "default"; // シングルユーザー
+
+  return {
+    // 正誤データを全件読み込み
+    loadAnswers: async () => {
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/sapix_answers?user_id=eq.${USER_ID}&select=unit_id,problem_id,is_correct`,
+          { headers }
+        );
+        if (!res.ok) return null;
+        const rows = await res.json();
+        // {unitId: {problemId: true/false}} 形式に変換
+        const result = {};
+        for (const row of rows) {
+          if (!result[row.unit_id]) result[row.unit_id] = {};
+          // is_correctを確実にboolean型に変換（文字列"true"/"false"対策）
+          result[row.unit_id][row.problem_id] = row.is_correct === true || row.is_correct === 'true' ? true : false;
+        }
+        return result;
+      } catch { return null; }
+    },
+
+    // 1問の正誤を保存（upsert）
+    saveAnswer: async (unitId, problemId, isCorrect) => {
+      try {
+        const val = isCorrect === true ? true : false;
+        const now = new Date().toISOString();
+        // PATCHで既存レコードを更新（is_correct=falseも確実に保存）
+        const patchRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/sapix_answers?user_id=eq.${USER_ID}&unit_id=eq.${encodeURIComponent(unitId)}&problem_id=eq.${encodeURIComponent(problemId)}`,
+          {
+            method: "PATCH",
+            headers: { ...headers, "Prefer": "return=representation,count=exact" },
+            body: JSON.stringify({ is_correct: val, updated_at: now }),
+          }
+        );
+        if (patchRes.ok) {
+          const text = await patchRes.text();
+          const updated = JSON.parse(text || '[]');
+          if (Array.isArray(updated) && updated.length > 0) return true;
+        }
+        // 既存レコードなし → INSERT
+        const insertRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/sapix_answers`,
+          {
+            method: "POST",
+            headers: { ...headers, "Prefer": "return=minimal" },
+            body: JSON.stringify({
+              user_id: USER_ID, unit_id: unitId,
+              problem_id: problemId, is_correct: val, updated_at: now,
+            }),
+          }
+        );
+        return insertRes.ok;
+      } catch { return false; }
+    },
+
+    // 全正誤データを一括保存（初回移行用）
+    saveAllAnswers: async (allAnswers) => {
+      try {
+        const rows = [];
+        for (const [unitId, probs] of Object.entries(allAnswers)) {
+          for (const [problemId, isCorrect] of Object.entries(probs)) {
+            rows.push({
+              user_id: USER_ID,
+              unit_id: unitId,
+              problem_id: problemId,
+              is_correct: isCorrect === true ? true : false,
+              updated_at: new Date().toISOString(),
+            });
+          }
+        }
+        if (rows.length === 0) return true;
+        // 50件ずつ分割してupsert
+        for (let i = 0; i < rows.length; i += 50) {
+          const chunk = rows.slice(i, i + 50);
+          const res = await fetch(
+            `${SUPABASE_URL}/rest/v1/sapix_answers`,
+            {
+              method: "POST",
+              headers: { ...headers, "Prefer": "resolution=merge-duplicates,return=minimal" },
+              body: JSON.stringify(chunk),
+            }
+          );
+          if (!res.ok) return false;
+        }
+        return true;
+      } catch { return false; }
+    },
+
+    // カスタム単元を保存
+    saveCustomUnit: async (unitId, unitData) => {
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/sapix_custom_units`,
+          {
+            method: "POST",
+            headers: { ...headers, "Prefer": "resolution=merge-duplicates,return=minimal" },
+            body: JSON.stringify({
+              user_id: USER_ID,
+              unit_id: unitId,
+              unit_data: unitData,
+              updated_at: new Date().toISOString(),
+            }),
+          }
+        );
+        return res.ok;
+      } catch { return false; }
+    },
+
+    // カスタム単元を全件読み込み
+    loadCustomUnits: async () => {
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/sapix_custom_units?user_id=eq.${USER_ID}&select=unit_id,unit_data`,
+          { headers }
+        );
+        if (!res.ok) return null;
+        const rows = await res.json();
+        const result = {};
+        for (const row of rows) result[row.unit_id] = row.unit_data;
+        return result;
+      } catch { return null; }
+    },
+  };
+})();
+
+const SUBJECTS = [
+{ id: "math",    label: "算数", en: "Math",    color: "#1e3a5f", accent: "#3b82f6", light: "#eff6ff", icon: "∑" },
+{ id: "japanese",label: "国語", en: "Japanese", color: "#5f1e1e", accent: "#ef4444", light: "#fef2f2", icon: "文" },
+{ id: "science", label: "理科", en: "Science",  color: "#1e4d2b", accent: "#22c55e", light: "#f0fdf4", icon: "⚗" },
+{ id: "social",  label: "社会", en: "Social",   color: "#4d3a1e", accent: "#f59e0b", light: "#fffbeb", icon: "🌏" },
+];
+
+const UNITS = window.__SAPIX_DATA__.UNITS;
+const UNITS_SAFE = sanitizeAllUnits(UNITS);
+// UNITS自体も上書き（参照を統一）
+Object.assign(UNITS, UNITS_SAFE);
+
+const UNIT_PDFS = window.__SAPIX_DATA__.UNIT_PDFS;
+
+const WS_UNITS = window.__SAPIX_DATA__.WS_UNITS;
+const WS_PDFS = window.__SAPIX_DATA__.WS_PDFS;
+
 // ============================================================
 
 
@@ -6132,7 +8511,190 @@ const SAPIX_SCHEDULE = [
 // ============================================================
 // 保護者向けダッシュボード（UMAPスケジュール統合版）
 // ============================================================
-function HomeScreen({ onOpenDaily, allAnswers }) {
+// ============================================================
+// 土曜特訓（WS）コンポーネント群
+// ============================================================
+
+// WS科目定義
+const WS_SUBJECTS = [
+{id:"math",label:"算数",icon:"📐",color:"#3b82f6",accent:"#60a5fa"},
+{id:"japanese",label:"国語",icon:"📖",color:"#ec4899",accent:"#f472b6"},
+{id:"science",label:"理科",icon:"🔬",color:"#22c55e",accent:"#4ade80"},
+{id:"social",label:"社会",icon:"🌏",color:"#f59e0b",accent:"#fbbf24"},
+];
+
+// WS正誤の集計
+function calcWsStats(sections, answers) {
+if (!sections || !Array.isArray(sections)) return {correct:0,answered:0,total:0};
+let correct=0,answered=0,total=0;
+sections.forEach(s=>{
+  if (!s || !Array.isArray(s.problems)) return;
+  s.problems.forEach(p=>{
+    total++;
+    const a=answers[p.id];
+    if(a!==null&&a!==undefined){answered++;if(a===true)correct++;}
+  });
+});
+return {correct,answered,total};
+}
+
+// WS ダッシュボード
+function WSDashboard({onSelectUnit, onGoHome, wsAllAnswers}) {
+const [activeSubj, setActiveSubj] = React.useState("math");
+const noto = "'Noto Sans JP', sans-serif";
+const serif = "'Noto Serif JP', serif";
+const subj = WS_SUBJECTS.find(s=>s.id===activeSubj);
+const units = WS_UNITS[activeSubj] || [];
+
+return (
+<div style={{minHeight:"100vh",background:"#060c18",color:"white",fontFamily:noto,paddingBottom:80}}>
+  <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@700&display=swap'); *{box-sizing:border-box;}`}</style>
+
+  {/* ヘッダー */}
+  <div style={{background:"linear-gradient(135deg,#0a1628,#162d4f)",padding:"16px 16px 12px",borderBottom:"1px solid #1e3a5f"}}>
+    <div style={{display:"flex",alignItems:"center",gap:12}}>
+      <button onClick={onGoHome} style={{background:"none",border:"none",color:"#60a5fa",fontSize:22,cursor:"pointer",padding:4}}>←</button>
+      <div>
+        <div style={{fontSize:16,fontWeight:700,fontFamily:serif}}>🏫 土曜特訓 WS</div>
+        <div style={{fontSize:11,color:"#64748b",marginTop:1}}>ウィークリーサピックス 正誤管理</div>
+      </div>
+    </div>
+
+    {/* 科目タブ */}
+    <div style={{display:"flex",gap:6,marginTop:12,overflowX:"auto",paddingBottom:2}}>
+      {WS_SUBJECTS.map(s=>(
+        <button key={s.id} onClick={()=>setActiveSubj(s.id)}
+          style={{flexShrink:0,padding:"6px 14px",borderRadius:20,border:`1px solid ${activeSubj===s.id?s.color:"#334155"}`,
+            background:activeSubj===s.id?`${s.color}22`:"transparent",color:activeSubj===s.id?s.accent:"#64748b",
+            fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:noto}}>
+          {s.icon} {s.label}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  {/* 全体進捗バー */}
+  {(()=>{
+    const allUnits = WS_UNITS[activeSubj]||[];
+    const totals = allUnits.reduce((acc,u)=>{
+      const stats = calcWsStats(u.sections, wsAllAnswers[u.id]||{});
+      acc.correct+=stats.correct; acc.answered+=stats.answered; acc.total+=stats.total;
+      return acc;
+    },{correct:0,answered:0,total:0});
+    const pct = totals.total>0?Math.round(totals.correct/totals.total*100):null;
+    return (
+      <div style={{margin:"12px 16px",background:"#0f1f38",borderRadius:12,padding:"12px 14px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:6}}>
+          <span style={{color:"#94a3b8"}}>{subj.icon} {subj.label}の総進捗</span>
+          <span style={{color:subj.accent,fontWeight:700}}>{totals.answered}/{totals.total}問 {pct!==null?`(${pct}%)`:"--"}</span>
+        </div>
+        <div style={{height:6,background:"#1e3a5f",borderRadius:3,overflow:"hidden"}}>
+          <div style={{width:`${totals.total>0?totals.answered/totals.total*100:0}%`,height:"100%",background:subj.color,borderRadius:3}}/>
+        </div>
+      </div>
+    );
+  })()}
+
+  {/* 単元リスト */}
+  <div style={{padding:"0 16px"}}>
+    {units.map(unit=>{
+      const stats = calcWsStats(unit.sections, wsAllAnswers[unit.id]||{});
+      const pct = stats.total>0?Math.round(stats.answered/stats.total*100):null;
+      return (
+        <div key={unit.id} onClick={()=>onSelectUnit(activeSubj,unit)}
+          style={{background:"#0f1f38",border:`1px solid ${pct===100?"#22c55e44":"#1e3a5f"}`,borderRadius:12,
+            padding:"12px 14px",marginBottom:8,cursor:"pointer",display:"flex",alignItems:"center",gap:12}}>
+          <div style={{flexShrink:0,width:40,height:40,borderRadius:10,
+            background:`${subj.color}22`,display:"flex",alignItems:"center",justifyContent:"center",
+            fontSize:13,fontWeight:700,color:subj.accent}}>
+            {unit.code.replace("WS-","")}
+          </div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:13,fontWeight:700,marginBottom:3}}>{unit.title}</div>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              <div style={{flex:1,height:4,background:"#1e3a5f",borderRadius:2,overflow:"hidden"}}>
+                <div style={{width:`${pct||0}%`,height:"100%",background:subj.color,borderRadius:2}}/>
+              </div>
+              <span style={{fontSize:11,color:"#64748b",flexShrink:0}}>{stats.answered}/{stats.total}</span>
+            </div>
+          </div>
+          <span style={{color:"#334155",fontSize:16}}>›</span>
+        </div>
+      );
+    })}
+  </div>
+</div>
+);
+}
+
+// WS 詳細ページ（正誤入力）
+function WSDetailPage({unit, subject, answers, onChange, onBack}) {
+const noto = "'Noto Sans JP', sans-serif";
+const serif = "'Noto Serif JP', serif";
+const subj = WS_SUBJECTS.find(s=>s.id===subject)||WS_SUBJECTS[0];
+if (!unit) return null;
+const stats = calcWsStats(unit.sections, answers||{});
+
+return (
+<div style={{minHeight:"100vh",background:"#060c18",color:"white",fontFamily:noto,paddingBottom:80}}>
+  <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@700&display=swap'); *{box-sizing:border-box;}`}</style>
+
+  {/* ヘッダー */}
+  <div style={{background:"linear-gradient(135deg,#0a1628,#162d4f)",padding:"14px 16px",borderBottom:"1px solid #1e3a5f",position:"sticky",top:0,zIndex:10}}>
+    <div style={{display:"flex",alignItems:"center",gap:10}}>
+      <button onClick={onBack} style={{background:"none",border:"none",color:"#60a5fa",fontSize:20,cursor:"pointer",padding:"4px 8px"}}>←</button>
+      <div style={{flex:1}}>
+        <div style={{fontSize:13,fontWeight:700,fontFamily:serif}}>{subj.icon} {unit.title}</div>
+        <div style={{fontSize:10,color:subj.accent,marginTop:1}}>{unit.code} ｜ {stats.answered}/{stats.total}問記録</div>
+      </div>
+      {stats.total>0&&<div style={{fontSize:11,fontWeight:700,color:"#22c55e",background:"#22c55e22",padding:"4px 10px",borderRadius:20}}>
+        ○{stats.correct} ×{stats.answered-stats.correct}
+      </div>}
+    </div>
+  </div>
+
+  {/* セクション一覧 */}
+  <div style={{padding:"12px 16px"}}>
+    {(unit.sections||[]).map(sec=>(
+      <div key={sec.id} style={{marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+          <div style={{width:4,height:16,background:subj.color,borderRadius:2}}/>
+          <div style={{fontSize:12,fontWeight:700,color:subj.accent}}>{sec.label}</div>
+          <div style={{fontSize:10,color:"#475569",marginLeft:"auto"}}>
+            {sec.problems.filter(p=>answers&&answers[p.id]!==undefined&&answers[p.id]!==null).length}/{sec.problems.length}問
+          </div>
+        </div>
+        {(sec.problems||[]).map(prob=>{
+          const ans = answers&&answers[prob.id];
+          return (
+            <div key={prob.id} style={{background:"#0f1f38",border:`1px solid ${ans===true?"#22c55e44":ans===false?"#ef444444":"#1e3a5f"}`,
+              borderRadius:10,padding:"10px 12px",marginBottom:6,display:"flex",alignItems:"center",gap:10}}>
+              <div style={{flex:1,fontSize:12,lineHeight:1.5,color:"#cbd5e1"}}>{prob.text}</div>
+              <div style={{display:"flex",gap:6,flexShrink:0}}>
+                <button onClick={()=>onChange(prob.id,true)}
+                  style={{width:36,height:36,borderRadius:18,border:"none",cursor:"pointer",fontSize:16,
+                    background:ans===true?"#22c55e":"#1e3a5f",color:ans===true?"white":"#475569"}}>○</button>
+                <button onClick={()=>onChange(prob.id,false)}
+                  style={{width:36,height:36,borderRadius:18,border:"none",cursor:"pointer",fontSize:16,
+                    background:ans===false?"#ef4444":"#1e3a5f",color:ans===false?"white":"#475569"}}>×</button>
+                {ans!==undefined&&ans!==null&&(
+                  <button onClick={()=>onChange(prob.id,null)}
+                    style={{width:36,height:36,borderRadius:18,border:"none",cursor:"pointer",fontSize:12,
+                      background:"#1e3a5f",color:"#475569"}}>↺</button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    ))}
+  </div>
+</div>
+);
+}
+
+
+function HomeScreen({ onOpenDaily, onOpenWS, allAnswers, wsAllAnswers }) {
 const [tab, setTab] = useState("home");
 const [userEvents, setUserEvents] = useState([]);
 const [showAddEvent, setShowAddEvent] = useState(false);
@@ -6555,6 +9117,21 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <div style={{flex:1,textAlign:"left"}}><div style={{fontSize:14,fontWeight:700,fontFamily:serif}}>デイリーサポート</div><div style={{fontSize:11,color:"#3b82f6",marginTop:1}}>進捗管理アプリを開く</div></div>
     <span style={{color:"#3b82f6",fontSize:18}}>›</span>
   </button>
+
+{/* 土曜特訓（WeeklySapiX）入り口 */}
+<button onClick={onOpenWS} style={{width:"100%",background:"linear-gradient(135deg,#1a3a1f,#0f2d15)",border:"1.5px solid #22c55e55",borderRadius:14,padding:"14px 18px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",color:"white",fontFamily:noto,marginTop:8}}>
+  <span style={{fontSize:24}}>🏫</span>
+  <div style={{flex:1,textAlign:"left"}}>
+    <div style={{fontSize:14,fontWeight:700,fontFamily:serif}}>土曜特訓（WS）</div>
+    <div style={{fontSize:11,color:"#22c55e",marginTop:1}}>
+      ウィークリーサピックスの正誤管理　›
+    </div>
+  </div>
+  {(()=>{
+    const total=Object.values(wsAllAnswers||{}).reduce((a,u)=>a+Object.keys(u||{}).length,0);
+    return total>0?<span style={{fontSize:11,color:"#22c55e",background:"#22c55e22",padding:"3px 8px",borderRadius:10}}>{total}問記録済み</span>:null;
+  })()}
+</button>
 </div>
 )}
 
@@ -7465,11 +10042,17 @@ ${pastSamples.map(p=>`[${subLabels[p.subject]}] ${p.question} → 解答：${p.a
 // メインアプリ（ホーム＋デイリーサポート統合）
 // ============================================================
 function App() {
-const [screen, setScreen] = useState("home");   // "home" | "daily"
+const [screen, setScreen] = useState("home");   // "home" | "daily" | "ws"
 const [page, setPage] = useState("dashboard");
 const [selectedSubject, setSelectedSubject] = useState(null);
 const [selectedUnit, setSelectedUnit] = useState(null);
 const [allAnswers, setAllAnswers] = useState({});
+// 土曜特訓（WeeklySapiX）の状態
+const [wsScreen, setWsScreen] = useState("dashboard"); // "dashboard" | "detail"
+const [wsSelectedSubject, setWsSelectedSubject] = useState(null);
+const [wsSelectedUnit, setWsSelectedUnit] = useState(null);
+const [wsAllAnswers, setWsAllAnswers] = useState({});
+const wsAllAnswersRef = React.useRef({});
 const [downloading, setDownloading] = useState(false);
 const [dlDone, setDlDone] = useState(false);
 const [saveStatus, setSaveStatus] = useState("idle"); // "idle"|"saving"|"saved"|"error"
@@ -7487,7 +10070,6 @@ try {
     const cloudData = await supabase.loadAnswers();
     if (cloudData) {
       const count = Object.values(cloudData).reduce((a,u)=>a+Object.keys(u||{}).length,0);
-      console.log('[SAPIX] Supabaseから読み込み:', count, '問');
       // ローカルにも同じデータがあれば merge（ローカルの方が新しい問題IDを持っている可能性）
       let merged = {...cloudData};
       try {
@@ -7553,7 +10135,6 @@ try {
     bestCount = Object.values(merged).reduce((a,u)=>a+Object.keys(u||{}).length,0);
   }
   if (bestData && bestCount > 0) {
-    console.log('[SAPIX] ローカルから読み込み:', bestCount, '問');
     allAnswersRef.current = bestData;
     setAllAnswers(bestData);
     // 全ストレージに同期（データ保全）
@@ -7561,7 +10142,6 @@ try {
     try { localStorage.setItem("sapix_all_answers", JSON.stringify(bestData)); } catch {}
   }
 } catch(e) {
-  console.warn('[SAPIX] 読み込みエラー:', e);
 }
 setSaveStatus("idle");
 if (!allAnswersRef.current) { allAnswersRef.current = {}; }
@@ -7575,7 +10155,7 @@ const data = allAnswersRef.current;
 if (Object.keys(data).length > 0) {
 // beacon API で同期的に保存を試みる（非同期不可の場合）
 try {
-Storage.set("sapix_all_answers", JSON.stringify(data));
+Storage.set("sapix_all_answers", JSON.stringify(data)).catch(()=>{});
 } catch {}
 }
 };
@@ -7619,7 +10199,6 @@ if (anySuccess) {
   saveTimerRef.current = setTimeout(() => setSaveStatus("idle"), 3000);
 } else {
   setSaveStatus("error");
-  console.error("[SAPIX] 全バックエンドへの保存失敗");
 }
 return anySuccess;
 };
@@ -7628,6 +10207,33 @@ const handleSelectUnit = (subj, unit) => {
 setSelectedSubject(subj);
 setSelectedUnit(unit);
 setPage("detail");
+};
+
+// 土曜特訓の単元選択ハンドラ
+const handleWsSelectUnit = (subj, unit) => {
+setWsSelectedSubject(subj);
+setWsSelectedUnit(unit);
+setWsScreen("detail");
+};
+
+// 土曜特訓の正誤変更ハンドラ
+const handleWsAnswerChange = (pid, value) => {
+const unitId = wsSelectedUnit?.id;
+if (!unitId) return;
+const prev = wsAllAnswersRef.current;
+const next = {
+  ...prev,
+  [unitId]: { ...(prev[unitId] || {}), [pid]: value },
+};
+if (value === null) {
+  next[unitId] = { ...(prev[unitId] || {}) };
+  delete next[unitId][pid];
+}
+wsAllAnswersRef.current = next;
+setWsAllAnswers(next);
+// ローカルストレージに保存（Supabaseにも保存する場合は拡張）
+try { localStorage.setItem("sapix_ws_answers", JSON.stringify(next)); } catch {}
+try { Storage.set("sapix_ws_answers", JSON.stringify(next)).catch(()=>{}); } catch {}
 };
 
 
@@ -7656,6 +10262,23 @@ if (supabase && value !== null) {
 saveAllAnswers(next);
 };
 
+
+
+
+// ── 土曜特訓データの読み込み ──
+useEffect(() => {
+(async () => {
+try {
+  let wsData = null;
+  try { const r = await Storage.get("sapix_ws_answers"); if(r) wsData = JSON.parse(r.value); } catch {}
+  if (!wsData) { try { const v = localStorage.getItem("sapix_ws_answers"); if(v) wsData = JSON.parse(v); } catch {} }
+  if (wsData && typeof wsData === 'object') {
+    wsAllAnswersRef.current = wsData;
+    setWsAllAnswers(wsData);
+  }
+} catch(e) {}
+})();
+}, []);
 
 const AutoSaveBar = () => {
 const cfg = {
@@ -7688,10 +10311,39 @@ if (screen === "home") {
 return (
 <div>
 <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@700&display=swap'); *{box-sizing:border-box;}`}</style>
-<HomeScreen onOpenDaily={() => setScreen("daily")} allAnswers={allAnswers} />
+<HomeScreen onOpenDaily={() => setScreen("daily")} onOpenWS={() => setScreen("ws")} allAnswers={allAnswers} wsAllAnswers={wsAllAnswers} />
 </div>
 );
 }
+
+// ── 土曜特訓（WeeklySapiX）画面 ──
+if (screen === "ws") {
+if (wsScreen === "detail" && wsSelectedSubject && wsSelectedUnit) {
+return (
+<div>
+<style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@700&display=swap'); *{box-sizing:border-box;}`}</style>
+<WSDetailPage
+unit={wsSelectedUnit}
+subject={wsSelectedSubject}
+answers={wsAllAnswers[wsSelectedUnit.id] || {}}
+onChange={handleWsAnswerChange}
+onBack={() => setWsScreen("dashboard")}
+/>
+</div>
+);
+}
+return (
+<div>
+<style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@700&display=swap'); *{box-sizing:border-box;}`}</style>
+<WSDashboard
+onSelectUnit={(subj, unit) => { setWsSelectedSubject(subj); setWsSelectedUnit(unit); setWsScreen("detail"); }}
+onGoHome={() => { setScreen("home"); setWsScreen("dashboard"); }}
+wsAllAnswers={wsAllAnswers}
+/>
+</div>
+);
+}
+
 
 if (page === "detail" && selectedSubject && selectedUnit) {
 return (

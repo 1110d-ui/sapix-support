@@ -2,9 +2,4 @@ const CACHE='sapix-cdn-v1';
 const CDNS=['https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js','https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js','https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>Promise.allSettled(CDNS.map(u=>fetch(u).then(r=>r.ok?c.put(u,r):null).catch(()=>null)))));});
 self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
-self.addEventListener('fetch',e=>{
-  const u=e.request.url;
-  if(u.includes('supabase.co'))return;
-  if(CDNS.some(c=>u.includes(new URL(c).hostname))){e.respondWith(caches.match(e.request).then(cached=>cached||fetch(e.request).then(r=>{if(r.ok)caches.open(CACHE).then(c=>c.put(e.request,r.clone()));return r;})));return;}
-  e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));
-});
+self.addEventListener('fetch',e=>{const u=e.request.url;if(u.includes('supabase.co'))return;if(CDNS.some(c=>u.includes(new URL(c).hostname))){e.respondWith(caches.match(e.request).then(cached=>cached||fetch(e.request).then(r=>{if(r.ok)caches.open(CACHE).then(c=>c.put(e.request,r.clone()));return r;})));return;}e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));});
