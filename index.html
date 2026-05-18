@@ -34,7 +34,7 @@ window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
 if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260512-019';
+const CURRENT_VERSION = '20260512-025';
 async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
 function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
 setTimeout(checkForUpdate,3000);
@@ -1744,6 +1744,91 @@ sections:[
 {id:"m10-dsE-1",text:"61E [1](ア)〜(カ)正二十面体の各数",pts:10},
 {id:"m10-dsE-2",text:"61E [2](1)図1の場所 (2)個数の範囲（玉はどこにある）",pts:20},
 ]},
+],initialAnswers:{}},
+{id:"math-61-11",code:"61-11",title:"拡大・縮小",isSpring:false,sections:[
+{id:"math-61-11-k1",label:"導入と基本①（拡大図・縮図の識別）",diff:1,cat:"導入と基本",problems:[
+{id:"math-61-11-k1-1",text:"[1] ⑦の図の拡大図はどれか・縮図はどれか答えなさい",pts:10},
+{id:"math-61-11-k1-2",text:"[2](1) ⑦の図の拡大図をすべて答えなさい",pts:10},
+{id:"math-61-11-k1-3",text:"[2](2) ⑦の図の縮図はどれか答えなさい",pts:10},
+{id:"math-61-11-k1-4",text:"[3](1) 平行四辺形EFGHの辺EFの長さは何cmか（縮図）",pts:15},
+{id:"math-61-11-k1-5",text:"[3](2) 角Gの大きさは何度か",pts:15},
+{id:"math-61-11-k1-6",text:"[4](1) 台形の土地（縮尺1/500）のまわりの長さは実際には何mか",pts:10},
+{id:"math-61-11-k1-7",text:"[4](2) 台形の土地の実際の面積は何m²か",pts:10},
+{id:"math-61-11-k1-8",text:"[4](3) 縮尺1:300の縮図にかきなおすとまわりの長さは何cmか",pts:10},
+]},
+{id:"math-61-11-k2",label:"導入と基本③（平行線と比・相似）",diff:2,cat:"導入と基本",problems:[
+{id:"math-61-11-k2-1",text:"[1] ABとCDは平行。xは何cmか（12cm・14cm・21cm・35cm）",pts:25},
+{id:"math-61-11-k2-2",text:"[2] ABとCDは平行。xは何cmか（55cm・28cm・70cm）",pts:25},
+{id:"math-61-11-k2-3",text:"[3] xは何cmか（125cmと35cm・120cm）",pts:25},
+{id:"math-61-11-k2-4",text:"[4] AB・CD・EFは平行。xは何cmか（13cm・8cm・6cm・17cm）",pts:25},
+]},
+{id:"math-61-11-a1",label:"デイリーアプローチ②（面積の比・台形と平行四辺形）",diff:2,cat:"デイリーアプローチ",problems:[
+{id:"math-61-11-a1-1",text:"面積の比[1](1) 台形ABCDのア・イ・ウ・エの面積の比（AD:BC=20:30）",pts:10},
+{id:"math-61-11-a1-2",text:"面積の比[1](2) 平行四辺形ABCDのア・イ・ウ・エの面積の比（AD:BC=10:40）",pts:10},
+{id:"math-61-11-a1-3",text:"面積の比[2](1) 台形ABCDのア・イ・ウ・エの面積の比（AD:BC=27:36）",pts:10},
+{id:"math-61-11-a1-4",text:"面積の比[2](2) 平行四辺形ABCDのア・イ・ウ・エの面積の比（AD:BC=12:30）",pts:10},
+]},
+{id:"math-61-11-a2",label:"デイリーアプローチ②（直角三角形と相似）",diff:2,cat:"デイリーアプローチ",problems:[
+{id:"math-61-11-a2-1",text:"直角三角形①[1](1) 三角形ABCのxとyの長さを求めなさい（8cm・6cm・10cm）",pts:10},
+{id:"math-61-11-a2-2",text:"直角三角形①[1](2) BHとHCの長さの比を求めなさい（18cm・12cm）",pts:10},
+{id:"math-61-11-a2-3",text:"直角三角形②[2](1) 三角形ABCのxとyを求めなさい（24cm・18cm・30cm）",pts:10},
+{id:"math-61-11-a2-4",text:"直角三角形②[2](2) BHとHCの長さの比を求めなさい（10cm・5cm）",pts:10},
+]},
+{id:"math-61-11-a3",label:"デイリーアプローチ④（縮尺と距離）",diff:2,cat:"デイリーアプローチ",problems:[
+{id:"math-61-11-a3-1",text:"[1](1) 縮尺1/25000の地図上6cmの距離は実際には何kmか",pts:10},
+{id:"math-61-11-a3-2",text:"[1](2) 実際10kmのAB間は1/25000地図上では何cmか",pts:10},
+{id:"math-61-11-a3-3",text:"[1](3) 縮図上14cmが実際7kmなら縮尺は1/□",pts:10},
+{id:"math-61-11-a3-4",text:"[1](4) 周囲70mの長方形（縦:横=3:4）を1/1000縮図にすると横は何cmか",pts:10},
+{id:"math-61-11-a3-5",text:"[2](1) 縮尺1/50000の地図上4cmの距離は実際には何kmか",pts:10},
+{id:"math-61-11-a3-6",text:"[2](2) 実際20kmのAB間は1/50000地図上では何cmか",pts:10},
+{id:"math-61-11-a3-7",text:"[2](3) 縮図上12cmが実際18kmなら縮尺は1/□",pts:10},
+{id:"math-61-11-a3-8",text:"[2](4) 周囲200mの長方形（縦:横=9:16）を1/800縮図にすると横は何cmか",pts:10},
+]},
+{id:"math-61-11-a4",label:"デイリーアプローチ④（縮図の面積と縮尺）",diff:2,cat:"デイリーアプローチ",problems:[
+{id:"math-61-11-a4-1",text:"縮図①[1](1) 台形の土地（1/800縮図）のまわりの長さは実際何mか",pts:10},
+{id:"math-61-11-a4-2",text:"縮図①[1](2) 台形の土地の実際の面積は何m²か",pts:10},
+{id:"math-61-11-a4-3",text:"縮図①[1](3) 縮尺1/240の縮図にかきなおすとまわりの長さは何cmか",pts:10},
+{id:"math-61-11-a4-4",text:"縮図②[2](1) 台形の土地（1/500縮図）のまわりの長さは実際何mか",pts:10},
+{id:"math-61-11-a4-5",text:"縮図②[2](2) 台形の土地の実際の面積は何m²か",pts:10},
+{id:"math-61-11-a4-6",text:"縮図②[2](3) 縮尺1/200の縮図にかきなおすとまわりの長さは何cmか",pts:10},
+]},
+{id:"math-61-11-a5",label:"デイリーアプローチ⑦（平行線と相似）",diff:2,cat:"デイリーアプローチ",problems:[
+{id:"math-61-11-a5-1",text:"平行線と相似①[1] 平行四辺形でEFP面積は全体の何倍か（E・Gは等分点）",pts:10},
+{id:"math-61-11-a5-2",text:"平行線と相似①[2] 平行四辺形でPEG面積は全体の何倍か（H・Iは等分点）",pts:10},
+{id:"math-61-11-a5-3",text:"平行線と相似②[1](1) DGの長さを求めなさい（AB=12cm・AD=7.5cm・AE=6cm）",pts:10},
+{id:"math-61-11-a5-4",text:"平行線と相似②[1](2) 三角形BCFの面積は三角形CEFの何倍か",pts:10},
+{id:"math-61-11-a5-5",text:"平行線と相似②[1](3) 三角形ABCの面積は三角形CEFの何倍か",pts:10},
+{id:"math-61-11-a5-6",text:"平行線と相似②[2](1) DGの長さを求めなさい（AB=10cm・AD=6.4cm・AE=5cm）",pts:10},
+{id:"math-61-11-a5-7",text:"平行線と相似②[2](2) 三角形BCFの面積は三角形CEFの何倍か",pts:10},
+{id:"math-61-11-a5-8",text:"平行線と相似②[2](3) 三角形ABCの面積は三角形CEFの何倍か",pts:10},
+]},
+{id:"math-61-11-b",label:"実戦編 61B-11（縮尺・相似の応用）",diff:2,cat:"実戦編61B",problems:[
+{id:"math-61-11-b-1",text:"[1](1) 台形ABCD（縮尺1/1000縮図）のまわりの長さは何mか",pts:10},
+{id:"math-61-11-b-2",text:"[1](2) 台形の土地の実際の面積は何haか",pts:10},
+{id:"math-61-11-b-3",text:"[1](3) ABに平行な直線EFで面積を2等分するとCFの実際の長さは何mか",pts:10},
+{id:"math-61-11-b-4",text:"[2] 台形ABCDの4つの三角形⑦⑥②⑤の面積の比（AD:BC=10:30）",pts:20},
+{id:"math-61-11-b-5",text:"[3](1) EDの長さは何mか（三角形・8m・4m）",pts:10},
+{id:"math-61-11-b-6",text:"[3](2) 三角形APQの面積は三角形ABCの何倍か",pts:10},
+{id:"math-61-11-b-7",text:"[4](1) 三角形ABOの面積は何cm²か（台形ABCD・10cm・20cm・24cm）",pts:15},
+{id:"math-61-11-b-8",text:"[4](2) 三角形AODと三角形COBの面積比は何対何か",pts:15},
+]},
+{id:"math-61-11-c",label:"実戦編 61C-11（縮尺・相似の応用②）",diff:3,cat:"実戦編61C",problems:[
+{id:"math-61-11-c-1",text:"[1](1) 縮尺1/25000の地図で縦8cm横15cmの長方形の実際の面積は何km²か",pts:10},
+{id:"math-61-11-c-2",text:"[1](2) 300aの広さは1/5000の地図上では何cm²か",pts:10},
+{id:"math-61-11-c-3",text:"[1](3) 1/□縮図で80cm²の土地の実際の面積が500m²となる□の値",pts:10},
+{id:"math-61-11-c-4",text:"[2](1) DE・FG・BC平行。DEの長さは何cmか",pts:5},
+{id:"math-61-11-c-5",text:"[2](2) 三角形ABCと三角形ADEの面積比を求めなさい",pts:10},
+{id:"math-61-11-c-6",text:"[2](3) 台形DFGEと台形FBCGの面積比を求めなさい",pts:10},
+{id:"math-61-11-c-7",text:"[3](1) xとyの長さを求めなさい（直角三角形・20cm・15cm・25cm）",pts:10},
+{id:"math-61-11-c-8",text:"[3](2) BHとHCの長さの比を求めなさい（9cm・6cm）",pts:10},
+{id:"math-61-11-c-9",text:"[4](1) 正三角形ABCで三角形BDEと同じ形で大きさが違う三角形は何個か",pts:5},
+{id:"math-61-11-c-10",text:"[4](2) 辺ADの長さは辺EFの何倍か",pts:10},
+{id:"math-61-11-c-11",text:"[4](3) 正三角形ABCの面積は三角形DEFの何倍か",pts:10},
+]},
+{id:"math-61-11-ds",label:"デイリーステップ（5年生の復習・計算問題）",diff:1,cat:"デイリーステップ",problems:[
+{id:"math-61-11-ds-1",text:"①〜⑤ 計算・確認問題①（前回単元の復習）",pts:10},
+{id:"math-61-11-ds-2",text:"⑥〜⑩ 計算・確認問題②（拡大・縮小の基本）",pts:10},
+]},
 ],initialAnswers:{}}],
 japanese: [
 
@@ -2317,6 +2402,38 @@ sections:[
 {id:"japanese-62A-10-ds4",text:"⑯〜⑳言葉の意味（テーマに関連した語彙の意味を答える）",pts:5},
 {id:"japanese-62A-10-ds5",text:"知の冒険（テーマに関連した知識問題①〜③）",pts:5},
 {id:"japanese-62A-10-ds6",text:"言葉ナビ（①〜③）慣用句・ことわざ・四字熟語の意味",pts:5},
+]},
+],initialAnswers:{}},
+{id:"japanese-62A-11",code:"62A-11",title:"敬語・手紙文の書き方",isSpring:false,sections:[
+{id:"japanese-62A-11-q1",label:"実力診断チェック（五年生までの総復習）",diff:1,cat:"実力診断チェック",problems:[
+{id:"japanese-62A-11-q1-1",text:"実力診断チェック(1)〜(5) 語句・文法の基礎①",pts:5},
+{id:"japanese-62A-11-q1-2",text:"実力診断チェック(6)〜(10) 語句・文法の基礎②",pts:5},
+{id:"japanese-62A-11-q1-3",text:"実力診断チェック(11)〜(15) 文法・表現の基礎③",pts:5},
+{id:"japanese-62A-11-q1-4",text:"実力診断チェック(16)〜(20) 文法・表現の基礎④",pts:5},
+]},
+{id:"japanese-62A-11-q2",label:"問題①（敬語の種類と使い方）",diff:1,cat:"敬語",problems:[
+{id:"japanese-62A-11-q2-1",text:"① 尊敬語・謙譲語・丁寧語の分類（ア〜エから選ぶ）",pts:5},
+{id:"japanese-62A-11-q2-2",text:"② 敬語の正しい使い方（間違い探し）",pts:5},
+{id:"japanese-62A-11-q2-3",text:"③ 尊敬語・謙譲語の正しい形に直す",pts:5},
+{id:"japanese-62A-11-q2-4",text:"④ 会話文中の敬語を正しく使い直す",pts:5},
+{id:"japanese-62A-11-q2-5",text:"⑤ 敬語を使った文を作る（自分・相手の行動）",pts:5},
+]},
+{id:"japanese-62A-11-q3",label:"問題②（手紙・実用文の書き方）",diff:2,cat:"手紙",problems:[
+{id:"japanese-62A-11-q3-1",text:"① 手紙の構成の順番（前文・主文・末文・後付け）",pts:5},
+{id:"japanese-62A-11-q3-2",text:"② 月ごとの時候の挨拶（選択）",pts:5},
+{id:"japanese-62A-11-q3-3",text:"③ 手紙文中の空欄補充（敬語・挨拶表現）",pts:5},
+{id:"japanese-62A-11-q3-4",text:"④ 手紙文の誤りを直す（敬語・形式）",pts:5},
+]},
+{id:"japanese-62A-11-q4",label:"知識のまとめ（語彙・文法の総合）",diff:1,cat:"知識のまとめ",problems:[
+{id:"japanese-62A-11-q4-1",text:"知識のまとめ(1)〜(5) 熟語・語句の意味",pts:5},
+{id:"japanese-62A-11-q4-2",text:"知識のまとめ(6)〜(10) 慣用句・ことわざ・四字熟語",pts:5},
+{id:"japanese-62A-11-q4-3",text:"知識のまとめ(11)〜(15) 文法（品詞・活用）",pts:5},
+{id:"japanese-62A-11-q4-4",text:"知識のまとめ(16)〜(20) 敬語・手紙文のまとめ",pts:5},
+]},
+{id:"japanese-62A-11-dc",label:"デイリーチェック（漢字・語句）",diff:1,cat:"デイリーチェック",problems:[
+{id:"japanese-62A-11-dc-1",text:"デイリーチェック①〜⑤ 漢字の書き取り①",pts:5},
+{id:"japanese-62A-11-dc-2",text:"デイリーチェック⑥〜⑩ 漢字の書き取り②",pts:5},
+{id:"japanese-62A-11-dc-3",text:"デイリーチェック⑪〜⑮ 語句の意味・用法",pts:5},
 ]},
 ],initialAnswers:{}}
 ],
@@ -3301,6 +3418,74 @@ sections:[
 {id:"sci-610-ds2-8",text:"⑧フックの法則が成り立つ範囲（弾性限界）の説明",pts:10},
 {id:"sci-610-ds2-9",text:"⑨ばねの伸びのグラフから正しいものを選ぶ（直列・並列・単体の比較）",pts:10},
 {id:"sci-610-ds2-10",text:"⑩ばねを縦・横どちらに使っても同じ力なら同じ伸び→理由を説明",pts:10},
+]},
+],initialAnswers:{}},
+{id:"sci-611",code:"630-11",title:"地層",isSpring:false,sections:[
+{id:"sci-611-k1",label:"確認問題①（地層のできかた・地形・地下水）",diff:1,cat:"確認問題",problems:[
+{id:"sci-611-k1-1",text:"(1) 化石とは何か。簡単に説明しなさい",pts:10},
+{id:"sci-611-k1-2",text:"(2) ア〜オから化石としてふさわしくないものを1つ選びなさい",pts:10},
+{id:"sci-611-k1-3",text:"(3) その地層が堆積した当時の環境が分かる化石を何というか",pts:10},
+{id:"sci-611-k1-4",text:"(4) ア〜エの化石が示す地質時代（古生代・中生代・新生代）をそれぞれ答えなさい",pts:10},
+{id:"sci-611-k1-5",text:"(5) ア〜エの化石の堆積場所（あたたかく浅い海・浅い海・湖や河口付近・比較的寒冷な海）",pts:10},
+{id:"sci-611-k1-6",text:"(6) A〜Cの岩石を顕微鏡で見たときの様子から名前をア〜エから選びなさい",pts:10},
+{id:"sci-611-k1-7",text:"(7) (6)のAとBのような様子をそれぞれ何と呼ぶか",pts:10},
+]},
+{id:"sci-611-k2",label:"確認問題②（河口付近の堆積・地下水・ボーリング）",diff:1,cat:"確認問題",problems:[
+{id:"sci-611-k2-1",text:"(1) 図1の海底の様子のA〜Cはそれぞれ次のア〜ウのどれか（ねん土・小石・砂）",pts:25},
+{id:"sci-611-k2-2",text:"(2) (1)で答えた理由を説明しなさい",pts:25},
+{id:"sci-611-k2-3",text:"(3) 図2（海底が2回押し上げられた場合）でA〜ウに堆積している粒の種類を記号で答えなさい",pts:25},
+{id:"sci-611-k2-4",text:"(4) 図2のようになるのは海底が押し上げられる以外にどのような原因か・説明しなさい",pts:25},
+]},
+{id:"sci-611-k3",label:"確認問題③〜⑩（地層の総合問題・各100点）",diff:2,cat:"確認問題",problems:[
+{id:"sci-611-k3-1",text:"③ 地層の読み取り総合①（各10点×10問）",pts:10},
+{id:"sci-611-k3-2",text:"④ 地層の読み取り総合②（各10点×10問）",pts:10},
+{id:"sci-611-k3-3",text:"⑤ 地層の読み取り総合③（各10点×10問）",pts:10},
+{id:"sci-611-k3-4",text:"⑥ 地層の読み取り総合④（各10点×10問）",pts:10},
+{id:"sci-611-k3-5",text:"⑦ 地層の読み取り総合⑤（各10点×10問）",pts:10},
+{id:"sci-611-k3-6",text:"⑧ 地層の読み取り総合⑥（各10点×10問）",pts:10},
+{id:"sci-611-k3-7",text:"⑨ 地層の読み取り総合⑦（各10点×10問）",pts:10},
+{id:"sci-611-k3-8",text:"⑩ 地層の読み取り総合⑧（各10点×10問）",pts:10},
+]},
+{id:"sci-611-k11",label:"確認問題⑪（山のがけ・ボーリング調査・総合）",diff:2,cat:"確認問題",problems:[
+{id:"sci-611-k11-1",text:"[A](1) 水はどの地層とどの地層の間から出ているか（ア〜オ）",pts:10},
+{id:"sci-611-k11-2",text:"[A](2) 水を保つはたらきが最も大きいのはどれか（ア〜オ）",pts:10},
+{id:"sci-611-k11-3",text:"[A](3) ②の地層の木や骨のようなものを何というか",pts:10},
+{id:"sci-611-k11-4",text:"[A](4) ②の地層と⑤の地層はそれぞれどのような場所でできたか",pts:10},
+{id:"sci-611-k11-5",text:"[A](5) この地層が山にあるのはどのようなことが起こったからか（10字以内）",pts:10},
+{id:"sci-611-k11-6",text:"[A](6) ③の地層の小石に丸いものが多い理由を30字以内で答えなさい",pts:10},
+{id:"sci-611-k11-7",text:"[B](7) PとQを通る南北の線のボーリングで火山灰の層はどのように現れるか（ア〜ウ）",pts:10},
+{id:"sci-611-k11-8",text:"[B](8) PとRを通る東西の線のボーリングで火山灰の層はどのように現れるか（ア〜ウ）",pts:10},
+{id:"sci-611-k11-9",text:"[B](9) S地点でボーリングすると地下何mから同じ火山灰の層が出るか",pts:10},
+]},
+{id:"sci-611-h1",label:"発展問題①（断層・しゅう曲・地形の変化）",diff:2,cat:"発展問題",problems:[
+{id:"sci-611-h1-1",text:"発展①[1] 地層の断面図の読み取り（各地点の地層構成）",pts:20},
+{id:"sci-611-h1-2",text:"発展①[2] 断層・しゅう曲の種類と特徴を答えなさい",pts:20},
+{id:"sci-611-h1-3",text:"発展①[3] 不整合面のできかたを説明しなさい",pts:20},
+{id:"sci-611-h1-4",text:"発展①[4] ボーリング調査の結果から地層の傾きを読み取る",pts:20},
+{id:"sci-611-h1-5",text:"発展①[5] 総合問題・記述",pts:20},
+]},
+{id:"sci-611-h2",label:"発展問題②（河川の侵食・堆積・日本とタイの洪水比較）",diff:3,cat:"発展問題",problems:[
+{id:"sci-611-h2-1",text:"発展②(1)① 川の文章（1〜6）に当てはまることばをア〜エから選びなさい",pts:5},
+{id:"sci-611-h2-2",text:"発展②(1)② 7・9に適することばをア・イから選びなさい",pts:5},
+{id:"sci-611-h2-3",text:"発展②(1)③ 8・10・11に適する地形の名称を答えなさい",pts:9},
+{id:"sci-611-h2-4",text:"発展②(2)① 曲がって流れる川が年月とともにどのように変化するか・理由を説明",pts:9},
+{id:"sci-611-h2-5",text:"発展②(2)② 曲がりが激しくなったあと、まっすぐな川筋ができてできる湖を何というか",pts:9},
+{id:"sci-611-h2-6",text:"発展②(3)① 増水した川の堤防が決壊して水があふれると水の深さはどうなるか（ア〜ウ）",pts:5},
+{id:"sci-611-h2-7",text:"発展②(3)② (3)①のときA運搬・B堆積のはたらきはどのように変化するか（ア〜エ）",pts:5},
+{id:"sci-611-h2-8",text:"発展②(3)③ 自然堤防のできかたについて説明しなさい",pts:5},
+{id:"sci-611-h2-9",text:"発展②(4) 日本とタイの洪水の様子の違いの原因を推定し簡単に説明しなさい",pts:9},
+]},
+{id:"sci-611-ds",label:"デイリーステップ①②（地層・岩石のポイントチェック）",diff:1,cat:"デイリーステップ",problems:[
+{id:"sci-611-ds-1",text:"岩石①(1) 堆積岩をつくる岩石・何が押し固められてできるか・堆積岩は何を含むか",pts:5},
+{id:"sci-611-ds-2",text:"岩石①(2)① 流水のはたらきによる堆積岩（粒の大きさと特徴・3種類）",pts:5},
+{id:"sci-611-ds-3",text:"岩石①(2)② 火山活動によってできる堆積岩の名前・材料",pts:5},
+{id:"sci-611-ds-4",text:"岩石①(3) 生き物の死がいなどが堆積してできる堆積岩（石灰岩・チャート）",pts:5},
+{id:"sci-611-ds-5",text:"岩石①(4) 堆積岩がもとになってできた変成岩（大理石・ホルンフェルス）",pts:5},
+{id:"sci-611-ds-6",text:"岩石②(1) マグマが冷えて固まった岩石（火成岩）の定義",pts:5},
+{id:"sci-611-ds-7",text:"岩石②(2) 火山岩と深成岩の違い（冷え固まる場所・結晶の大きさ）",pts:5},
+{id:"sci-611-ds-8",text:"岩石②(3) マグネシウムが多い・少ないマグマの性質（ねばり気・色・噴火の様子）",pts:5},
+{id:"sci-611-ds-9",text:"岩石②(4) 富士山・桜島・マウナ・ケアの火山の様子・火山岩・深成岩の対応",pts:5},
+{id:"sci-611-ds-10",text:"岩石②(5) 岩石の色・マグマのねばり気・噴火の様子の総合表を完成させる",pts:5},
 ]},
 ],initialAnswers:{}},
 {id:"sci-6H01",code:"6H-01",title:"電気のはたらき（春期）",isSpring:true,
@@ -4310,6 +4495,45 @@ sections:[
 {id:"s640-10-dc2-5",text:"DC2(5)日本国憲法制定時の内閣総理大臣の名前",pts:4},
 ]},
 ],initialAnswers:{}},
+{id:"social-640-11",code:"640-11",title:"日本国憲法②（三大原則・基本的人権）",isSpring:false,sections:[
+{id:"social-640-11-t1",label:"テーマ1　三大原則③・基本的人権の尊重（授業の確認問題・基礎編）",diff:1,cat:"授業の確認問題",problems:[
+{id:"social-640-11-t1-1",text:"(1) 文中の空らん（1）〜（3）に当てはまる語句を漢字で答えなさい（主権者・平和主義・法律）",pts:3},
+{id:"social-640-11-t1-2",text:"(2) A・Bに当てはまる年月日を答えなさい（公布・施行）",pts:2},
+{id:"social-640-11-t1-3",text:"(3) 下線部①この憲法を何というか・発布の日と内閣総理大臣の名前",pts:3},
+{id:"social-640-11-t1-4",text:"(4) 下線部②「主権」とはどのような権力か。簡単に説明しなさい",pts:2},
+{id:"social-640-11-t1-5",text:"(5)① 下線部③の天皇の地位を説明した文の空らん（①）〜（③）に当てはまる語句をア〜クから選ぶ",pts:3},
+{id:"social-640-11-t1-6",text:"(5)② 下線部③の(6)に当てはまる語句を選ぶ（内閣の助言と承認）",pts:3},
+{id:"social-640-11-t1-7",text:"(6) 下線部④について1941年から始まったこの戦争を何というか",pts:3},
+{id:"social-640-11-t1-8",text:"(7)① 下線部⑤の条文の内容（第何条か・空らんあ〜おに当てはまる語句をア〜クから選ぶ）",pts:3},
+{id:"social-640-11-t1-9",text:"(8) 下線部⑥について、このような権利を何というか（漢字で）",pts:2},
+{id:"social-640-11-t1-10",text:"(9)① 日本国憲法の改正の説明として正しいものをア〜エから選ぶ",pts:2},
+{id:"social-640-11-t1-11",text:"(9)② 日本国憲法の改正の手続きや公布について記されているのは第何条か",pts:2},
+]},
+{id:"social-640-11-t2",label:"テーマ1　基本的人権（発展編）",diff:2,cat:"授業の確認問題",problems:[
+{id:"social-640-11-t2-1",text:"発展(1) 文中の（1）〜（3）に当てはまる語句・数字を答えなさい（戦争放棄・明治・自衛隊）",pts:2},
+{id:"social-640-11-t2-2",text:"発展(2) 下線部①について、前文に記された内容としてふさわしくないものをア〜エから選ぶ",pts:2},
+{id:"social-640-11-t2-3",text:"発展(3)① 日本国憲法第9条の3つの否定（国権の発動たる戦争・武力による威嚇・武力の行使）の例",pts:5},
+{id:"social-640-11-t2-4",text:"発展(3)② 世界最初の被ばく国として「非核三原則」の内容を説明しなさい",pts:5},
+{id:"social-640-11-t2-5",text:"発展(4) 下線部⑨の主権者に関する空らん（①）〜（⑦）に当てはまる語句（国・決定・天皇・象徴）",pts:5},
+{id:"social-640-11-t2-6",text:"発展(5) 下線部④「基本的人権」とはどのようなものか、簡単に説明しなさい",pts:5},
+{id:"social-640-11-t2-7",text:"発展(6) 下線部⑤について、1992年に（3）が最初に派遣された国の名前を答えなさい",pts:3},
+{id:"social-640-11-t2-8",text:"発展(7) 下線部⑥で反対の声を上げた人々はどのような場合のどのような行為を問題視したか（憲法第9条の内容をふまえて説明）",pts:5},
+]},
+{id:"social-640-11-dc1",label:"デイリーチェック[1]（基礎・5問）",diff:1,cat:"デイリーチェック",problems:[
+{id:"social-640-11-dc1-1",text:"デイリーチェック[1](1) 日本国憲法の三大原則の名前を全て答えなさい",pts:3},
+{id:"social-640-11-dc1-2",text:"デイリーチェック[1](2) 基本的人権の5種類（平等権・自由権・社会権・参政権・請求権）",pts:3},
+{id:"social-640-11-dc1-3",text:"デイリーチェック[1](3) 日本国憲法が公布・施行された年月日",pts:2},
+{id:"social-640-11-dc1-4",text:"デイリーチェック[1](4) 憲法改正の手続き（各議院の総議員の2/3以上の賛成・国民投票）",pts:2},
+{id:"social-640-11-dc1-5",text:"デイリーチェック[1](5) 天皇の役割（日本国・日本国民統合の象徴）と行為の根拠",pts:2},
+]},
+{id:"social-640-11-dc2",label:"デイリーチェック[2]（発展・5問）",diff:2,cat:"デイリーチェック",problems:[
+{id:"social-640-11-dc2-1",text:"デイリーチェック[2](1) 第9条の内容（国権の発動たる戦争・武力による威嚇・武力の行使を永久に放棄）",pts:3},
+{id:"social-640-11-dc2-2",text:"デイリーチェック[2](2) 非核三原則とは何か（持たず・作らず・持ち込ませず）",pts:3},
+{id:"social-640-11-dc2-3",text:"デイリーチェック[2](3) 公共の福祉とは何か（人権と人権が衝突したときのバランスをとる原理）",pts:2},
+{id:"social-640-11-dc2-4",text:"デイリーチェック[2](4) PKO協力法（1992年）とその内容",pts:2},
+{id:"social-640-11-dc2-5",text:"デイリーチェック[2](5) 平等権の説明（第14条・法の下に平等・差別されない）",pts:2},
+]},
+],initialAnswers:{}},
 {id:"social-6H01",code:"6H-01",title:"政治史⑦（昭和時代〜現代）",isSpring:true,
 sections:[
 {id:"social-6H01-ds1",label:"デイリーステップ パート1（年表空欄埋め・21問）",diff:1,cat:"デイリーステップ",problems:[
@@ -4534,6 +4758,7 @@ UNIT_PDFS: {
 "social-6H03":"社6H03社会産業史.pdf",
 "social-640-09":"社609外交史.pdf",
 "social-640-10":"社610日本国憲法.pdf",
+"math-61-11":"算611拡大縮小.pdf","japanese-62A-11":"国611.pdf","sci-611":"理611地層.pdf","social-640-11":"社611日本国憲法２.pdf",
 },
 WS_UNITS: {
 math: [
@@ -5576,6 +5801,81 @@ math: [
 {id:"ws-math-10-z2-7-1",text:"Z②[7](1) 装置A・C・DにIN=27（25点）",pts:25},
 {id:"ws-math-10-z2-7-2",text:"Z②[7](2) 逆順でOUT=35のIN（25点）",pts:25}
 ]}
+],initialAnswers:{}},
+{id:"ws-math-11",code:"WS-11",title:"拡大・縮小（相似・縮尺）",sections:[
+{id:"ws-math-11-r1a",label:"R1A（拡大・縮小）基礎①",diff:1,cat:"R1A",problems:[
+{id:"ws-math-11-r1a-1-1",text:"R1A[1](1) 拡大図・縮図の識別と辺の長さ計算①",pts:10},
+{id:"ws-math-11-r1a-1-2",text:"R1A[1](2) 拡大図・縮図の識別と辺の長さ計算②",pts:10},
+{id:"ws-math-11-r1a-1-3",text:"R1A[1](3) 拡大図・縮図の識別と辺の長さ計算③",pts:10},
+{id:"ws-math-11-r1a-2-1",text:"R1A[2] 縮尺の計算（地図上の距離→実際の距離）",pts:10},
+{id:"ws-math-11-r1a-3-1",text:"R1A[3](1) 相似の基本問題①（比の利用）",pts:10},
+{id:"ws-math-11-r1a-3-2",text:"R1A[3](2) 相似の基本問題②",pts:10},
+{id:"ws-math-11-r1a-4-1",text:"R1A[4](1) 相似比と面積比の関係①",pts:10},
+{id:"ws-math-11-r1a-4-2",text:"R1A[4](2) 相似比と面積比の関係②",pts:10},
+]},
+{id:"ws-math-11-r1b",label:"R1B（動点と面積）基礎②",diff:1,cat:"R1B",problems:[
+{id:"ws-math-11-r1b-1-1",text:"R1B[1](1) 平行四辺形ABCDの動点P・Q→15秒後の図形ABQPの面積",pts:10},
+{id:"ws-math-11-r1b-1-2",text:"R1B[1](2) 図形ABQPがはじめて平行四辺形になるのは何秒後か",pts:10},
+{id:"ws-math-11-r1b-1-3",text:"R1B[1](3) 図形ABQPの面積がはじめてABCDの1/2になるのは何秒後か",pts:10},
+{id:"ws-math-11-r1b-2-1",text:"R1B[2](1) 平行四辺形ABCD（105cm×40cm）の動点→10秒後の面積",pts:10},
+{id:"ws-math-11-r1b-2-2",text:"R1B[2](2) 図形ABQPがはじめて平行四辺形になるのは何秒後か",pts:10},
+{id:"ws-math-11-r1b-2-3",text:"R1B[2](3) 図形ABQPの面積がはじめてABCDの1/2になるのは何秒後か",pts:10},
+{id:"ws-math-11-r1b-3-1",text:"R1B[3](1) 直角三角形ABCを動点Pが進む→BC・CA・ABの長さを求める",pts:10},
+{id:"ws-math-11-r1b-3-2",text:"R1B[3](2) 同・CA",pts:10},
+{id:"ws-math-11-r1b-3-3",text:"R1B[3](3) 同・AB",pts:10},
+{id:"ws-math-11-r1b-3-4",text:"R1B[3](4) 三角形ABPの面積が直角三角形ABCの1/2になるのは何秒後か（全て答える）",pts:10},
+]},
+{id:"ws-math-11-r1c",label:"R1C（動点と面積）標準③",diff:2,cat:"R1C",problems:[
+{id:"ws-math-11-r1c-1-1",text:"R1C[1](1) 長方形ABCD（40cm×40cm）の動点→面積が300cm²になるのは何秒後か",pts:20},
+{id:"ws-math-11-r1c-1-2",text:"R1C[1](2) 三角形ABPが二等辺三角形になるのは何秒後か（全て答える）",pts:20},
+{id:"ws-math-11-r1c-2-1",text:"R1C[2](1) 直角三角形ABC（30cm・34cm・16cm）→4秒後の三角形ABPの面積",pts:20},
+{id:"ws-math-11-r1c-2-2",text:"R1C[2](2) 33秒後の三角形ABPの面積",pts:20},
+{id:"ws-math-11-r1c-2-3",text:"R1C[2](3) 三角形ABPの面積が直角三角形ABCの3/4になるのは何秒後か",pts:20},
+]},
+{id:"ws-math-11-r2a",label:"R2A（縮尺・相似）応用①",diff:2,cat:"R2A",problems:[
+{id:"ws-math-11-r2a-1-1",text:"R2A[1] 縮尺・相似の応用問題①",pts:25},
+{id:"ws-math-11-r2a-2-1",text:"R2A[2] 縮尺・相似の応用問題②",pts:25},
+{id:"ws-math-11-r2a-3-1",text:"R2A[3] 縮尺・相似の応用問題③",pts:25},
+{id:"ws-math-11-r2a-4-1",text:"R2A[4] 縮尺・相似の応用問題④",pts:25},
+]},
+{id:"ws-math-11-r2b",label:"R2B（相似・面積比）応用②",diff:2,cat:"R2B",problems:[
+{id:"ws-math-11-r2b-1-1",text:"R2B[1] 相似・面積比の応用問題①",pts:25},
+{id:"ws-math-11-r2b-2-1",text:"R2B[2] 相似・面積比の応用問題②",pts:25},
+{id:"ws-math-11-r2b-3-1",text:"R2B[3] 相似・面積比の応用問題③",pts:25},
+{id:"ws-math-11-r2b-4-1",text:"R2B[4] 相似・面積比の応用問題④",pts:25},
+]},
+{id:"ws-math-11-r2c",label:"R2C（難問）",diff:3,cat:"R2C",problems:[
+{id:"ws-math-11-r2c-1",text:"R2C[1] 縮尺・相似難問①（25点）",pts:25},
+{id:"ws-math-11-r2c-2",text:"R2C[2] 縮尺・相似難問②（25点）",pts:25},
+{id:"ws-math-11-r2c-3",text:"R2C[3] 縮尺・相似難問③（25点）",pts:25},
+{id:"ws-math-11-r2c-4",text:"R2C[4] 縮尺・相似難問④（25点）",pts:25},
+]},
+{id:"ws-math-11-x1",label:"x-11① 発展①",diff:3,cat:"x①",problems:[
+{id:"ws-math-11-x1-1",text:"x①[1] 発展①（25点）",pts:25},
+{id:"ws-math-11-x1-2",text:"x①[2] 発展②（25点）",pts:25},
+{id:"ws-math-11-x1-3",text:"x①[3] 発展③（25点）",pts:25},
+{id:"ws-math-11-x1-4",text:"x①[4] 発展④（25点）",pts:25},
+]},
+{id:"ws-math-11-x2",label:"x-11② 発展②",diff:3,cat:"x②",problems:[
+{id:"ws-math-11-x2-1",text:"x②[1] 発展⑤（25点）",pts:25},
+{id:"ws-math-11-x2-2",text:"x②[2] 発展⑥（25点）",pts:25},
+{id:"ws-math-11-x2-3",text:"x②[3] 発展⑦（25点）",pts:25},
+{id:"ws-math-11-x2-4",text:"x②[4] 発展⑧（25点）",pts:25},
+]},
+{id:"ws-math-11-z1",label:"Z-11① 最難問①",diff:3,cat:"Z①",problems:[
+{id:"ws-math-11-z1-1",text:"Z①[1](1) 最難問①（20点）",pts:20},
+{id:"ws-math-11-z1-2",text:"Z①[1](2) 最難問②（20点）",pts:20},
+{id:"ws-math-11-z1-3",text:"Z①[2](1) 最難問③（20点）",pts:20},
+{id:"ws-math-11-z1-4",text:"Z①[2](2) 最難問④（20点）",pts:20},
+{id:"ws-math-11-z1-5",text:"Z①[3] 最難問⑤（20点）",pts:20},
+]},
+{id:"ws-math-11-z2",label:"Z-11② 最難問②",diff:3,cat:"Z②",problems:[
+{id:"ws-math-11-z2-1",text:"Z②[4](1) 最難問⑥（20点）",pts:20},
+{id:"ws-math-11-z2-2",text:"Z②[4](2) 最難問⑦（20点）",pts:20},
+{id:"ws-math-11-z2-3",text:"Z②[5](1) 最難問⑧（25点）",pts:25},
+{id:"ws-math-11-z2-4",text:"Z②[5](2) 最難問⑨（25点）",pts:25},
+{id:"ws-math-11-z2-5",text:"Z②[6] 最難問⑩（25点）",pts:25},
+]},
 ],initialAnswers:{}}
 ],
 japanese: [
@@ -5821,6 +6121,33 @@ japanese: [
 {id:"ws-jp-10-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
 {id:"ws-jp-10-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
 ]}
+],initialAnswers:{}},
+{id:"ws-jp-11",code:"WS-11",title:"物語文⑦・詩・俳句読解",sections:[
+{id:"ws-jp-11-q",label:"読解問題（問二〜問十一）",diff:2,cat:"読解問題",problems:[
+{id:"ws-jp-11-q2",text:"問二 本文中の空欄Aに当てはまる表現を文中から探して答えなさい",pts:5},
+{id:"ws-jp-11-q3",text:"問三 本文中の空欄（1）に当てはまることばを文中から探して答えなさい",pts:5},
+{id:"ws-jp-11-q4",text:"問四 本文中の空欄（2）に当てはまる部分を文中から探して答えなさい",pts:5},
+{id:"ws-jp-11-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
+{id:"ws-jp-11-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
+{id:"ws-jp-11-q6b",text:"問六 下線部について二語を使って説明（20〜25字）②",pts:5},
+{id:"ws-jp-11-q7",text:"問七 本文中の空欄に当てはまる語句（心情を表す）を答えなさい",pts:5},
+{id:"ws-jp-11-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
+{id:"ws-jp-11-q9",text:"問九 下線部の表現について・本文中から読み取れる情報を答えなさい",pts:5},
+{id:"ws-jp-11-q10a",text:"問十 一文目と二文目の関係を記号で答えなさい",pts:5},
+{id:"ws-jp-11-q10b",text:"問十 登場人物の気持ちを五十字以内で説明しなさい",pts:8},
+]},
+{id:"ws-jp-11-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
+{id:"ws-jp-11-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
+{id:"ws-jp-11-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
+{id:"ws-jp-11-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
+{id:"ws-jp-11-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
+{id:"ws-jp-11-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
+{id:"ws-jp-11-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
+{id:"ws-jp-11-ws-7",text:"ウィークリーステップ(7) 言葉の意味①",pts:5},
+{id:"ws-jp-11-ws-8",text:"ウィークリーステップ(8) 言葉の意味②",pts:5},
+{id:"ws-jp-11-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
+{id:"ws-jp-11-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5},
+]},
 ],initialAnswers:{}}
 ],
 science: [
@@ -6556,6 +6883,34 @@ science: [
 {id:"ws-sci-10-z4-5",text:"最難問②(5) 問題5",pts:10},
 {id:"ws-sci-10-z4-6",text:"最難問②(6) 問題6",pts:10}
 ]}
+],initialAnswers:{}},
+{id:"ws-sci-11",code:"WS-11",title:"ろうそくと燃焼",sections:[
+{id:"ws-sci-11-x",label:"Xグループ（基礎〜標準）X1〜X3",diff:1,cat:"X",problems:[
+{id:"ws-sci-11-x1-1",text:"X1(1) 第一講の現象の説明として正しいものをア〜エから選ぶ",pts:10},
+{id:"ws-sci-11-x1-2",text:"X1(2) 第二講でそれ自身が燃えなくても明るく輝く例をすべて選ぶ（蛍光灯・豆電球・アルコールランプ）",pts:10},
+{id:"ws-sci-11-x1-3",text:"X1(3) 第二講・第五講・第六講のA〜Eに当てはまるものを選びなさい（水素気・イオウ・水素・炭素・0.03〜0.04等）",pts:10},
+{id:"ws-sci-11-x1-4",text:"X1(4) 第五講の気体と水素を集気びんに入れてガラス板を取り外した→①数分後②数日後はどうなるか",pts:10},
+{id:"ws-sci-11-x1-5",text:"X1(5) F・Gに当てはまるもの（固体→液体→気体・ろうの燃焼の流れ）",pts:10},
+{id:"ws-sci-11-x1-6",text:"X1(6) 火を消すと煙のようなものが立ち上がり→マッチを近づけたときに起こる現象をア〜ウから選ぶ",pts:10},
+{id:"ws-sci-11-x1-7",text:"X1(7) 乾留（試験管で加熱）で同じ物質が残るものをア〜エからすべて選ぶ",pts:10},
+{id:"ws-sci-11-x2-1",text:"X2(1) 地層が堆積した当時の環境が分かる化石を何というか",pts:10},
+{id:"ws-sci-11-x2-2",text:"X2(2)〜(7) 地層・岩石の総合問題",pts:10},
+{id:"ws-sci-11-x3-1",text:"X3(1)〜(8) 燃焼・地層の発展問題",pts:10},
+]},
+{id:"ws-sci-11-y",label:"Yグループ（標準〜応用）Y1〜Y3",diff:2,cat:"Y",problems:[
+{id:"ws-sci-11-y1-1",text:"Y1(1)〜(5) ろうそくの燃焼実験の応用問題①（気体の性質・燃焼の条件）",pts:10},
+{id:"ws-sci-11-y1-2",text:"Y1(6)〜(10) ろうそくの燃焼実験の応用問題②",pts:10},
+{id:"ws-sci-11-y2-1",text:"Y2(1)〜(5) 地層の読み取り・ボーリング調査の応用問題①",pts:10},
+{id:"ws-sci-11-y2-2",text:"Y2(6)〜(10) 地層の読み取り・ボーリング調査の応用問題②",pts:10},
+{id:"ws-sci-11-y3-1",text:"Y3(1)〜(5) 燃焼計算・金属の酸化・気体の発生の総合問題①",pts:10},
+{id:"ws-sci-11-y3-2",text:"Y3(6)〜(10) 燃焼計算・金属の酸化・気体の発生の総合問題②",pts:10},
+]},
+{id:"ws-sci-11-z",label:"Zグループ（発展・難問）Z1〜Z4",diff:3,cat:"Z",problems:[
+{id:"ws-sci-11-z1-1",text:"Z1(1)〜(5) ろうそくと燃焼の難問①（炎の構造・不完全燃焼）",pts:10},
+{id:"ws-sci-11-z2-1",text:"Z2(1)〜(5) 地層の難問②（断層・しゅう曲・不整合）",pts:10},
+{id:"ws-sci-11-z3-1",text:"Z3(1)〜(5) 燃焼計算の難問③（混合気体・複合計算）",pts:10},
+{id:"ws-sci-11-z4-1",text:"Z4(1)〜(5) 最難問④（燃焼・地層・岩石の総合難問）",pts:10},
+]},
 ],initialAnswers:{}}
 ],
 social: [
@@ -6916,6 +7271,62 @@ social: [
 {id:"ws-soc-09-b6",text:"(6) 下線部eで1582年に亡くなった人物の出身地を国名で",pts:3},
 {id:"ws-soc-09-b7",text:"(7) 下線部fで中山道が東海道より優れていた点を説明",pts:6}
 ]}
+],initialAnswers:{}},
+{id:"ws-soc-11",code:"WS-11",title:"歴史の総完成・政治史④昭和〜現代",sections:[
+{id:"ws-soc-11-chishiki",label:"1. 知識の総完成（昭和〜現代・空欄補充）",diff:1,cat:"知識の総完成",problems:[
+{id:"ws-soc-11-c1",text:"知識の総完成①（戦前の政治・軍部の台頭・満州事変・日中戦争）",pts:5},
+{id:"ws-soc-11-c2",text:"知識の総完成②（太平洋戦争の経緯・主な戦い・終戦）",pts:5},
+{id:"ws-soc-11-c3",text:"知識の総完成③（戦後の復興・GHQ・日本国憲法・農地改革）",pts:5},
+{id:"ws-soc-11-c4",text:"知識の総完成④（朝鮮戦争・サンフランシスコ平和条約・自衛隊）",pts:5},
+{id:"ws-soc-11-c5",text:"知識の総完成⑤（高度経済成長・公害問題・沖縄返還・日中国交正常化）",pts:5},
+{id:"ws-soc-11-c6",text:"知識の総完成⑥（現代の政治・冷戦の終結・バブル経済・PKO）",pts:5},
+{id:"ws-soc-11-c7",text:"知識の総完成⑦（歴史人物④昭和〜現代・政治家・思想家）",pts:5},
+{id:"ws-soc-11-c8",text:"知識の総完成⑧（昭和〜現代の文化・科学技術・オリンピック）",pts:5},
+{id:"ws-soc-11-c9",text:"知識の総完成⑨（昭和〜現代の外交・条約・国際関係）",pts:5},
+{id:"ws-soc-11-c10",text:"知識の総完成⑩（統計・年表の読み取り・時代の特色）",pts:5},
+]},
+{id:"ws-soc-11-a1",label:"2. 入試実戦演習 A1（長文・下線部設問）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-11-a1-1",text:"A1(1) 文中の（1）〜（3）に当てはまる語句や数字（GHQ・1945・財閥解体等）",pts:3},
+{id:"ws-soc-11-a1-2",text:"A1(2) 下線部①の雨温図・グラフなどをア〜エから選ぶ",pts:3},
+{id:"ws-soc-11-a1-3",text:"A1(3) 下線部②について説明・答えなさい",pts:3},
+{id:"ws-soc-11-a1-4",text:"A1(4) 下線部③について・正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-11-a1-5",text:"A1(5) 下線部④について・地図記号を描く・説明する",pts:4},
+{id:"ws-soc-11-a1-6",text:"A1(6) 下線部⑤について・どのような風か説明しなさい",pts:4},
+{id:"ws-soc-11-a1-7",text:"A1(7) 下線部⑥について・正しいものをア〜エから選ぶ",pts:3},
+]},
+{id:"ws-soc-11-a2",label:"2. 入試実戦演習 A2（地図・統計・設問）",diff:2,cat:"Aタイプ",problems:[
+{id:"ws-soc-11-a2-1",text:"A2(1) 地図中A〜Cの名称（半島・川・平野など）",pts:3},
+{id:"ws-soc-11-a2-2",text:"A2(2) 地図中の水域で多く取れる魚をア〜エから選ぶ",pts:3},
+{id:"ws-soc-11-a2-3",text:"A2(3) 地図中の地域の自然条件から理由を説明しなさい",pts:4},
+{id:"ws-soc-11-a2-4",text:"A2(4) 説明として間違っているものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-11-a2-5",text:"A2(5) 断面図として正しいものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-11-a2-6",text:"A2(6) 気温と降水量のグラフをア〜エから選ぶ",pts:3},
+{id:"ws-soc-11-a2-7",text:"A2(7) グラフから読み取る設問",pts:3},
+{id:"ws-soc-11-a2-8",text:"A2(8) 象徴・記号・県章をア〜エから選ぶ",pts:3},
+]},
+{id:"ws-soc-11-b1",label:"3. 入試実戦演習 Bタイプ基礎編（B1）",diff:2,cat:"Bタイプ",problems:[
+{id:"ws-soc-11-b1-1",text:"B1(1) 文中の（1）〜（5）に当てはまる語句（江戸時代・明治・戦前の制度）",pts:2},
+{id:"ws-soc-11-b1-2",text:"B1(2) 下線部aの都で流通した貨幣をア〜エから選ぶ",pts:2},
+{id:"ws-soc-11-b1-3",text:"B1(3) 下線部bについて「庸・調」を使って説明",pts:5},
+{id:"ws-soc-11-b1-4",text:"B1(4) 下線部cの①〜④の文が正しいか（○×）",pts:2},
+{id:"ws-soc-11-b1-5",text:"B1(5) 下線部dと江戸時代の関所の違いを説明",pts:5},
+{id:"ws-soc-11-b1-6",text:"B1(6) 下線部eで1582年に亡くなった人物の出身地を国名で",pts:2},
+{id:"ws-soc-11-b1-7",text:"B1(7) 下線部fで中山道が東海道より優れていた点を説明",pts:5},
+]},
+{id:"ws-soc-11-b2",label:"3. Bタイプ発展編（B2）",diff:3,cat:"Bタイプ",problems:[
+{id:"ws-soc-11-b2-1",text:"B2(1) 文中の（A）〜（C）に当てはまる語句を漢字で（戦争放棄・昭和・自衛隊）",pts:6},
+{id:"ws-soc-11-b2-2",text:"B2(2) 下線部①の前文の内容としてふさわしくないものをア〜エから選ぶ",pts:3},
+{id:"ws-soc-11-b2-3",text:"B2(3)① 第9条の3つの否定に当たる歴史上の出来事をア〜エから選ぶ",pts:5},
+{id:"ws-soc-11-b2-4",text:"B2(3)② 非核三原則の内容を簡単に説明しなさい",pts:5},
+{id:"ws-soc-11-b2-5",text:"B2(4) 下線部⑨の主権者に関する空らん①〜⑦（国・決定・天皇・象徴等）",pts:5},
+{id:"ws-soc-11-b2-6",text:"B2(5) 下線部④「基本的人権」とはどのようなものか説明",pts:5},
+{id:"ws-soc-11-b2-7",text:"B2(6) 1992年に初めて派遣された国の名前（PKO）",pts:3},
+{id:"ws-soc-11-b2-8",text:"B2(7) 反対の声を上げた人々が問題視したこと（憲法第9条をふまえて）",pts:5},
+]},
+{id:"ws-soc-11-b3",label:"4. Bタイプ発展編②（B3）",diff:3,cat:"Bタイプ",problems:[
+{id:"ws-soc-11-b3-1",text:"B3(1)〜(5) 昭和〜現代の歴史・長文読解・記述問題①",pts:5},
+{id:"ws-soc-11-b3-2",text:"B3(6)〜(10) 昭和〜現代の歴史・長文読解・記述問題②",pts:5},
+]},
 ],initialAnswers:{}}
 ],
 },
@@ -6932,6 +7343,7 @@ WS_PDFS: {
 "ws-soc-01":"社WS01中部.pdf","ws-soc-02":"社WS02九州.pdf","ws-soc-03":"社WS03北海道.pdf",
 "ws-soc-04":"社WS04東北.pdf","ws-soc-05":"社WS05関東.pdf","ws-soc-06":"社WS06近畿.pdf",
 "ws-soc-07":"社WS07中国四国.pdf","ws-soc-08":"社WS08古墳_室町.pdf","ws-soc-09":"社WS09室町_江戸.pdf",
+"ws-math-11":"算WS_11.pdf","ws-jp-11":"国WS_11.pdf","ws-sci-11":"理WS11.pdf","ws-soc-11":"社WS11昭和_現代.pdf",
 }
 };
 
@@ -8694,6 +9106,201 @@ return (
 }
 
 
+// ============================================================
+// AnalysisTab: 科目別 得意・苦手単元一覧
+// ============================================================
+function AnalysisTab({ UNITS, IMPORTED_TESTS, testScores, allAnswers, calcStats, noto }) {
+const serif = "'Noto Serif JP',serif";
+const [anaSubj, setAnaSubj] = React.useState("math");
+
+const SM = {
+  math:     {l:"算数",c:"#3b82f6",i:"∑",max:150},
+  japanese: {l:"国語",c:"#ef4444",i:"文",max:150},
+  science:  {l:"理科",c:"#22c55e",i:"⚗",max:100},
+  social:   {l:"社会",c:"#f59e0b",i:"🌏",max:100},
+};
+const SUBJ_KEYS = ["math","japanese","science","social"];
+const allTests = [...IMPORTED_TESTS, ...testScores];
+
+const TAG_META = {
+  strong:    {label:"✅ 得意",   color:"#4ade80",bg:"rgba(74,222,128,.1)", border:"rgba(74,222,128,.3)"},
+  ok:        {label:"〇 普通",   color:"#60a5fa",bg:"rgba(96,165,250,.08)",border:"rgba(96,165,250,.2)"},
+  caution:   {label:"🟡 要注意", color:"#f59e0b",bg:"rgba(245,158,11,.08)",border:"rgba(245,158,11,.2)"},
+  weak:      {label:"🔴 苦手",   color:"#ef4444",bg:"rgba(239,68,68,.08)", border:"rgba(239,68,68,.25)"},
+  weak_easy: {label:"🔴 要克服", color:"#ef4444",bg:"rgba(239,68,68,.1)",  border:"rgba(239,68,68,.35)"},
+  weak_mid:  {label:"🟡 要注意", color:"#f59e0b",bg:"rgba(245,158,11,.1)", border:"rgba(245,158,11,.3)"},
+  nodata:    {label:"—",         color:"#475569",bg:"rgba(71,85,105,.07)", border:"rgba(71,85,105,.15)"},
+};
+const TAG_ORDER = {weak_easy:0,weak:1,weak_mid:2,caution:3,ok:4,strong:5,nodata:6};
+
+const buildUnitSummary = (sid) => {
+  const units = UNITS[sid] || [];
+  return units.map(u => {
+    const st = calcStats(u.sections || [], allAnswers[u.id] || {});
+    const dsAnswered = st.answered;
+    const dsRate = dsAnswered >= 1 ? Math.round(st.correct / st.answered * 100) : null;
+
+    const testMatches = [];
+    allTests.forEach(t => {
+      (t.weakFields?.[sid] || []).forEach(f => {
+        const fieldKey = f.field.replace(/[（(].*/,"").trim();
+        const titleKey = u.title.replace(/[（(].*/,"").trim();
+        if (f.field.includes(titleKey) || u.title.includes(fieldKey) || titleKey.includes(fieldKey)) {
+          testMatches.push({myRate:f.myRate,avgRate:f.avgRate,priority:f.priority,testName:t.name,date:t.date});
+        }
+      });
+    });
+
+    const latestTest = testMatches.sort((a,b) => (b.date||"").localeCompare(a.date||""))[0] || null;
+    const testMyRate  = latestTest?.myRate ?? null;
+    const testAvgRate = latestTest?.avgRate ?? null;
+
+    let compositeScore = null;
+    if (dsRate != null && testMyRate != null) compositeScore = Math.round((dsRate + testMyRate) / 2);
+    else if (dsRate != null)  compositeScore = dsRate;
+    else if (testMyRate != null) compositeScore = testMyRate;
+
+    let tag = "nodata";
+    if (compositeScore != null) {
+      if (testAvgRate != null && testAvgRate >= 60 && compositeScore < testAvgRate) tag = "weak_easy";
+      else if (testAvgRate != null && testAvgRate >= 40 && compositeScore < testAvgRate - 10) tag = "weak_mid";
+      else if (compositeScore >= 75) tag = "strong";
+      else if (compositeScore >= 55) tag = "ok";
+      else if (compositeScore >= 35) tag = "caution";
+      else tag = "weak";
+    }
+    return {u, dsAnswered, dsRate, testMatches, latestTest, testMyRate, testAvgRate, compositeScore, tag};
+  }).filter(r => r.dsAnswered > 0 || r.testMatches.length > 0);
+};
+
+const sm   = SM[anaSubj];
+const rows = buildUnitSummary(anaSubj).sort((a,b) => TAG_ORDER[a.tag] - TAG_ORDER[b.tag]);
+
+const counts = {strong:0, ok:0, caution:0, weak:0, nodata:0};
+rows.forEach(r => {
+  if (r.tag==="weak_easy"||r.tag==="weak") counts.weak++;
+  else if (r.tag==="weak_mid"||r.tag==="caution") counts.caution++;
+  else if (r.tag==="ok") counts.ok++;
+  else if (r.tag==="strong") counts.strong++;
+  else counts.nodata++;
+});
+
+const RateBar = ({label, rate, max100, sub}) => (
+  <div style={{display:"flex",alignItems:"center",gap:6}}>
+    <span style={{fontSize:9,color:"rgba(255,255,255,.38)",width:72,flexShrink:0}}>{label}</span>
+    <div style={{flex:1,height:5,borderRadius:3,background:"rgba(255,255,255,.07)",overflow:"hidden"}}>
+      <div style={{height:"100%",borderRadius:3,
+        background:rate>=75?"#4ade80":rate>=55?"#60a5fa":rate>=35?"#f59e0b":"#ef4444",
+        width:`${rate}%`,transition:"width .4s"}}/>
+    </div>
+    <span style={{fontSize:10,fontWeight:700,
+      color:rate>=75?"#4ade80":rate>=55?"#60a5fa":rate>=35?"#fcd34d":"#f87171",
+      width:30,textAlign:"right",flexShrink:0}}>{rate}%</span>
+    {sub!=null&&<span style={{fontSize:9,color:"rgba(255,255,255,.2)",width:36,flexShrink:0}}>{sub}</span>}
+  </div>
+);
+
+return (
+<div style={{padding:"16px",paddingBottom:100,animation:"fadeUp .4s ease both"}}>
+  {/* 科目タブ */}
+  <div style={{display:"flex",gap:5,marginBottom:14}}>
+    {SUBJ_KEYS.map(k => {
+      const s = SM[k];
+      return (
+        <button key={k} onClick={()=>setAnaSubj(k)} style={{flex:1,padding:"8px 2px",borderRadius:10,
+          border:`1.5px solid ${anaSubj===k?s.c+"99":"rgba(255,255,255,.1)"}`,
+          background:anaSubj===k?`${s.c}20`:"transparent",
+          color:anaSubj===k?s.c:"rgba(255,255,255,.35)",
+          fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:noto}}>
+          <div style={{fontSize:14}}>{s.i}</div>
+          <div>{s.l}</div>
+        </button>
+      );
+    })}
+  </div>
+
+  {/* サマリーバー */}
+  <div style={{marginBottom:14,borderRadius:12,background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.07)",padding:"12px 14px"}}>
+    <div style={{fontSize:10,opacity:.4,marginBottom:8,letterSpacing:1}}>単元別 習熟度サマリー（{sm.l}）</div>
+    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
+      {[["weak","🔴 苦手・要克服","#ef4444"],["caution","🟡 要注意","#f59e0b"],["ok","〇 普通","#60a5fa"],["strong","✅ 得意","#4ade80"],["nodata","— 未集計","#475569"]].map(([k,l,c])=>(
+        <div key={k} style={{display:"flex",alignItems:"center",gap:4}}>
+          <span style={{fontSize:12,fontWeight:700,color:c}}>{counts[k]}</span>
+          <span style={{fontSize:9,color:"rgba(255,255,255,.3)"}}>{l}</span>
+        </div>
+      ))}
+    </div>
+    {rows.length > 0 && (() => {
+      const total = rows.length;
+      const segments = [
+        {k:"weak",  c:"#ef4444", n:counts.weak},
+        {k:"caution",c:"#f59e0b",n:counts.caution},
+        {k:"ok",    c:"#60a5fa", n:counts.ok},
+        {k:"strong",c:"#4ade80", n:counts.strong},
+        {k:"nodata",c:"#334155", n:counts.nodata},
+      ].filter(s => s.n > 0);
+      return (
+        <div style={{display:"flex",height:6,borderRadius:3,overflow:"hidden"}}>
+          {segments.map((s,i) => (
+            <div key={i} style={{width:`${s.n/total*100}%`,background:s.c,opacity:.8}}/>
+          ))}
+        </div>
+      );
+    })()}
+    <div style={{fontSize:9,opacity:.25,marginTop:6}}>✱ DS正誤入力済み＋テスト弱点記録のある単元のみ集計</div>
+  </div>
+
+  {/* 単元一覧 */}
+  {rows.length === 0 ? (
+    <div style={{textAlign:"center",fontSize:12,opacity:.28,padding:"32px 16px",lineHeight:1.8}}>
+      デイリーサポートの正誤入力またはテスト結果の弱点分野を登録すると、ここに単元別の習熟度が表示されます
+    </div>
+  ) : (
+    <div style={{display:"flex",flexDirection:"column",gap:7}}>
+      {rows.map((r, i) => {
+        const meta = TAG_META[r.tag] || TAG_META.nodata;
+        return (
+          <div key={i} style={{borderRadius:11,background:meta.bg,border:`1px solid ${meta.border}`,padding:"10px 13px"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+              <div style={{fontSize:12,fontWeight:700,color:"white"}}>{r.u.code}「{r.u.title}」</div>
+              <span style={{fontSize:10,fontWeight:700,color:meta.color,background:`${meta.color}22`,
+                padding:"2px 8px",borderRadius:10,flexShrink:0,marginLeft:8}}>{meta.label}</span>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:4}}>
+              {r.dsRate != null && (
+                <RateBar label="DS正答率" rate={r.dsRate} sub={`(${r.dsAnswered}問)`}/>
+              )}
+              {r.testMyRate != null && (
+                <RateBar label="テスト" rate={r.testMyRate} sub={r.testAvgRate!=null?`平均${r.testAvgRate}%`:null}/>
+              )}
+              {r.compositeScore != null && r.dsRate != null && r.testMyRate != null && (
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:9,color:"rgba(255,255,255,.38)",width:72,flexShrink:0}}>総合</span>
+                  <div style={{flex:1,height:5,borderRadius:3,background:"rgba(255,255,255,.07)",overflow:"hidden"}}>
+                    <div style={{height:"100%",borderRadius:3,
+                      background:r.compositeScore>=75?"#4ade80":r.compositeScore>=55?"#a78bfa":r.compositeScore>=35?"#f59e0b":"#ef4444",
+                      width:`${r.compositeScore}%`,transition:"width .4s"}}/>
+                  </div>
+                  <span style={{fontSize:10,fontWeight:700,
+                    color:r.compositeScore>=75?"#4ade80":r.compositeScore>=55?"#a78bfa":r.compositeScore>=35?"#fcd34d":"#f87171",
+                    width:30,textAlign:"right",flexShrink:0}}>{r.compositeScore}%</span>
+                </div>
+              )}
+            </div>
+            {r.testMatches.length > 0 && (
+              <div style={{fontSize:9,opacity:.28,marginTop:5}}>
+                📝 {r.testMatches.slice(0,2).map(m=>m.testName||"テスト").join("・")}に出題
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  )}
+</div>
+);
+}
+
 function HomeScreen({ onOpenDaily, onOpenWS, allAnswers, wsAllAnswers }) {
 const [tab, setTab] = useState("home");
 const [userEvents, setUserEvents] = useState([]);
@@ -8703,7 +9310,15 @@ const [calMonth, setCalMonth] = useState(() => { const d=new Date(); return {y:d
 const [showSapixOnly, setShowSapixOnly] = useState(false);
 const [testScores, setTestScores] = useState([]);
 const [showAddTest, setShowAddTest] = useState(false);
-const [newTest, setNewTest] = useState({ date:"", name:"", math:"", japanese:"", science:"", social:"", total:"", memo:"" });
+const [newTest, setNewTest] = useState({ date:"", name:"", type:"monthly", math:"", japanese:"", science:"", social:"", total:"", hensachi:"", mathH:"", japaneseH:"", scienceH:"", socialH:"", memo:"" });
+const [targetHensachi, setTargetHensachi] = useState(() => {
+  try { const v=localStorage.getItem("sapix_target_hensachi"); return v?parseFloat(v):63; } catch { return 63; }
+});
+const [weakInputStep, setWeakInputStep] = useState("basic"); // "basic"|"weak"
+const [weakViewMode, setWeakViewMode] = useState("weak"); // "weak"|"strong"
+const [newWeakFields, setNewWeakFields] = useState({math:[],japanese:[],science:[],social:[]});
+const [weakInputSubj, setWeakInputSubj] = useState("math");
+const [newWeakRow, setNewWeakRow] = useState({field:"",score:"",avg:"",priority:"high"});
 const [mockTab, setMockTab] = useState("create");
 const [mockSessions, setMockSessions] = useState([]);
 const [mockConfig, setMockConfig] = useState({ subjects:["math"], difficulty:"all", count:10 });
@@ -8942,6 +9557,47 @@ const IMPORTED_TESTS = [
     ],
   },
 },
+{
+  id:"imported-monthly-may",
+  date:"2026-05-14",
+  name:"5月度マンスリー確認テスト",
+  type:"monthly",
+  total:"254", maxTotal:500,
+  hensachi:"45.0",
+  math:"71", mathMax:150, mathHensachi:"45.5",
+  japanese:"69", japaneseMax:150, japaneseHensachi:"37.8",
+  science:"51", scienceMax:100, scienceHensachi:"47.2",
+  social:"63", socialMax:100, socialHensachi:"52.6",
+  memo:"東京校 平常コース6年E",
+  weakFields:{
+    math:[
+      {field:"計算問題",score:"10/15",myRate:67,avgRate:75,avg:11.2,priority:"high",note:"簡単な分野なのに平均を下回る。確実に得点すべき。"},
+      {field:"小問集合（文章題）",score:"22/46",myRate:48,avgRate:60,avg:27.5,priority:"high",note:"受験者の6割が取れている問題で大幅に下回っている。"},
+      {field:"数の性質",score:"5/15",myRate:33,avgRate:52,avg:7.8,priority:"high",note:"平均は半分以上取れている設問。大きく差が出ている。"},
+      {field:"立体図形（水量）",score:"5/15",myRate:33,avgRate:53,avg:7.9,priority:"high",note:"平均53%の問題で33%。水量変化の手順を復習すること。"},
+      {field:"２量の関係",score:"5/15",myRate:33,avgRate:41,avg:6.2,priority:"mid",note:"平均正答率が低い問題。平均前後なので差は小さいが改善余地あり。"},
+      {field:"立体図形",score:"0/15",myRate:0,avgRate:34,avg:5.1,priority:"mid",note:"受験者の難問（平均34%）。0点は厳しいので基礎から確認を。"},
+      {field:"小問集合（図形）",score:"24/29",myRate:83,avgRate:64,avg:18.7,priority:"ok",note:"平均を大幅に上回る。この調子を維持。"},
+    ],
+    japanese:[
+      {field:"漢字の読み書き",score:"14/20",myRate:70,avgRate:77,avg:15.4,priority:"high",note:"受験者の8割近くが取れる基礎分野。ここは満点を目指すべき。"},
+      {field:"ことばの知識",score:"16/20",myRate:80,avgRate:85,avg:17.0,priority:"high",note:"平均85%の易しい分野で80%。知識分野は完全習得を目標に。"},
+      {field:"論説文の読解",score:"16/53",myRate:30,avgRate:59,avg:31.4,priority:"high",note:"受験者の6割が取れているのに自分は30%。論説文の読解力が課題。"},
+      {field:"物語文の読解",score:"23/57",myRate:40,avgRate:47,avg:26.8,priority:"mid",note:"平均前後。物語文は論説文より差が小さい。"},
+    ],
+    science:[
+      {field:"小問集合",score:"4/10",myRate:40,avgRate:64,avg:6.4,priority:"high",note:"平均64%の問題で40%。理科の基礎知識の確認が必要。"},
+      {field:"太陽と月",score:"5/22",myRate:23,avgRate:48,avg:10.6,priority:"high",note:"平均48%の設問で23%。天体分野の理解が不足している。"},
+      {field:"人体",score:"14/22",myRate:64,avgRate:62,avg:13.6,priority:"ok",note:"平均をやや上回る。"},
+      {field:"てこ",score:"14/24",myRate:58,avgRate:60,avg:14.3,priority:"ok",note:"平均並み。"},
+      {field:"ばね",score:"14/22",myRate:64,avgRate:52,avg:11.4,priority:"ok",note:"平均を上回る。"},
+    ],
+    social:[
+      {field:"外交史・文化史に関する問題",score:"42/73",myRate:58,avgRate:56,avg:40.7,priority:"ok",note:"平均をやや上回る。"},
+      {field:"憲法に関する問題",score:"21/27",myRate:78,avgRate:66,avg:17.7,priority:"ok",note:"平均を大きく上回る。"},
+    ],
+  },
+}
 ];
 
 const today = new Date();
@@ -8972,8 +9628,22 @@ setShowAddEvent(false);
 const deleteEvent = async (id) => saveUserEvents(userEvents.filter(e=>e.id!==id));
 const addTest = async () => {
 if (!newTest.date||!newTest.name) return;
-await saveScores([...testScores, {...newTest,id:Date.now().toString()}]);
-setNewTest({date:"",name:"",math:"",japanese:"",science:"",social:"",total:"",memo:""});
+const entry = {
+  ...newTest,
+  id: Date.now().toString(),
+  maxTotal: 500,
+  mathMax: 150, japaneseMax: 150, scienceMax: 100, socialMax: 100,
+  weakFields: {
+    math: newWeakFields.math.filter(r=>r.field),
+    japanese: newWeakFields.japanese.filter(r=>r.field),
+    science: newWeakFields.science.filter(r=>r.field),
+    social: newWeakFields.social.filter(r=>r.field),
+  },
+};
+await saveScores([entry, ...testScores]);
+setNewTest({date:"",name:"",type:"monthly",math:"",japanese:"",science:"",social:"",total:"",hensachi:"",mathH:"",japaneseH:"",scienceH:"",socialH:"",memo:""});
+setNewWeakFields({math:[],japanese:[],science:[],social:[]});
+setWeakInputStep("basic");
 setShowAddTest(false);
 };
 const deleteTest = async (id) => saveScores(testScores.filter(t=>t.id!==id));
@@ -9039,7 +9709,7 @@ setMockSession(null); setMockAnswers({});
 
 const SUBJ_MAP={math:{label:"算数",color:"#3b82f6",icon:"∑"},japanese:{label:"国語",color:"#ef4444",icon:"文"},science:{label:"理科",color:"#22c55e",icon:"⚗"},social:{label:"社会",color:"#f59e0b",icon:"🌏"}};
 const inp={width:"100%",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",borderRadius:9,padding:"10px 12px",color:"white",fontFamily:noto,fontSize:13,outline:"none",marginBottom:8,boxSizing:"border-box",colorScheme:"dark"};
-const TABS=[{id:"home",icon:"🏠",label:"ホーム"},{id:"cal",icon:"📅",label:"カレンダー"},{id:"test",icon:"📝",label:"テスト成績"},{id:"mock",icon:"✏️",label:"模擬テスト"},{id:"daily",icon:"📋",label:"進捗"}];
+const TABS=[{id:"home",icon:"🏠",label:"ホーム"},{id:"cal",icon:"📅",label:"カレンダー"},{id:"test",icon:"📝",label:"テスト成績"},{id:"analysis",icon:"📊",label:"分析"},{id:"mock",icon:"✏️",label:"模擬テスト"},{id:"daily",icon:"📋",label:"進捗"}];
 
 return (
 <div style={{minHeight:"100vh",background:"#060c18",fontFamily:noto,color:"white",paddingBottom:80}}>
@@ -9081,6 +9751,75 @@ const days=Math.round((nextDate-todayMidnight)/86400000);
           <div style={{fontSize:26,fontWeight:900,fontFamily:"monospace",color:t.color}}>{days===0?"今日！":days===1?"明日":days+"日後"}</div>
         </div>
         {next.memo&&<div style={{fontSize:10,opacity:.5,marginTop:6,lineHeight:1.5}}>{next.memo}</div>}
+      </div>
+    );
+  })()}
+
+  {/* 重点強化リスト（テスト弱点＋デイリー低正答率） */}
+  {(()=>{
+    // テストの最新weakFields(priority:high)を収集
+    const allTests=[...IMPORTED_TESTS,...testScores];
+    const latestTest=allTests.sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
+    const testWeak=[];
+    if(latestTest?.weakFields){
+      ["math","japanese","science","social"].forEach(sid=>{
+        (latestTest.weakFields[sid]||[]).forEach(f=>{
+          const my=f.myRate!=null?f.myRate:(f.rate!=null?f.rate:null);
+          const av=f.avgRate!=null?f.avgRate:null;
+          // 難易度ベース: 要克服・要注意のみ表示
+          let isWeak=false;
+          if(av!=null){
+            if(av>=60&&my<av) isWeak=true;        // 簡単なのに取れていない
+            else if(av>=40&&my<av-10) isWeak=true; // 平均を大幅に下回る
+          } else if(f.priority==="high"||f.priority==="mid") isWeak=true;
+          if(isWeak) testWeak.push({sid,field:f.field,from:"test",myRate:my,avgRate:av,score:f.score});
+        });
+        // 重要度順: avgRate高い（簡単なのに落としている）を優先
+        testWeak.sort((a,b)=>(b.avgRate||0)-(a.avgRate||0));
+      });
+    }
+    // デイリーで正答率50%未満の単元
+    const dsWeak=[];
+    ["math","japanese","science","social"].forEach(sid=>{
+      (UNITS[sid]||[]).forEach(u=>{
+        const st=calcStats(u.sections||[],allAnswers[u.id]||{});
+        if(st.answered>=3&&st.total>0){
+          const rate=Math.round(st.correct/st.answered*100);
+          if(rate<50) dsWeak.push({sid,field:u.title,code:u.code,from:"daily",rate});
+        }
+      });
+    });
+    const combined=[...testWeak,...dsWeak.slice(0,4)];
+    if(!combined.length) return null;
+    const SM={math:{l:"算数",c:"#3b82f6",i:"∑"},japanese:{l:"国語",c:"#ef4444",i:"文"},science:{l:"理科",c:"#22c55e",i:"⚗"},social:{l:"社会",c:"#f59e0b",i:"🌏"}};
+    return(
+      <div style={{marginBottom:18,borderRadius:14,background:"rgba(239,68,68,.08)",border:"1.5px solid rgba(239,68,68,.35)",padding:"13px 14px"}}>
+        <div style={{fontSize:10,color:"#f87171",fontWeight:700,letterSpacing:1,marginBottom:10}}>🔴 重点強化リスト</div>
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {combined.slice(0,6).map((w,i)=>{
+            const sm=SM[w.sid]||SM.math;
+            return(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,0,0,.2)",borderRadius:8,padding:"7px 10px"}}>
+                <span style={{fontSize:12,color:sm.c,flexShrink:0}}>{sm.i}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:12,fontWeight:700,color:"white",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{w.from==="daily"&&w.code?`${w.code}「${w.field}」`:w.field}</div>
+                  <div style={{fontSize:9,color:w.from==="test"?"#fca5a5":"#94a3b8",marginTop:1}}>
+                    {w.from==="test"
+                      ?<>{w.avgRate!=null&&w.myRate!=null?`自分${Math.round(w.myRate)}% vs 平均${Math.round(w.avgRate)}%`:"テスト弱点"}
+                         {w.avgRate>=60?" — 易問で失点":""}
+                         {w.avgRate>=40&&w.avgRate<60&&w.myRate<w.avgRate-10?" — 平均を大幅下回る":""}
+                         {w.avgRate<40?" — 難問":""}
+                       </>
+                      :<>デイリー低正答率 {w.rate!=null?`— ${Math.round(w.rate)}%`:""}</>
+                    }
+                  </div>
+                </div>
+                <span style={{fontSize:9,color:w.avgRate>=60?"#ef4444":"#f59e0b",fontWeight:700,background:w.avgRate>=60?"rgba(239,68,68,.15)":"rgba(245,158,11,.15)",padding:"2px 6px",borderRadius:6,flexShrink:0}}>{w.avgRate>=60?"🔴 要克服":"🟡 要注意"}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{fontSize:9,opacity:.4,marginTop:8,textAlign:"right"}}>📝テスト成績タブで詳細確認</div>
       </div>
     );
   })()}
@@ -9233,336 +9972,463 @@ const days=Math.round((nextDate-todayMidnight)/86400000);
 {/* テスト成績タブ */}
 {tab==="test"&&(
 <div style={{padding:"16px",animation:"fadeUp .4s ease both"}}>
-{(() => {
-  // インポート済み＋手入力を古い順に統合
-  const all = [
-    ...IMPORTED_TESTS.map(t=>({...t,imported:true})),
-    ...testScores.map(t=>({...t,imported:false,weakFields:null})),
-  ].sort((a,b)=>a.date.localeCompare(b.date));
 
-  const noto="'Noto Sans JP',sans-serif";
-  const serif="'Noto Serif JP',serif";
-  const sc=scoreColor;
-  const fmtD=fmtDate;
-  const SUBJ_MAP={math:{l:"算数",c:"#3b82f6",i:"∑"},japanese:{l:"国語",c:"#ef4444",i:"文"},science:{l:"理科",c:"#22c55e",i:"⚗"},social:{l:"社会",c:"#f59e0b",i:"🌏"}};
-  const PRI_COLOR={high:"#ef4444",mid:"#f59e0b",low:"#6b7280"};
-  const PRI_LABEL={high:"要克服",mid:"要注意",low:"確認"};
+{/* ── 目標偏差値設定バー ── */}
+{(()=>{
+const SM={math:{l:"算数",c:"#3b82f6"},japanese:{l:"国語",c:"#ef4444"},science:{l:"理科",c:"#22c55e"},social:{l:"社会",c:"#f59e0b"}};
+const allTests=[...IMPORTED_TESTS,...testScores].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+const latestH=parseFloat(allTests[0]?.hensachi)||null;
+const gap=latestH?Math.round((targetHensachi-latestH)*10)/10:null;
+return(
+<div style={{marginBottom:14,borderRadius:13,background:"rgba(99,102,241,.1)",border:"1px solid rgba(99,102,241,.35)",padding:"11px 14px"}}>
+  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+    <div>
+      <div style={{fontSize:10,color:"#a78bfa",fontWeight:700,letterSpacing:1}}>目標偏差値（渋渋合格ライン）</div>
+      {gap!=null&&<div style={{fontSize:11,color:gap<=0?"#4ade80":"#f87171",marginTop:2}}>{gap<=0?`✅ 目標達成（+${Math.abs(gap)}）`:`あと +${gap} で目標達成`}</div>}
+    </div>
+    <div style={{display:"flex",alignItems:"center",gap:6}}>
+      <button onClick={()=>{ const v=Math.max(50,targetHensachi-1); setTargetHensachi(v); try{localStorage.setItem("sapix_target_hensachi",v);}catch{} }} style={{width:26,height:26,borderRadius:13,border:"1px solid rgba(167,139,250,.4)",background:"rgba(167,139,250,.1)",color:"#a78bfa",fontSize:14,cursor:"pointer"}}>−</button>
+      <div style={{fontSize:24,fontWeight:900,fontFamily:"monospace",color:"#a78bfa",minWidth:36,textAlign:"center"}}>{targetHensachi}</div>
+      <button onClick={()=>{ const v=Math.min(80,targetHensachi+1); setTargetHensachi(v); try{localStorage.setItem("sapix_target_hensachi",v);}catch{} }} style={{width:26,height:26,borderRadius:13,border:"1px solid rgba(167,139,250,.4)",background:"rgba(167,139,250,.1)",color:"#a78bfa",fontSize:14,cursor:"pointer"}}>＋</button>
+    </div>
+  </div>
+</div>
+);
+})()}
 
-  // 克服提案生成
-  const makeSuggestions = (t) => {
-    if (!t.weakFields) return null;
-    const suggs=[];
-    const subjects=["math","japanese","science","social"];
-    for (const s of subjects) {
-      const fields=(t.weakFields[s]||[]).filter(f=>f.priority==="high"||f.priority==="mid");
-      if (!fields.length) continue;
-      const subj=SUBJ_MAP[s];
-      // 各科目の弱点分野に対応するUNITSから関連単元を探す
-      const relatedUnits=[];
-      const unitList=UNITS[s]||[];
-      for (const f of fields) {
-        const matched=unitList.filter(u=>
-          u.title.includes(f.field.split("（")[0]) ||
-          u.title.includes(f.field.replace(/[・（）]/g,"")) ||
-          f.field.includes(u.title.split("(")[0]) ||
-          f.field.includes(u.title)
-        ).slice(0,2);
-        if (matched.length) relatedUnits.push(...matched);
-      }
-      suggs.push({subject:s,subj,fields,relatedUnits:[...new Set(relatedUnits)]});
-    }
-    return suggs;
-  };
+{/* ── 偏差値推移グラフ ── */}
+{(()=>{
+const allTests=[...IMPORTED_TESTS,...testScores].sort((a,b)=>(a.date||"").localeCompare(b.date||""));
+if(allTests.length<1) return <div style={{textAlign:"center",fontSize:12,opacity:.28,padding:"18px 0",marginBottom:14}}>テスト結果を登録すると推移グラフが表示されます</div>;
+const W=320,H=120,PAD={t:10,r:10,b:24,l:30};
+const allH=allTests.map(t=>parseFloat(t.hensachi)).filter(x=>!isNaN(x));
+const minH=Math.max(30,Math.floor((Math.min(...allH)-3)/5)*5);
+const maxH=Math.min(80,Math.ceil((Math.max(Math.max(...allH),targetHensachi)+3)/5)*5);
+const xScale=(i)=>PAD.l+(i/(Math.max(allTests.length-1,1)))*(W-PAD.l-PAD.r);
+const yScale=(v)=>PAD.t+(maxH-v)/(maxH-minH)*(H-PAD.t-PAD.b);
+const targetY=yScale(targetHensachi);
+const SM={math:"#3b82f6",japanese:"#ef4444",science:"#22c55e",social:"#f59e0b"};
+const subjKeys=["math","japanese","science","social"];
+const subjH={math:[],japanese:[],science:[],social:[]};
+allTests.forEach(t=>{
+  subjKeys.forEach(k=>{
+    const v=parseFloat(t[k+"H"]||t[k+"Hensachi"])||null;
+    subjH[k].push(v);
+  });
+});
+const makeLine=(vals,color)=>{
+  const pts=vals.map((v,i)=>v!=null?`${xScale(i).toFixed(1)},${yScale(v).toFixed(1)}`:null).filter(Boolean);
+  if(pts.length<2) return "";
+  return `<polyline points="${pts.join(" ")}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.6" stroke-dasharray="4,3"/>`;
+};
+const mainPts=allTests.map((t,i)=>{const v=parseFloat(t.hensachi);return isNaN(v)?null:`${xScale(i).toFixed(1)},${yScale(v).toFixed(1)}`;}).filter(Boolean);
+const mainLine=mainPts.length>=2?`<polyline points="${mainPts.join(" ")}" fill="none" stroke="#a78bfa" stroke-width="2.5"/>`:"";
+const ygridLines=[minH,minH+(maxH-minH)/4,minH+(maxH-minH)/2,minH+(maxH-minH)*3/4,maxH].map(v=>
+  `<line x1="${PAD.l}" y1="${yScale(v).toFixed(1)}" x2="${W-PAD.r}" y2="${yScale(v).toFixed(1)}" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+   <text x="${PAD.l-3}" y="${(yScale(v)+3).toFixed(1)}" fill="rgba(255,255,255,.3)" font-size="8" text-anchor="end">${Math.round(v)}</text>`
+).join("");
+const dots=allTests.map((t,i)=>{const v=parseFloat(t.hensachi);if(isNaN(v))return"";const x=xScale(i),y=yScale(v);return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#a78bfa" stroke="#060c18" stroke-width="1.5"/><text x="${x.toFixed(1)}" y="${(y-7).toFixed(1)}" fill="#c4b5fd" font-size="8" text-anchor="middle">${v}</text>`;}).join("");
+const xlabels=allTests.map((t,i)=>`<text x="${xScale(i).toFixed(1)}" y="${H-2}" fill="rgba(255,255,255,.3)" font-size="7" text-anchor="middle">${(t.date||"").slice(5)}</text>`).join("");
+const svg=`<svg width="100%" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+  ${ygridLines}
+  <line x1="${PAD.l}" y1="${targetY.toFixed(1)}" x2="${W-PAD.r}" y2="${targetY.toFixed(1)}" stroke="#a78bfa" stroke-width="1" stroke-dasharray="5,3" opacity="0.7"/>
+  <text x="${(W-PAD.r+2).toFixed(1)}" y="${(targetY+3).toFixed(1)}" fill="#a78bfa" font-size="8">目標</text>
+  ${Object.entries(SM).map(([k,c])=>makeLine(subjH[k],c)).join("")}
+  ${mainLine}
+  ${dots}
+  ${xlabels}
+</svg>`;
+return(
+<div style={{marginBottom:14,borderRadius:13,background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.08)",padding:"12px 10px"}}>
+  <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.5)",letterSpacing:1,marginBottom:8}}>偏差値推移グラフ</div>
+  <div dangerouslySetInnerHTML={{__html:svg}}/>
+  <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:8}}>
+    <div style={{display:"flex",alignItems:"center",gap:3}}><div style={{width:16,height:3,background:"#a78bfa",borderRadius:2}}/><span style={{fontSize:9,opacity:.5}}>4科総合</span></div>
+    {Object.entries({math:"#3b82f6",japanese:"#ef4444",science:"#22c55e",social:"#f59e0b"}).map(([k,c])=>(
+      <div key={k} style={{display:"flex",alignItems:"center",gap:3}}><div style={{width:14,height:2,background:c,borderRadius:1,opacity:.6}}/><span style={{fontSize:9,opacity:.4}}>{k==="math"?"算":k==="japanese"?"国":k==="science"?"理":"社"}</span></div>
+    ))}
+    <div style={{display:"flex",alignItems:"center",gap:3}}><div style={{width:16,height:1,background:"#a78bfa",borderRadius:1,opacity:.6,borderTop:"1px dashed #a78bfa"}}/><span style={{fontSize:9,color:"#a78bfa",opacity:.7}}>目標</span></div>
+  </div>
+</div>
+);
+})()}
 
-  if (selectedTest) {
-    const t=selectedTest;
-    const suggs=makeSuggestions(t);
-    return (
-      <div>
-        {/* 戻るボタン */}
-        <button onClick={()=>setSelectedTest(null)} style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",color:"rgba(255,255,255,.65)",padding:"5px 14px",borderRadius:20,fontSize:12,cursor:"pointer",fontFamily:noto,marginBottom:14,display:"flex",alignItems:"center",gap:5}}>
-          ‹ テスト一覧に戻る
-        </button>
-
-        {/* テスト詳細ヘッダー */}
-        <div style={{borderRadius:16,background:"linear-gradient(135deg,#0f1e3a,#162d4f)",border:"1px solid rgba(59,130,246,.3)",padding:"16px",marginBottom:16}}>
-          <div style={{fontSize:10,color:"#60a5fa",fontWeight:700,letterSpacing:1,marginBottom:5}}>{fmtD(t.date)}</div>
-          <div style={{fontSize:17,fontWeight:700,fontFamily:serif,marginBottom:12}}>{t.name}</div>
-          {/* 合計 */}
-          <div style={{display:"flex",alignItems:"baseline",gap:10,marginBottom:10}}>
-            <div style={{fontSize:42,fontWeight:900,fontFamily:"monospace",color:sc(parseFloat(t.hensachi))}}>{t.total}</div>
-            <div style={{fontSize:14,opacity:.5}}>/ {t.maxTotal||500}点</div>
-            <div style={{marginLeft:"auto",textAlign:"right"}}>
-              <div style={{fontSize:30,fontWeight:900,fontFamily:"monospace",color:sc(parseFloat(t.hensachi))}}>{t.hensachi}</div>
-              <div style={{fontSize:10,opacity:.45}}>4科偏差値</div>
-            </div>
+{/* ── テスト一覧（詳細クリック） ── */}
+{!selectedTest&&(()=>{
+const allTests=[...IMPORTED_TESTS,...testScores].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+const SM={math:{l:"算",c:"#3b82f6"},japanese:{l:"国",c:"#ef4444"},science:{l:"理",c:"#22c55e"},social:{l:"社",c:"#f59e0b"}};
+const TYPE_LABEL={monthly:"マンスリー",kumiwake:"組分け",fukushuu:"復習",sapixopen:"オープン"};
+return(
+<div>
+  <div style={{fontSize:10,opacity:.3,letterSpacing:2,marginBottom:10}}>テスト結果一覧</div>
+  {allTests.length===0&&<div style={{textAlign:"center",fontSize:12,opacity:.28,padding:"18px 0"}}>テスト結果がありません</div>}
+  <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14}}>
+  {allTests.map((t,i)=>{
+    const h=parseFloat(t.hensachi)||null;
+    const gap=h?Math.round((targetHensachi-h)*10)/10:null;
+    const highWeak=Object.values(t.weakFields||{}).flat().filter(f=>f.priority==="high");
+    return(
+      <div key={t.id||i} onClick={()=>setSelectedTest(t)} style={{borderRadius:12,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",padding:"12px 14px",cursor:"pointer"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+          <div>
+            <div style={{fontSize:12,fontWeight:700}}>{t.name}</div>
+            <div style={{fontSize:9,opacity:.4,marginTop:1}}>{t.date} {TYPE_LABEL[t.type]||""}</div>
           </div>
-          {/* 科目別 */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
-            {["math","japanese","science","social"].map(k=>{
-              const si=SUBJ_MAP[k];
-              const score=parseFloat(t[k]);
-              const hens=parseFloat(t[k+"Hensachi"]);
-              const max=t[k+"Max"]||0;
-              return (
-                <div key={k} style={{background:`${si.c}18`,border:`1px solid ${si.c}33`,borderRadius:10,padding:"8px 6px",textAlign:"center"}}>
-                  <div style={{fontSize:10,marginBottom:2}}>{si.i}</div>
-                  <div style={{fontSize:15,fontWeight:900,fontFamily:"monospace",color:sc(hens)}}>{t[k]}</div>
-                  <div style={{fontSize:8,opacity:.45}}>/  {max}</div>
-                  <div style={{fontSize:11,fontWeight:700,color:sc(hens),fontFamily:"monospace"}}>{t[k+"Hensachi"]||"—"}</div>
-                  <div style={{fontSize:8,opacity:.38}}>偏差値</div>
-                </div>
-              );
-            })}
+          <div style={{textAlign:"right"}}>
+            {h!=null&&<div style={{fontSize:24,fontWeight:900,fontFamily:"monospace",color:h>=targetHensachi?"#4ade80":h>=targetHensachi-5?"#f59e0b":"#f87171"}}>{h}</div>}
+            {gap!=null&&<div style={{fontSize:9,color:gap<=0?"#4ade80":"#f87171"}}>{gap<=0?`目標達成`:gap>0?`目標まで+${gap}`:""}</div>}
           </div>
         </div>
-
-        {/* 弱点分野 */}
-        {t.weakFields && (
-          <div style={{marginBottom:16}}>
-            <div style={{fontSize:10,opacity:.35,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>弱点分野（正答率が低い順）</div>
-            {["math","japanese","science","social"].map(k=>{
-              const fields=t.weakFields[k]||[];
-              if (!fields.length) return null;
-              const si=SUBJ_MAP[k];
-              return (
-                <div key={k} style={{marginBottom:12,background:`${si.c}0d`,border:`1px solid ${si.c}22`,borderRadius:13}}>
-                  <div style={{padding:"10px 14px 6px",display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{fontSize:16}}>{si.i}</span>
-                    <span style={{fontSize:13,fontWeight:700,color:si.c}}>{si.l}</span>
-                  </div>
-                  {fields.map((f,i)=>(
-                    <div key={i} style={{padding:"7px 14px",borderTop:i===0?"1px solid rgba(255,255,255,.05)":"none",display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{width:4,height:4,borderRadius:"50%",background:PRI_COLOR[f.priority],flexShrink:0}}/>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:12,color:"white",fontWeight:f.priority==="high"?600:400}}>{f.field}</div>
-                        <div style={{fontSize:10,opacity:.45,marginTop:1}}>得点 {f.score} · 受験者平均 {f.avg}点</div>
-                      </div>
-                      {/* 正答率バー */}
-                      <div style={{width:60,textAlign:"right"}}>
-                        <div style={{fontSize:11,fontWeight:700,fontFamily:"monospace",color:PRI_COLOR[f.priority]}}>{Math.round(f.rate)}%</div>
-                        <div style={{height:3,borderRadius:2,background:"rgba(255,255,255,.1)",overflow:"hidden",marginTop:2}}>
-                          <div style={{height:"100%",borderRadius:2,background:PRI_COLOR[f.priority],width:`${f.rate}%`}}/>
-                        </div>
-                      </div>
-                      <span style={{fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:6,background:`${PRI_COLOR[f.priority]}22`,color:PRI_COLOR[f.priority],flexShrink:0}}>{PRI_LABEL[f.priority]}</span>
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* 克服のための提案 */}
-        {suggs && suggs.length>0 && (
-          <div>
-            <div style={{fontSize:10,opacity:.35,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>📌 克服のための学習提案</div>
-            {suggs.map((sg,i)=>(
-              <div key={i} style={{marginBottom:12,background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,overflow:"hidden"}}>
-                <div style={{padding:"10px 14px",background:`${sg.subj.c}18`,borderBottom:"1px solid rgba(255,255,255,.06)",display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:16}}>{sg.subj.i}</span>
-                  <span style={{fontSize:13,fontWeight:700,color:sg.subj.c}}>{sg.subj.l}の克服ポイント</span>
-                </div>
-                <div style={{padding:"10px 14px"}}>
-                  {/* 優先度高の弱点 */}
-                  {sg.fields.filter(f=>f.priority==="high").length>0 && (
-                    <div style={{marginBottom:10}}>
-                      <div style={{fontSize:10,color:"#ef4444",fontWeight:700,marginBottom:6}}>🔴 最優先で取り組む分野</div>
-                      {sg.fields.filter(f=>f.priority==="high").map((f,j)=>(
-                        <div key={j} style={{fontSize:12,background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.2)",borderRadius:8,padding:"7px 10px",marginBottom:5,lineHeight:1.5}}>
-                          <span style={{fontWeight:700,color:"#fca5a5"}}>{f.field}</span>
-                          <span style={{opacity:.55}}> — 正答率{Math.round(f.rate)}%（平均{f.avg}点）</span>
-                          <div style={{fontSize:11,opacity:.65,marginTop:3}}>
-                            {f.rate===0
-                              ? "完全に白紙・理解不足の可能性あり。まずテキストの「導入と基本」から再確認しましょう。"
-                              : f.rate<30
-                              ? "基礎的な理解はあるが解法が身についていない。類題をくり返し練習してください。"
-                              : "理解はできているが本番で得点できていない。時間配分や見直しの習慣を確認しましょう。"}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {/* 優先度中の弱点 */}
-                  {sg.fields.filter(f=>f.priority==="mid").length>0 && (
-                    <div style={{marginBottom:10}}>
-                      <div style={{fontSize:10,color:"#f59e0b",fontWeight:700,marginBottom:6}}>🟡 次に取り組む分野</div>
-                      {sg.fields.filter(f=>f.priority==="mid").map((f,j)=>(
-                        <div key={j} style={{fontSize:12,background:"rgba(245,158,11,.06)",border:"1px solid rgba(245,158,11,.2)",borderRadius:8,padding:"7px 10px",marginBottom:5,lineHeight:1.5}}>
-                          <span style={{fontWeight:600,color:"#fcd34d"}}>{f.field}</span>
-                          <span style={{opacity:.55}}> — 正答率{Math.round(f.rate)}%</span>
-                          <div style={{fontSize:11,opacity:.6,marginTop:3}}>デイリーサポートで類似単元を重点的に○×チェックしてパターンを確認しましょう。</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {/* 関連デイリー単元 */}
-                  {sg.relatedUnits.length>0 && (
-                    <div style={{borderTop:"1px solid rgba(255,255,255,.06)",paddingTop:8,marginTop:6}}>
-                      <div style={{fontSize:10,opacity:.38,marginBottom:6}}>📋 デイリーサポートで確認すべき単元</div>
-                      <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-                        {sg.relatedUnits.slice(0,4).map((u,j)=>(
-                          <span key={j} onClick={onOpenDaily} style={{fontSize:10,fontWeight:700,padding:"4px 10px",borderRadius:20,background:`${sg.subj.c}22`,color:sg.subj.c,border:`1px solid ${sg.subj.c}44`,cursor:"pointer"}}>
-                            {u.code}「{u.title}」
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5,marginBottom:highWeak.length>0?8:0}}>
+          {["math","japanese","science","social"].map(k=>{
+            const sm=SM[k];
+            const sc=parseInt(t[k])||null;
+            const mx=k==="math"||k==="japanese"?150:100;
+            const sh=parseFloat(t[k+"H"]||t[k+"Hensachi"])||null;
+            return(
+              <div key={k} style={{textAlign:"center",background:`${sm.c}18`,borderRadius:8,padding:"5px 3px"}}>
+                <div style={{fontSize:9,color:sm.c,fontWeight:700}}>{sm.l}</div>
+                <div style={{fontSize:14,fontWeight:900,fontFamily:"monospace"}}>{sc!=null?sc:"—"}</div>
+                <div style={{fontSize:8,opacity:.45}}>/{mx}点</div>
+                {sh!=null&&<div style={{fontSize:9,color:"#a78bfa"}}>{sh}</div>}
               </div>
+            );
+          })}
+        </div>
+        {highWeak.length>0&&(
+          <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+            <span style={{fontSize:9,color:"#f87171",fontWeight:700}}>🔴 要克服:</span>
+            {highWeak.slice(0,3).map((f,j)=>(
+              <span key={j} style={{fontSize:9,padding:"1px 6px",borderRadius:5,background:"rgba(239,68,68,.15)",color:"#fca5a5",border:"1px solid rgba(239,68,68,.25)"}}>{f.field}</span>
             ))}
-
-            {/* 全体コメント */}
-            <div style={{background:"rgba(59,130,246,.06)",border:"1px solid rgba(59,130,246,.2)",borderRadius:13,padding:"12px 14px",marginTop:4}}>
-              <div style={{fontSize:11,fontWeight:700,color:"#60a5fa",marginBottom:6}}>💡 総合アドバイス</div>
-              <div style={{fontSize:12,lineHeight:1.7,opacity:.75}}>
-                {parseFloat(t.hensachi)<40
-                  ? "基礎の定着が課題です。デイリーサポートの「★基礎」問題から確実に正解できるよう、毎日少しずつ取り組みましょう。模擬テストも★基礎のみで設定して、自信をつけるところから始めるのがおすすめです。"
-                  : parseFloat(t.hensachi)<45
-                  ? "基礎は身についてきていますが、応用での取りこぼしが見られます。弱点分野の単元をデイリーサポートで重点チェックし、間違えた問題は翌日に必ず見直す習慣をつけましょう。"
-                  : "安定した得点力があります。偏差値50超えを目指して、★★標準〜★★★発展問題への挑戦を増やしましょう。模擬テストで難易度を上げて練習するのも効果的です。"}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 手入力テストには弱点データなし */}
-        {!t.weakFields && (
-          <div style={{background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"14px",textAlign:"center"}}>
-            <div style={{fontSize:12,opacity:.4}}>手入力データには分野別の詳細情報がありません。</div>
+            {highWeak.length>3&&<span style={{fontSize:9,opacity:.4}}>+{highWeak.length-3}</span>}
           </div>
         )}
       </div>
     );
+  })}
+  </div>
+</div>
+);
+})()}
+
+{/* ── テスト詳細画面 ── */}
+{selectedTest&&(()=>{
+const t=selectedTest;
+const SM={math:{l:"算数",c:"#3b82f6",i:"∑"},japanese:{l:"国語",c:"#ef4444",i:"文"},science:{l:"理科",c:"#22c55e",i:"⚗"},social:{l:"社会",c:"#f59e0b",i:"🌏"}};
+// 難易度ベースの評価関数: myRate(自分の正答率) と avgRate(受験者平均=問題難易度) を使う
+const getDiffLabel=(f)=>{
+  const my=f.myRate!=null?f.myRate:(f.rate!=null?f.rate:null);
+  const av=f.avgRate!=null?f.avgRate:null;
+  if(my==null) return {label:"",color:"#6b7280",bg:"rgba(107,114,128,.1)",border:"rgba(107,114,128,.2)"};
+  if(av==null){
+    // avgRateがない古いデータはpriorityで判定
+    if(f.priority==="high") return {label:"🔴 要克服",color:"#ef4444",bg:"rgba(239,68,68,.08)",border:"rgba(239,68,68,.25)"};
+    if(f.priority==="mid")  return {label:"🟡 要注意",color:"#f59e0b",bg:"rgba(245,158,11,.08)",border:"rgba(245,158,11,.25)"};
+    return {label:"✅ 平均以上",color:"#4ade80",bg:"rgba(74,222,128,.06)",border:"rgba(74,222,128,.2)"};
   }
-
-  // ── テスト一覧（古い順） ──
-  return (
-    <div>
-      {/* 偏差値推移ミニグラフ */}
-      {all.length>1 && (
-        <div style={{marginBottom:18,background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.07)",borderRadius:14,padding:"14px"}}>
-          <div style={{fontSize:10,opacity:.35,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>4科偏差値の推移</div>
-          <div style={{display:"flex",alignItems:"flex-end",gap:4,height:60}}>
-            {all.map((t,i)=>{
-              const h=parseFloat(t.hensachi)||35;
-              const barH=Math.max(4,((h-30)/(60-30))*56);
-              const c=sc(h);
-              return (
-                <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-                  <div style={{fontSize:9,fontWeight:700,fontFamily:"monospace",color:c}}>{h.toFixed(1)}</div>
-                  <div style={{width:"100%",borderRadius:"3px 3px 0 0",background:c,height:barH,transition:"height .5s"}}/>
-                </div>
-              );
-            })}
-          </div>
-          <div style={{display:"flex",gap:4,marginTop:5}}>
-            {all.map((t,i)=>{
-              const d=new Date(t.date+"T00:00:00");
-              return <div key={i} style={{flex:1,fontSize:8,opacity:.38,textAlign:"center"}}>{d.getMonth()+1}/{d.getDate()}</div>;
-            })}
-          </div>
+  if(av>=60&&my<av)    return {label:"🔴 要克服",sub:"簡単な問題で失点",color:"#ef4444",bg:"rgba(239,68,68,.08)",border:"rgba(239,68,68,.25)"};
+  if(av>=40&&my<av-10) return {label:"🟡 要注意",sub:"平均を大幅に下回る",color:"#f59e0b",bg:"rgba(245,158,11,.08)",border:"rgba(245,158,11,.25)"};
+  if(av<40&&my<av)     return {label:"⚪ 難問",sub:"難問だが平均を下回る",color:"#94a3b8",bg:"rgba(148,163,184,.06)",border:"rgba(148,163,184,.2)"};
+  return {label:"✅ 平均以上",color:"#4ade80",bg:"rgba(74,222,128,.06)",border:"rgba(74,222,128,.2)"};
+};
+const makeSuggestions=()=>{
+  if(!t.weakFields) return [];
+  return ["math","japanese","science","social"].map(s=>{
+    const allFields=(t.weakFields[s]||[]);
+    const fields=allFields.filter(f=>{
+      const dl=getDiffLabel(f);
+      return dl.label!=="✅ 平均以上";
+    });
+    if(!fields.length) return null;
+    const relatedUnits=[];
+    const unitList=UNITS[s]||[];
+    fields.forEach(f=>{
+      const matched=unitList.filter(u=>u.title.includes(f.field.split("（")[0])||f.field.includes(u.title)).slice(0,2);
+      relatedUnits.push(...matched);
+    });
+    return{sid:s,subj:SM[s],fields,relatedUnits:[...new Set(relatedUnits)]};
+  }).filter(Boolean);
+};
+const suggs=makeSuggestions();
+const h=parseFloat(t.hensachi)||null;
+const gap=h?Math.round((targetHensachi-h)*10)/10:null;
+return(
+<div>
+  <button onClick={()=>setSelectedTest(null)} style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",color:"rgba(255,255,255,.65)",padding:"5px 14px",borderRadius:20,fontSize:12,cursor:"pointer",fontFamily:noto,marginBottom:14}}>‹ 一覧に戻る</button>
+  {/* ヘッダー */}
+  <div style={{borderRadius:16,background:"linear-gradient(135deg,#0f1e3a,#162d4f)",border:"1px solid rgba(59,130,246,.3)",padding:"16px",marginBottom:14}}>
+    <div style={{fontSize:10,color:"#60a5fa",fontWeight:700,letterSpacing:1,marginBottom:4}}>{t.date}</div>
+    <div style={{fontSize:17,fontWeight:700,fontFamily:serif,marginBottom:10}}>{t.name}</div>
+    <div style={{display:"flex",alignItems:"baseline",gap:10,marginBottom:10}}>
+      <div style={{fontSize:40,fontWeight:900,fontFamily:"monospace",color:h>=targetHensachi?"#4ade80":h>=targetHensachi-5?"#f59e0b":"#f87171"}}>{t.total}</div>
+      <div style={{fontSize:13,opacity:.5}}>/ {t.maxTotal||500}点</div>
+      <div style={{marginLeft:"auto",textAlign:"right"}}>
+        {h!=null&&<><div style={{fontSize:28,fontWeight:900,fontFamily:"monospace",color:h>=targetHensachi?"#4ade80":h>=targetHensachi-5?"#f59e0b":"#f87171"}}>{h}</div><div style={{fontSize:9,opacity:.45}}>4科偏差値</div></>}
+        {gap!=null&&<div style={{fontSize:10,color:gap<=0?"#4ade80":"#f87171",marginTop:2}}>{gap<=0?`目標達成✅`:`目標まで+${gap}`}</div>}
+      </div>
+    </div>
+    {/* 目標偏差値ゲージ */}
+    {h!=null&&(
+      <div style={{marginBottom:10}}>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:9,opacity:.4,marginBottom:3}}><span>40</span><span>目標{targetHensachi}</span><span>80</span></div>
+        <div style={{height:6,borderRadius:3,background:"rgba(255,255,255,.1)",position:"relative",overflow:"visible"}}>
+          <div style={{height:"100%",borderRadius:3,background:"linear-gradient(90deg,#ef4444,#f59e0b,#4ade80)",width:`${Math.min(100,Math.max(0,(h-40)/(80-40)*100))}%`}}/>
+          <div style={{position:"absolute",top:-2,left:`${Math.min(100,Math.max(0,(targetHensachi-40)/(80-40)*100))}%`,transform:"translateX(-50%)",width:2,height:10,background:"#a78bfa",borderRadius:1}}/>
         </div>
-      )}
+      </div>
+    )}
+    {/* 科目別 */}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
+      {["math","japanese","science","social"].map(k=>{
+        const sm=SM[k]; const sc=parseInt(t[k])||null; const mx=k==="math"||k==="japanese"?150:100;
+        const sh=parseFloat(t[k+"H"]||t[k+"Hensachi"])||null;
+        const pct=sc!=null?Math.round(sc/mx*100):null;
+        return(
+          <div key={k} style={{textAlign:"center",background:`${sm.c}18`,borderRadius:10,padding:"8px 4px",border:`1px solid ${sm.c}33`}}>
+            <div style={{fontSize:11,color:sm.c,fontWeight:700,marginBottom:2}}>{sm.i}</div>
+            <div style={{fontSize:16,fontWeight:900,fontFamily:"monospace"}}>{sc!=null?sc:"—"}</div>
+            <div style={{fontSize:8,opacity:.45}}>/{mx}</div>
+            {sh!=null&&<div style={{fontSize:10,color:"#a78bfa",fontWeight:700}}>{sh}</div>}
+            {pct!=null&&<div style={{marginTop:4,height:3,borderRadius:2,background:"rgba(255,255,255,.1)",overflow:"hidden"}}><div style={{height:"100%",background:sm.c,width:`${pct}%`}}/></div>}
+          </div>
+        );
+      })}
+    </div>
+  </div>
 
-      <div style={{fontSize:10,opacity:.35,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>テスト一覧（古い順）　タップで詳細・克服提案</div>
+  {/* 弱点分野＋得意分野（切り替えボタン付き） */}
+  {(()=>{
+    // 得意分野（平均以上）
+    const makeStrengths=()=>{
+      if(!t.weakFields) return [];
+      return ["math","japanese","science","social"].map(s=>{
+        const fields=(t.weakFields[s]||[]).filter(f=>{
+          const dl=getDiffLabel(f);
+          return dl.label==="✅ 平均以上";
+        });
+        if(!fields.length) return null;
+        return{sid:s,subj:SM[s],fields};
+      }).filter(Boolean);
+    };
+    const strengths=makeStrengths();
+    const hasWeak=suggs.length>0;
+    const hasStrong=strengths.length>0;
+    if(!hasWeak&&!hasStrong) return null;
 
-      <div style={{display:"flex",flexDirection:"column",gap:10}}>
-        {all.map((t,i)=>{
-          const h=parseFloat(t.hensachi)||null;
-          const hColor=sc(h);
-          const isImported=t.imported;
-          return (
-            <div key={t.id||i} onClick={()=>setSelectedTest(t)}
-              style={{borderRadius:14,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",overflow:"hidden",cursor:"pointer",transition:"border-color .15s",boxShadow:"none"}}
-              onMouseEnter={e=>e.currentTarget.style.borderColor="rgba(59,130,246,.4)"}
-              onMouseLeave={e=>e.currentTarget.style.borderColor="rgba(255,255,255,.08)"}>
-              {/* ヘッダー行 */}
-              <div style={{padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:10,opacity:.4,marginBottom:3}}>{fmtD(t.date)}{isImported?" · PDFから取込":""}</div>
-                  <div style={{fontSize:14,fontWeight:700,fontFamily:serif,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name}</div>
-                </div>
-                <div style={{textAlign:"right",flexShrink:0}}>
-                  <div style={{fontSize:26,fontWeight:900,fontFamily:"monospace",color:hColor,lineHeight:1}}>{t.total||"—"}</div>
-                  <div style={{fontSize:9,opacity:.4}}>/{t.maxTotal||500}点</div>
-                </div>
-                <div style={{textAlign:"right",flexShrink:0,minWidth:40}}>
-                  <div style={{fontSize:20,fontWeight:900,fontFamily:"monospace",color:hColor,lineHeight:1}}>{h?h.toFixed(1):"—"}</div>
-                  <div style={{fontSize:8,opacity:.38}}>偏差値</div>
-                </div>
-                <div style={{color:"rgba(255,255,255,.3)",fontSize:16}}>›</div>
-              </div>
-              {/* 科目別バー */}
-              {(t.math||t.japanese||t.science||t.social) && (
-                <div style={{padding:"0 14px 10px",display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5}}>
-                  {["math","japanese","science","social"].map(k=>{
-                    const si=SUBJ_MAP[k];
-                    const hv=parseFloat(t[k+"Hensachi"]);
-                    return (
-                      <div key={k} style={{textAlign:"center"}}>
-                        <div style={{fontSize:9,color:si.c,opacity:.8}}>{si.i}{si.l}</div>
-                        <div style={{fontSize:13,fontWeight:900,fontFamily:"monospace",color:sc(hv)}}>{t[k]||"—"}</div>
-                        {hv&&<div style={{fontSize:8,opacity:.38,fontFamily:"monospace"}}>{hv.toFixed(1)}</div>}
-                      </div>
-                    );
-                  })}
+    // 共通カードUI
+    const FieldCard=({f,subj})=>{
+      const dl=getDiffLabel(f);
+      const my=f.myRate!=null?f.myRate:(f.rate!=null?Math.round(f.rate):null);
+      const av=f.avgRate!=null?Math.round(f.avgRate):null;
+      return(
+        <div style={{fontSize:12,background:dl.bg,border:`1px solid ${dl.border}`,borderRadius:10,padding:"9px 11px",marginBottom:7,lineHeight:1.6}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+            <span style={{fontWeight:700,color:"white",fontSize:13}}>{f.field}</span>
+            <span style={{fontSize:10,fontWeight:700,color:dl.color,background:`${dl.color}22`,padding:"2px 7px",borderRadius:10,flexShrink:0,marginLeft:6}}>
+              {dl.label}{dl.sub?` — ${dl.sub}`:""}
+            </span>
+          </div>
+          {(my!=null||av!=null)&&(
+            <div style={{marginBottom:5}}>
+              {my!=null&&(
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+                  <span style={{fontSize:9,color:"rgba(255,255,255,.4)",width:60,flexShrink:0}}>自分</span>
+                  <div style={{flex:1,height:5,borderRadius:3,background:"rgba(255,255,255,.08)",overflow:"hidden"}}>
+                    <div style={{height:"100%",borderRadius:3,background:my<40?"#ef4444":my<60?"#f59e0b":"#4ade80",width:`${my}%`,transition:"width .4s"}}/>
+                  </div>
+                  <span style={{fontSize:10,fontWeight:700,color:my<40?"#f87171":my<60?"#fcd34d":"#4ade80",width:34,textAlign:"right",flexShrink:0}}>{my}%</span>
                 </div>
               )}
-              {/* 弱点ありバッジ */}
-              {isImported && (
-                <div style={{padding:"6px 14px",borderTop:"1px solid rgba(255,255,255,.05)",display:"flex",gap:5,flexWrap:"wrap"}}>
-                  {["math","japanese","science","social"].map(k=>{
-                    const wf=(t.weakFields||{})[k]||[];
-                    const high=wf.filter(f=>f.priority==="high").length;
-                    if (!high) return null;
-                    const si=SUBJ_MAP[k];
-                    return <span key={k} style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:10,background:"rgba(239,68,68,.15)",color:"#f87171",border:"1px solid rgba(239,68,68,.3)"}}>{si.i}{si.l} 要克服{high}分野</span>;
-                  })}
+              {av!=null&&(
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:9,color:"rgba(255,255,255,.4)",width:60,flexShrink:0}}>受験者平均</span>
+                  <div style={{flex:1,height:5,borderRadius:3,background:"rgba(255,255,255,.08)",overflow:"hidden"}}>
+                    <div style={{height:"100%",borderRadius:3,background:"rgba(148,163,184,.5)",width:`${av}%`}}/>
+                  </div>
+                  <span style={{fontSize:10,color:"rgba(255,255,255,.35)",width:34,textAlign:"right",flexShrink:0}}>{av}%</span>
                 </div>
               )}
             </div>
-          );
-        })}
-      </div>
-
-      {/* 手入力追加ボタン */}
-      <div style={{marginTop:14}}>
-        <button onClick={()=>setShowAddTest(true)} style={{width:"100%",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.3)",borderRadius:12,padding:"12px",fontSize:13,fontWeight:700,color:"#f87171",cursor:"pointer",fontFamily:noto}}>＋ テスト結果を手入力</button>
-      </div>
-      {showAddTest&&(
-        <div style={{marginTop:10,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)",borderRadius:13,padding:"13px"}}>
-          <div style={{fontSize:13,fontWeight:700,marginBottom:10,fontFamily:serif}}>テスト結果を入力</div>
-          <input type="date" value={newTest.date} onChange={e=>setNewTest(p=>({...p,date:e.target.value}))} style={inp}/>
-          <input value={newTest.name} onChange={e=>setNewTest(p=>({...p,name:e.target.value}))} placeholder="テスト名" style={inp}/>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:8}}>
-            {["math","japanese","science","social"].map(k=>{const si=SUBJ_MAP[k];return(
-              <div key={k} style={{position:"relative"}}>
-                <input type="number" value={newTest[k]} onChange={e=>setNewTest(p=>({...p,[k]:e.target.value}))} placeholder={si.l} style={{...inp,marginBottom:0,border:`1px solid ${si.c}44`,paddingRight:22}}/>
-                <span style={{position:"absolute",right:9,top:"50%",transform:"translateY(-50%)",fontSize:10,color:si.c,opacity:.55}}>点</span>
-              </div>
-            );})}
+          )}
+          <div style={{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}}>
+            {f.score&&<span style={{fontSize:10,color:"rgba(255,255,255,.45)"}}>{f.score}</span>}
+            {av!=null&&<span style={{fontSize:9,color:"rgba(255,255,255,.3)"}}>（問題難易度: {av>=70?"易":av>=50?"標準":av>=35?"やや難":"難問"}）</span>}
           </div>
-          <input type="number" value={newTest.total} onChange={e=>setNewTest(p=>({...p,total:e.target.value}))} placeholder="合計点" style={inp}/>
-          <input value={newTest.hensachi||""} onChange={e=>setNewTest(p=>({...p,hensachi:e.target.value}))} placeholder="偏差値（任意）" style={inp}/>
-          <input value={newTest.memo} onChange={e=>setNewTest(p=>({...p,memo:e.target.value}))} placeholder="メモ（任意）" style={{...inp,marginBottom:11}}/>
-          <div style={{display:"flex",gap:7}}>
-            <button onClick={()=>setShowAddTest(false)} style={{flex:1,padding:"9px",borderRadius:9,border:"1px solid rgba(255,255,255,.14)",background:"transparent",color:"rgba(255,255,255,.38)",fontSize:12,cursor:"pointer",fontFamily:noto}}>キャンセル</button>
-            <button onClick={addTest} style={{flex:2,padding:"9px",borderRadius:9,border:"none",background:"linear-gradient(135deg,#ef4444,#b91c1c)",color:"white",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:noto}}>保存する</button>
+          {(f.note||(my!=null&&av!=null))&&(
+            <div style={{fontSize:10,color:"rgba(255,255,255,.45)",marginTop:4,paddingTop:4,borderTop:"1px solid rgba(255,255,255,.05)"}}>
+              {f.note||(weakViewMode==="weak"
+                ?(av>=60&&my<av?"受験者の多くが取れる問題です。基礎を固め直しましょう。":av>=40&&my<av-10?"平均を大幅に下回っています。この分野を重点的に復習してください。":"難問ですが、差をつけられないよう対策しておきましょう。")
+                :"平均を上回っています。このレベルを本番でも安定して取れるようにしましょう。"
+              )}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const currentList=weakViewMode==="weak"?suggs:strengths;
+    return(
+      <div>
+        {/* 切り替えボタン */}
+        <div style={{display:"flex",gap:6,marginBottom:12}}>
+          <button onClick={()=>setWeakViewMode("weak")} style={{flex:1,padding:"9px 0",borderRadius:10,border:`1.5px solid ${weakViewMode==="weak"?"#ef444488":"rgba(255,255,255,.1)"}`,background:weakViewMode==="weak"?"rgba(239,68,68,.15)":"transparent",color:weakViewMode==="weak"?"#f87171":"rgba(255,255,255,.35)",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:noto}}>
+            🔴 苦手分野 {hasWeak?`(${suggs.reduce((a,s)=>a+s.fields.length,0)})` :""}
+          </button>
+          <button onClick={()=>setWeakViewMode("strong")} style={{flex:1,padding:"9px 0",borderRadius:10,border:`1.5px solid ${weakViewMode==="strong"?"#4ade8088":"rgba(255,255,255,.1)"}`,background:weakViewMode==="strong"?"rgba(74,222,128,.12)":"transparent",color:weakViewMode==="strong"?"#4ade80":"rgba(255,255,255,.35)",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:noto}}>
+            ✅ 得意分野 {hasStrong?`(${strengths.reduce((a,s)=>a+s.fields.length,0)})` :""}
+          </button>
+        </div>
+
+        {/* コンテンツ */}
+        {currentList.length===0?(
+          <div style={{textAlign:"center",fontSize:12,opacity:.28,padding:"18px 0"}}>
+            {weakViewMode==="weak"?"苦手分野なし — 全分野平均以上です！":"得意分野のデータがありません"}
+          </div>
+        ):(
+          currentList.map((sg,i)=>(
+            <div key={i} style={{marginBottom:12,borderRadius:12,border:`1px solid ${sg.subj.c}33`,overflow:"hidden"}}>
+              <div style={{padding:"9px 13px",background:`${sg.subj.c}18`,borderBottom:`1px solid ${sg.subj.c}22`,display:"flex",alignItems:"center",gap:6}}>
+                <span style={{fontSize:15}}>{sg.subj.i}</span>
+                <span style={{fontSize:13,fontWeight:700,color:sg.subj.c}}>{sg.subj.l}</span>
+              </div>
+              <div style={{padding:"10px 13px"}}>
+                {sg.fields.map((f,j)=><FieldCard key={j} f={f} subj={sg.subj}/>)}
+                {weakViewMode==="weak"&&sg.relatedUnits&&sg.relatedUnits.length>0&&(
+                  <div style={{borderTop:"1px solid rgba(255,255,255,.06)",paddingTop:8}}>
+                    <div style={{fontSize:10,opacity:.38,marginBottom:6}}>📋 デイリーサポートで確認すべき単元</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                      {sg.relatedUnits.slice(0,4).map((u,j)=>(
+                        <span key={j} onClick={onOpenDaily} style={{fontSize:10,fontWeight:700,padding:"4px 10px",borderRadius:20,background:`${sg.subj.c}22`,color:sg.subj.c,border:`1px solid ${sg.subj.c}44`,cursor:"pointer"}}>{u.code}「{u.title}」</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    );
+  })()}
+  {t.memo&&<div style={{fontSize:11,opacity:.4,padding:"8px 12px",borderRadius:8,background:"rgba(255,255,255,.03)",marginBottom:12}}>{t.memo}</div>}
+</div>
+);
+})()}
+
+{/* ── テスト新規入力（2段階） ── */}
+<div style={{marginTop:14}}>
+  <button onClick={()=>{setShowAddTest(true);setWeakInputStep("basic");}} style={{width:"100%",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.3)",borderRadius:12,padding:"12px",fontSize:13,fontWeight:700,color:"#f87171",cursor:"pointer",fontFamily:noto}}>＋ テスト結果を入力</button>
+</div>
+{showAddTest&&(
+  <div style={{marginTop:10,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)",borderRadius:13,padding:"14px"}}>
+    {/* ステップ切り替えタブ */}
+    <div style={{display:"flex",gap:4,marginBottom:14}}>
+      {[["basic","① 基本情報"],["weak","② 分野別弱点"]].map(([s,l])=>(
+        <button key={s} onClick={()=>setWeakInputStep(s)} style={{flex:1,padding:"7px",borderRadius:8,border:`1px solid ${weakInputStep===s?"#ef444466":"rgba(255,255,255,.1)"}`,background:weakInputStep===s?"rgba(239,68,68,.15)":"transparent",color:weakInputStep===s?"#f87171":"rgba(255,255,255,.35)",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:noto}}>{l}</button>
+      ))}
+    </div>
+
+    {weakInputStep==="basic"&&(
+      <div>
+        <div style={{fontSize:12,fontWeight:700,marginBottom:10,fontFamily:serif}}>基本情報・科目別点数</div>
+        {/* テスト種別 */}
+        <div style={{display:"flex",gap:4,marginBottom:8,flexWrap:"wrap"}}>
+          {[["monthly","マンスリー"],["kumiwake","組分け"],["fukushuu","復習"],["sapixopen","オープン"]].map(([v,l])=>(
+            <button key={v} onClick={()=>setNewTest(p=>({...p,type:v}))} style={{padding:"5px 10px",borderRadius:7,border:`1px solid ${newTest.type===v?"#ef444466":"rgba(255,255,255,.1)"}`,background:newTest.type===v?"rgba(239,68,68,.15)":"transparent",color:newTest.type===v?"#f87171":"rgba(255,255,255,.3)",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:noto}}>{l}</button>
+          ))}
+        </div>
+        <input type="date" value={newTest.date} onChange={e=>setNewTest(p=>({...p,date:e.target.value}))} style={inp}/>
+        <input value={newTest.name} onChange={e=>setNewTest(p=>({...p,name:e.target.value}))} placeholder="テスト名（例: 6月度マンスリー確認テスト）" style={inp}/>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:8}}>
+          {[["math","算数（/150）"],["japanese","国語（/150）"],["science","理科（/100）"],["social","社会（/100）"]].map(([k,ph])=>(
+            <input key={k} type="number" value={newTest[k]} onChange={e=>setNewTest(p=>({...p,[k]:e.target.value}))} placeholder={ph} style={{...inp,marginBottom:0}}/>
+          ))}
+        </div>
+        <input type="number" value={newTest.total} onChange={e=>setNewTest(p=>({...p,total:e.target.value}))} placeholder="合計点（/500）" style={inp}/>
+        <input value={newTest.hensachi||""} onChange={e=>setNewTest(p=>({...p,hensachi:e.target.value}))} placeholder="4科偏差値" style={inp}/>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:8}}>
+          {[["mathH","算数偏差値"],["japaneseH","国語偏差値"],["scienceH","理科偏差値"],["socialH","社会偏差値"]].map(([k,ph])=>(
+            <input key={k} value={newTest[k]||""} onChange={e=>setNewTest(p=>({...p,[k]:e.target.value}))} placeholder={ph} style={{...inp,marginBottom:0,fontSize:11}}/>
+          ))}
+        </div>
+        <input value={newTest.memo} onChange={e=>setNewTest(p=>({...p,memo:e.target.value}))} placeholder="メモ（任意）" style={{...inp,marginBottom:11}}/>
+        <div style={{display:"flex",gap:7}}>
+          <button onClick={()=>setShowAddTest(false)} style={{flex:1,padding:"9px",borderRadius:9,border:"1px solid rgba(255,255,255,.14)",background:"transparent",color:"rgba(255,255,255,.38)",fontSize:12,cursor:"pointer",fontFamily:noto}}>キャンセル</button>
+          <button onClick={()=>setWeakInputStep("weak")} style={{flex:2,padding:"9px",borderRadius:9,border:"none",background:"rgba(239,68,68,.3)",color:"white",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:noto}}>次へ: 分野別弱点を入力 ›</button>
+        </div>
+      </div>
+    )}
+
+    {weakInputStep==="weak"&&(
+      <div>
+        <div style={{fontSize:12,fontWeight:700,marginBottom:10,fontFamily:serif}}>分野別弱点（テスト返却後に入力）</div>
+        {/* 科目タブ */}
+        <div style={{display:"flex",gap:4,marginBottom:12}}>
+          {[["math","算数","#3b82f6"],["japanese","国語","#ef4444"],["science","理科","#22c55e"],["social","社会","#f59e0b"]].map(([k,l,c])=>(
+            <button key={k} onClick={()=>setWeakInputSubj(k)} style={{flex:1,padding:"6px 2px",borderRadius:8,border:`1px solid ${weakInputSubj===k?c+"88":"rgba(255,255,255,.1)"}`,background:weakInputSubj===k?`${c}22`:"transparent",color:weakInputSubj===k?c:"rgba(255,255,255,.35)",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:noto}}>
+              {l}{newWeakFields[k].filter(r=>r.field).length>0&&<span style={{marginLeft:2,fontSize:8,color:c}}>({newWeakFields[k].filter(r=>r.field).length})</span>}
+            </button>
+          ))}
+        </div>
+        {/* 入力行 */}
+        <div style={{display:"flex",gap:5,marginBottom:8,alignItems:"flex-start"}}>
+          <div style={{flex:2}}>
+            <input value={newWeakRow.field} onChange={e=>setNewWeakRow(p=>({...p,field:e.target.value}))} placeholder="分野名（例: 速さ）" style={{...inp,marginBottom:4,fontSize:12}}/>
+            <div style={{display:"flex",gap:4}}>
+              <input value={newWeakRow.score} onChange={e=>setNewWeakRow(p=>({...p,score:e.target.value}))} placeholder="得点（例: 3/18）" style={{...inp,marginBottom:0,fontSize:11,flex:1}}/>
+              <input value={newWeakRow.avg} onChange={e=>setNewWeakRow(p=>({...p,avg:e.target.value}))} placeholder="平均（例: 9.2）" style={{...inp,marginBottom:0,fontSize:11,flex:1}}/>
+            </div>
+          </div>
+          <div style={{flexShrink:0}}>
+            <div style={{display:"flex",flexDirection:"column",gap:4,marginBottom:4}}>
+              {[["high","🔴"],["mid","🟡"],["low","⚪"]].map(([v,e])=>(
+                <button key={v} onClick={()=>setNewWeakRow(p=>({...p,priority:v}))} style={{padding:"4px 6px",borderRadius:6,border:`1px solid ${newWeakRow.priority===v?"rgba(255,255,255,.4)":"rgba(255,255,255,.1)"}`,background:newWeakRow.priority===v?"rgba(255,255,255,.15)":"transparent",color:"white",fontSize:10,cursor:"pointer",fontFamily:noto}}>{e}</button>
+              ))}
+            </div>
+            <button onClick={()=>{
+              if(!newWeakRow.field.trim()) return;
+              const rate=newWeakRow.score?(() => { const m=newWeakRow.score.match(/(\d+)\/(\d+)/); return m?Math.round(parseInt(m[1])/parseInt(m[2])*100):null; })():null;
+              setNewWeakFields(p=>({...p,[weakInputSubj]:[...p[weakInputSubj],{...newWeakRow,rate}]}));
+              setNewWeakRow({field:"",score:"",avg:"",priority:"high"});
+            }} style={{padding:"5px 8px",borderRadius:7,border:"none",background:"#ef4444",color:"white",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:noto,width:"100%"}}>追加</button>
           </div>
         </div>
-      )}
-    </div>
-  );
-})()}
+        {/* 登録済み弱点 */}
+        {newWeakFields[weakInputSubj].length>0&&(
+          <div style={{marginBottom:10}}>
+            {newWeakFields[weakInputSubj].map((f,j)=>(
+              <div key={j} style={{display:"flex",alignItems:"center",gap:6,background:"rgba(255,255,255,.04)",borderRadius:7,padding:"5px 9px",marginBottom:4}}>
+                <span style={{fontSize:10}}>{f.priority==="high"?"🔴":f.priority==="mid"?"🟡":"⚪"}</span>
+                <span style={{fontSize:11,flex:1}}>{f.field}{f.score?` (${f.score})`:""}{f.avg?` 平均${f.avg}`:""}</span>
+                <button onClick={()=>setNewWeakFields(p=>({...p,[weakInputSubj]:p[weakInputSubj].filter((_,i)=>i!==j)}))} style={{background:"rgba(239,68,68,.2)",border:"none",color:"#f87171",borderRadius:5,width:20,height:20,fontSize:11,cursor:"pointer"}}>×</button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div style={{display:"flex",gap:7,marginTop:8}}>
+          <button onClick={()=>setWeakInputStep("basic")} style={{flex:1,padding:"9px",borderRadius:9,border:"1px solid rgba(255,255,255,.14)",background:"transparent",color:"rgba(255,255,255,.38)",fontSize:12,cursor:"pointer",fontFamily:noto}}>‹ 基本情報に戻る</button>
+          <button onClick={addTest} style={{flex:2,padding:"9px",borderRadius:9,border:"none",background:"linear-gradient(135deg,#ef4444,#b91c1c)",color:"white",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:noto}}>💾 テスト結果を保存</button>
+        </div>
+      </div>
+    )}
+  </div>
+)}
+
 </div>
 )}
 
+{tab==="analysis"&&(
+<AnalysisTab
+  UNITS={UNITS}
+  IMPORTED_TESTS={IMPORTED_TESTS}
+  testScores={testScores}
+  allAnswers={allAnswers}
+  calcStats={calcStats}
+  noto={noto}
+/>
+)}
 
-
-{/* 模擬テストタブ */}
 {tab==="mock"&&(
 <div style={{padding:"16px",animation:"fadeUp .4s ease both"}}>
 
