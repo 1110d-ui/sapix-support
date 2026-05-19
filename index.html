@@ -34,12 +34,12 @@ window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
 if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260512-025';
+const CURRENT_VERSION = '20260512-028';
 async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
 function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
 setTimeout(checkForUpdate,3000);
 </script>
-<script>setLoadMsg("データ読み込み中...");</script>
+<script>setLoadMsg("データ読み込❿中...");</script>
 <script>
 // SAPIX データ定義（Babelコンパイル対象外）
 window.__SAPIX_DATA__ = {
@@ -7348,7 +7348,7 @@ WS_PDFS: {
 };
 
 </script>
-<script>setLoadMsg("ライブラリ読み込み中...");</script>
+<script>setLoadMsg("ライブラリ読❿中...");</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
@@ -7366,7 +7366,7 @@ class ErrorBoundary extends React.Component {
         <div style={{fontSize:32}}>⚠️</div>
         <div style={{color:"#f87171",fontSize:15,fontWeight:700}}>エラーが発生しました</div>
         <pre style={{color:"#94a3b8",fontSize:11,background:"rgba(0,0,0,.3)",padding:12,borderRadius:8,maxWidth:"100%",overflow:"auto"}}>{this.state.error.message}</pre>
-        <button onClick={()=>window.location.reload()} style={{background:"#3b82f6",color:"white",border:"none",padding:"12px 24px",borderRadius:12,fontSize:14,cursor:"pointer"}}>再読み込み</button>
+        <button onClick={()=>window.location.reload()} style={{background:"#3b82f6",color:"white",border:"none",padding:"12px 24px",borderRadius:12,fontSize:14,cursor:"pointer"}}>再読み込❿</button>
       </div>
     );
     return this.props.children;
@@ -9107,20 +9107,35 @@ return (
 
 
 // ============================================================
+// RateBar: 正答率バー（AnalysisTab用・グローバルコンポーネント）
+// ============================================================
+function RateBar({ label, rate, sub }) {
+  const color = rate >= 75 ? "#4ade80" : rate >= 55 ? "#60a5fa" : rate >= 35 ? "#f59e0b" : "#ef4444";
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:6}}>
+      <span style={{fontSize:9,color:"rgba(255,255,255,.38)",width:72,flexShrink:0}}>{label}</span>
+      <div style={{flex:1,height:5,borderRadius:3,background:"rgba(255,255,255,.07)",overflow:"hidden"}}>
+        <div style={{height:"100%",borderRadius:3,background:color,width:`${rate}%`,transition:"width .4s"}}/>
+      </div>
+      <span style={{fontSize:10,fontWeight:700,color:color,width:30,textAlign:"right",flexShrink:0}}>{rate}%</span>
+      {sub!=null&&<span style={{fontSize:9,color:"rgba(255,255,255,.2)",width:40,flexShrink:0}}>{sub}</span>}
+    </div>
+  );
+}
+
+// ============================================================
 // AnalysisTab: 科目別 得意・苦手単元一覧
 // ============================================================
 function AnalysisTab({ UNITS, IMPORTED_TESTS, testScores, allAnswers, calcStats, noto }) {
-const serif = "'Noto Serif JP',serif";
 const [anaSubj, setAnaSubj] = React.useState("math");
 
 const SM = {
-  math:     {l:"算数",c:"#3b82f6",i:"∑",max:150},
-  japanese: {l:"国語",c:"#ef4444",i:"文",max:150},
-  science:  {l:"理科",c:"#22c55e",i:"⚗",max:100},
-  social:   {l:"社会",c:"#f59e0b",i:"🌏",max:100},
+  math:     {l:"算数",c:"#3b82f6",i:"∑"},
+  japanese: {l:"国語",c:"#ef4444",i:"文"},
+  science:  {l:"理科",c:"#22c55e",i:"⚗"},
+  social:   {l:"社会",c:"#f59e0b",i:"🌏"},
 };
 const SUBJ_KEYS = ["math","japanese","science","social"];
-const allTests = [...IMPORTED_TESTS, ...testScores];
 
 const TAG_META = {
   strong:    {label:"✅ 得意",   color:"#4ade80",bg:"rgba(74,222,128,.1)", border:"rgba(74,222,128,.3)"},
@@ -9133,50 +9148,60 @@ const TAG_META = {
 };
 const TAG_ORDER = {weak_easy:0,weak:1,weak_mid:2,caution:3,ok:4,strong:5,nodata:6};
 
+const allTests = [...IMPORTED_TESTS, ...(testScores||[])];
+
+const getTag = (compositeScore, testMyRate, testAvgRate) => {
+  if (compositeScore == null) return "nodata";
+  if (testAvgRate != null && testAvgRate >= 60 && compositeScore < testAvgRate) return "weak_easy";
+  if (testAvgRate != null && testAvgRate >= 40 && compositeScore < testAvgRate - 10) return "weak_mid";
+  if (compositeScore >= 75) return "strong";
+  if (compositeScore >= 55) return "ok";
+  if (compositeScore >= 35) return "caution";
+  return "weak";
+};
+
 const buildUnitSummary = (sid) => {
   const units = UNITS[sid] || [];
   return units.map(u => {
-    const st = calcStats(u.sections || [], allAnswers[u.id] || {});
+    const st = calcStats(u.sections || [], (allAnswers || {})[u.id] || {});
     const dsAnswered = st.answered;
     const dsRate = dsAnswered >= 1 ? Math.round(st.correct / st.answered * 100) : null;
 
     const testMatches = [];
     allTests.forEach(t => {
-      (t.weakFields?.[sid] || []).forEach(f => {
+      const fields = (t.weakFields && t.weakFields[sid]) ? t.weakFields[sid] : [];
+      fields.forEach(f => {
         const fieldKey = f.field.replace(/[（(].*/,"").trim();
         const titleKey = u.title.replace(/[（(].*/,"").trim();
         if (f.field.includes(titleKey) || u.title.includes(fieldKey) || titleKey.includes(fieldKey)) {
-          testMatches.push({myRate:f.myRate,avgRate:f.avgRate,priority:f.priority,testName:t.name,date:t.date});
+          testMatches.push({
+            myRate: f.myRate != null ? f.myRate : null,
+            avgRate: f.avgRate != null ? f.avgRate : null,
+            testName: t.name || "",
+            date: t.date || "",
+          });
         }
       });
     });
 
-    const latestTest = testMatches.sort((a,b) => (b.date||"").localeCompare(a.date||""))[0] || null;
-    const testMyRate  = latestTest?.myRate ?? null;
-    const testAvgRate = latestTest?.avgRate ?? null;
+    const latestTest = testMatches.sort((a,b) => b.date.localeCompare(a.date))[0] || null;
+    const testMyRate  = latestTest ? latestTest.myRate  : null;
+    const testAvgRate = latestTest ? latestTest.avgRate : null;
 
     let compositeScore = null;
     if (dsRate != null && testMyRate != null) compositeScore = Math.round((dsRate + testMyRate) / 2);
-    else if (dsRate != null)  compositeScore = dsRate;
+    else if (dsRate != null) compositeScore = dsRate;
     else if (testMyRate != null) compositeScore = testMyRate;
 
-    let tag = "nodata";
-    if (compositeScore != null) {
-      if (testAvgRate != null && testAvgRate >= 60 && compositeScore < testAvgRate) tag = "weak_easy";
-      else if (testAvgRate != null && testAvgRate >= 40 && compositeScore < testAvgRate - 10) tag = "weak_mid";
-      else if (compositeScore >= 75) tag = "strong";
-      else if (compositeScore >= 55) tag = "ok";
-      else if (compositeScore >= 35) tag = "caution";
-      else tag = "weak";
-    }
-    return {u, dsAnswered, dsRate, testMatches, latestTest, testMyRate, testAvgRate, compositeScore, tag};
+    const tag = getTag(compositeScore, testMyRate, testAvgRate);
+    return {u, dsAnswered, dsRate, testMatches, testMyRate, testAvgRate, compositeScore, tag};
   }).filter(r => r.dsAnswered > 0 || r.testMatches.length > 0);
 };
 
-const sm   = SM[anaSubj];
+const sm = SM[anaSubj];
 const rows = buildUnitSummary(anaSubj).sort((a,b) => TAG_ORDER[a.tag] - TAG_ORDER[b.tag]);
 
-const counts = {strong:0, ok:0, caution:0, weak:0, nodata:0};
+const counts = {strong:0,ok:0,caution:0,weak:0,nodata:0};
 rows.forEach(r => {
   if (r.tag==="weak_easy"||r.tag==="weak") counts.weak++;
   else if (r.tag==="weak_mid"||r.tag==="caution") counts.caution++;
@@ -9185,20 +9210,7 @@ rows.forEach(r => {
   else counts.nodata++;
 });
 
-const RateBar = ({label, rate, max100, sub}) => (
-  <div style={{display:"flex",alignItems:"center",gap:6}}>
-    <span style={{fontSize:9,color:"rgba(255,255,255,.38)",width:72,flexShrink:0}}>{label}</span>
-    <div style={{flex:1,height:5,borderRadius:3,background:"rgba(255,255,255,.07)",overflow:"hidden"}}>
-      <div style={{height:"100%",borderRadius:3,
-        background:rate>=75?"#4ade80":rate>=55?"#60a5fa":rate>=35?"#f59e0b":"#ef4444",
-        width:`${rate}%`,transition:"width .4s"}}/>
-    </div>
-    <span style={{fontSize:10,fontWeight:700,
-      color:rate>=75?"#4ade80":rate>=55?"#60a5fa":rate>=35?"#fcd34d":"#f87171",
-      width:30,textAlign:"right",flexShrink:0}}>{rate}%</span>
-    {sub!=null&&<span style={{fontSize:9,color:"rgba(255,255,255,.2)",width:36,flexShrink:0}}>{sub}</span>}
-  </div>
-);
+const total = rows.length;
 
 return (
 <div style={{padding:"16px",paddingBottom:100,animation:"fadeUp .4s ease both"}}>
@@ -9230,23 +9242,13 @@ return (
         </div>
       ))}
     </div>
-    {rows.length > 0 && (() => {
-      const total = rows.length;
-      const segments = [
-        {k:"weak",  c:"#ef4444", n:counts.weak},
-        {k:"caution",c:"#f59e0b",n:counts.caution},
-        {k:"ok",    c:"#60a5fa", n:counts.ok},
-        {k:"strong",c:"#4ade80", n:counts.strong},
-        {k:"nodata",c:"#334155", n:counts.nodata},
-      ].filter(s => s.n > 0);
-      return (
-        <div style={{display:"flex",height:6,borderRadius:3,overflow:"hidden"}}>
-          {segments.map((s,i) => (
-            <div key={i} style={{width:`${s.n/total*100}%`,background:s.c,opacity:.8}}/>
-          ))}
-        </div>
-      );
-    })()}
+    {total > 0 && (
+      <div style={{display:"flex",height:6,borderRadius:3,overflow:"hidden"}}>
+        {[{k:"weak",c:"#ef4444",n:counts.weak},{k:"caution",c:"#f59e0b",n:counts.caution},{k:"ok",c:"#60a5fa",n:counts.ok},{k:"strong",c:"#4ade80",n:counts.strong},{k:"nodata",c:"#334155",n:counts.nodata}].filter(s=>s.n>0).map((s,i)=>(
+          <div key={i} style={{width:`${s.n/total*100}%`,background:s.c,opacity:.8}}/>
+        ))}
+      </div>
+    )}
     <div style={{fontSize:9,opacity:.25,marginTop:6}}>✱ DS正誤入力済み＋テスト弱点記録のある単元のみ集計</div>
   </div>
 
@@ -9755,6 +9757,20 @@ const days=Math.round((nextDate-todayMidnight)/86400000);
     );
   })()}
 
+  {/* 今後14日 */}
+  <div style={{fontSize:10,opacity:.3,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>今後14日の予定</div>
+  {upcoming.length===0
+    ? <div style={{textAlign:"center",fontSize:12,opacity:.28,padding:"14px",background:"rgba(255,255,255,.03)",borderRadius:11,marginBottom:16}}>予定なし</div>
+    : <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:16}}>
+        {upcoming.slice(0,9).map((ev,i)=>{const t=EVENT_TYPES[ev.type]||EVENT_TYPES.other;const isTest=isTestType(ev.type);return(
+          <div key={i} style={{display:"flex",alignItems:"center",gap:9,background:isTest?`${t.bg}ee`:"rgba(255,255,255,.03)",border:`${isTest?"1.5px":"1px"} solid ${isTest?t.color+"88":"rgba(255,255,255,.06)"}`,borderRadius:9,padding:"8px 12px",boxShadow:isTest?`0 2px 12px ${t.glow}`:"none"}}>
+            <div style={{width:3,height:26,borderRadius:2,background:t.color,flexShrink:0}}/>
+            <div style={{flex:1}}><div style={{fontSize:12,fontWeight:isTest?700:400,color:isTest?t.color:"white"}}>{ev.title}</div><div style={{fontSize:9,opacity:.42,marginTop:1}}>{fmtDate(ev.date)}</div></div>
+            {isTest&&<span style={{fontSize:9,fontWeight:700,color:t.color,background:`${t.color}22`,padding:"2px 7px",borderRadius:8,border:`1px solid ${t.color}44`,flexShrink:0}}>テスト</span>}
+          </div>
+        );})}
+      </div>
+  }
   {/* 重点強化リスト（テスト弱点＋デイリー低正答率） */}
   {(()=>{
     // テストの最新weakFields(priority:high)を収集
@@ -9824,42 +9840,36 @@ const days=Math.round((nextDate-todayMidnight)/86400000);
     );
   })()}
 
-  {/* 進捗 */}
-  <div style={{fontSize:10,opacity:.3,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>デイリーサポート進捗</div>
-  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:20}}>
-    {subjProgress.map(s=>(
-      <div key={s.id} style={{borderRadius:14,background:`linear-gradient(135deg,${s.color}aa,${s.color}66)`,border:`1px solid ${s.accent}44`,padding:"12px 13px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}>
-          <div><div style={{fontSize:11,fontWeight:700,color:s.accent}}>{s.icon} {s.label}</div><div style={{fontSize:9,opacity:.4,marginTop:1}}>{(UNITS[s.id]||[]).length}単元</div></div>
-          <div style={{fontSize:22,fontWeight:900,fontFamily:"monospace",color:scoreColor(s.pct)}}>{s.pct==null?"—":s.pct+"%"}</div>
-        </div>
-        <div style={{height:4,borderRadius:2,background:"rgba(0,0,0,.35)",overflow:"hidden"}}><div style={{height:"100%",borderRadius:2,background:s.accent,width:`${s.pct||0}%`}}/></div>
-        <div style={{fontSize:9,opacity:.38,marginTop:4}}>{s.ans}/{s.tot}問</div>
-      </div>
-    ))}
-  </div>
-
-  {/* 今後14日 */}
-  <div style={{fontSize:10,opacity:.3,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>今後14日の予定</div>
-  {upcoming.length===0
-    ? <div style={{textAlign:"center",fontSize:12,opacity:.28,padding:"14px",background:"rgba(255,255,255,.03)",borderRadius:11,marginBottom:16}}>予定なし</div>
-    : <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:16}}>
-        {upcoming.slice(0,9).map((ev,i)=>{const t=EVENT_TYPES[ev.type]||EVENT_TYPES.other;const isTest=isTestType(ev.type);return(
-          <div key={i} style={{display:"flex",alignItems:"center",gap:9,background:isTest?`${t.bg}ee`:"rgba(255,255,255,.03)",border:`${isTest?"1.5px":"1px"} solid ${isTest?t.color+"88":"rgba(255,255,255,.06)"}`,borderRadius:9,padding:"8px 12px",boxShadow:isTest?`0 2px 12px ${t.glow}`:"none"}}>
-            <div style={{width:3,height:26,borderRadius:2,background:t.color,flexShrink:0}}/>
-            <div style={{flex:1}}><div style={{fontSize:12,fontWeight:isTest?700:400,color:isTest?t.color:"white"}}>{ev.title}</div><div style={{fontSize:9,opacity:.42,marginTop:1}}>{fmtDate(ev.date)}</div></div>
-            {isTest&&<span style={{fontSize:9,fontWeight:700,color:t.color,background:`${t.color}22`,padding:"2px 7px",borderRadius:8,border:`1px solid ${t.color}44`,flexShrink:0}}>テスト</span>}
-          </div>
-        );})}
-      </div>
-  }
   <button onClick={onOpenDaily} style={{width:"100%",background:"linear-gradient(135deg,#1e3a5f,#162d4f)",border:"1.5px solid #3b82f655",borderRadius:14,padding:"14px 18px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",color:"white",fontFamily:noto}}>
     <span style={{fontSize:22}}>📋</span>
     <div style={{flex:1,textAlign:"left"}}><div style={{fontSize:14,fontWeight:700,fontFamily:serif}}>デイリーサポート</div><div style={{fontSize:11,color:"#3b82f6",marginTop:1}}>進捗管理アプリを開く</div></div>
     <span style={{color:"#3b82f6",fontSize:18}}>›</span>
   </button>
 
-{/* 土曜特訓（WeeklySapiX）入り口 */}
+{/* 進捗 */}
+  <div style={{fontSize:10,opacity:.3,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>デイリーサポート進捗</div>
+  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:20}}>
+    {subjProgress.map(s=>(
+      <div key={s.id} style={{borderRadius:14,background:"rgba(255,255,255,.045)",borderTop:"1px solid rgba(255,255,255,.08)",borderRight:"1px solid rgba(255,255,255,.08)",borderBottom:"1px solid rgba(255,255,255,.08)",borderLeft:`4px solid ${s.accent}`,padding:"12px 13px",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:0,right:0,bottom:0,width:"45%",background:`linear-gradient(to left,${s.accent}12,transparent)`,pointerEvents:"none"}}/>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+          <div>
+            <div style={{fontSize:12,fontWeight:700,color:"white"}}>{s.icon} {s.label}</div>
+            <div style={{fontSize:9,color:s.accent,opacity:.7,marginTop:2}}>{(UNITS[s.id]||[]).length}単元</div>
+          </div>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:26,fontWeight:900,fontFamily:"monospace",color:scoreColor(s.pct),lineHeight:1}}>{s.pct==null?"—":s.pct+"%"}</div>
+            <div style={{fontSize:8,opacity:.4,marginTop:2}}>{s.ans}/{s.tot}問</div>
+          </div>
+        </div>
+        <div style={{height:3,borderRadius:2,background:"rgba(255,255,255,.08)",overflow:"hidden"}}>
+          <div style={{height:"100%",borderRadius:2,background:`linear-gradient(to right,${s.accent}aa,${s.accent})`,width:`${s.pct||0}%`,transition:"width .5s ease"}}/>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {/* 土曜特訓（WeeklySapiX）入り口 */}
 <button onClick={onOpenWS} style={{width:"100%",background:"linear-gradient(135deg,#1a3a1f,#0f2d15)",border:"1.5px solid #22c55e55",borderRadius:14,padding:"14px 18px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",color:"white",fontFamily:noto,marginTop:8}}>
   <span style={{fontSize:24}}>🏫</span>
   <div style={{flex:1,textAlign:"left"}}>
@@ -9875,6 +9885,34 @@ const days=Math.round((nextDate-todayMidnight)/86400000);
 </button>
 </div>
 )}
+
+{/* 土曜特訓進捗 */}
+  <div style={{fontSize:10,opacity:.3,letterSpacing:2,textTransform:"uppercase",marginBottom:10,marginTop:4}}>土曜特訓（WS）進捗</div>
+  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:20}}>
+    {SUBJECTS.map(s=>{
+      const units=WS_UNITS[s.id]||[];
+      const agg=units.reduce((a,u)=>{const st=calcStats(u.sections||[],( wsAllAnswers[u.id]||{}));return{c:a.c+st.correct,ans:a.ans+st.answered,tot:a.tot+st.total};},{c:0,ans:0,tot:0});
+      const pct=agg.ans===0?null:Math.round(agg.c/agg.ans*100);
+      return(
+        <div key={s.id} style={{borderRadius:14,background:"rgba(255,255,255,.045)",borderTop:"1px solid rgba(255,255,255,.08)",borderRight:"1px solid rgba(255,255,255,.08)",borderBottom:"1px solid rgba(255,255,255,.08)",borderLeft:`4px solid ${s.accent}`,padding:"12px 13px",position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:0,right:0,bottom:0,width:"45%",background:`linear-gradient(to left,${s.accent}12,transparent)`,pointerEvents:"none"}}/>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+            <div>
+              <div style={{fontSize:12,fontWeight:700,color:"white"}}>{s.icon} {s.label}</div>
+              <div style={{fontSize:9,color:s.accent,opacity:.7,marginTop:2}}>{units.length}単元</div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontSize:26,fontWeight:900,fontFamily:"monospace",color:scoreColor(pct),lineHeight:1}}>{pct==null?"—":pct+"%"}</div>
+              <div style={{fontSize:8,opacity:.4,marginTop:2}}>{agg.ans}/{agg.tot}問</div>
+            </div>
+          </div>
+          <div style={{height:3,borderRadius:2,background:"rgba(255,255,255,.08)",overflow:"hidden"}}>
+            <div style={{height:"100%",borderRadius:2,background:`linear-gradient(to right,${s.accent}aa,${s.accent})`,width:`${pct||0}%`,transition:"width .5s ease"}}/>
+          </div>
+        </div>
+      );
+    })}
+  </div>
 
 {/* カレンダータブ */}
 {tab==="cal"&&(
