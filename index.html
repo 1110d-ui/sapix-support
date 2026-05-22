@@ -11,7 +11,7 @@
 <style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0f172a;color:white;font-family:sans-serif;overflow-x:hidden}#root{min-height:100vh}#loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0f172a;color:#60a5fa;gap:16px;z-index:9999;transition:opacity .3s}#loading.hide{opacity:0;pointer-events:none}@keyframes spin{to{transform:rotate(360deg)}}.spinner{width:40px;height:40px;border:3px solid #1e3a5f;border-top-color:#3b82f6;border-radius:50%;animation:spin .8s linear infinite}</style>
 </head>
 <body>
-<div id="loading"><div class="spinner"></div><div style="font-size:18px;font-weight:700">SAPIX デイリーサポート</div><div id="load-msg" style="font-size:11px;color:#475569">読み込み中...</div></div>
+<div id="loading"><div class="spinner"></div><div style="font-size:18px;font-weight:700">SAPIX デイリーサポート</div><div id="load-msg" style="font-size:11px;color:#475569">読み込❿中...</div></div>
 <div id="root"></div>
 <script>window.storage=(()=>{const DB='sapix_v2',ST='kv';let db=null;
 const open=()=>new Promise((r,e)=>{if(db){r(db);return;}const q=indexedDB.open(DB,1);
@@ -32,14 +32,14 @@ function setLoadMsg(m){var e=document.getElementById("load-msg");if(e)e.textCont
 function hideLoading(){var e=document.getElementById("loading");if(e){e.classList.add("hide");setTimeout(function(){if(e)e.style.display="none";},300);}}
 window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
-if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sw.js").catch(()=>{});}
+if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sapix-support/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260512-028';
+const CURRENT_VERSION = '20260521-032';
 async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
 function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
 setTimeout(checkForUpdate,3000);
 </script>
-<script>setLoadMsg("データ読み込❿中...");</script>
+<script>setLoadMsg("データ読❿中...");</script>
 <script>
 // SAPIX データ定義（Babelコンパイル対象外）
 window.__SAPIX_DATA__ = {
@@ -7366,7 +7366,7 @@ class ErrorBoundary extends React.Component {
         <div style={{fontSize:32}}>⚠️</div>
         <div style={{color:"#f87171",fontSize:15,fontWeight:700}}>エラーが発生しました</div>
         <pre style={{color:"#94a3b8",fontSize:11,background:"rgba(0,0,0,.3)",padding:12,borderRadius:8,maxWidth:"100%",overflow:"auto"}}>{this.state.error.message}</pre>
-        <button onClick={()=>window.location.reload()} style={{background:"#3b82f6",color:"white",border:"none",padding:"12px 24px",borderRadius:12,fontSize:14,cursor:"pointer"}}>再読み込❿</button>
+        <button onClick={()=>window.location.reload()} style={{background:"#3b82f6",color:"white",border:"none",padding:"12px 24px",borderRadius:12,fontSize:14,cursor:"pointer"}}>再読❿込❿</button>
       </div>
     );
     return this.props.children;
@@ -9107,6 +9107,54 @@ return (
 
 
 // ============================================================
+// ApiKeyBanner: Claude APIキー設定バナー（模擬テスト用）
+// ============================================================
+function ApiKeyBanner({ noto }) {
+  const [open, setOpen] = React.useState(false);
+  const [val, setVal] = React.useState(() => {
+    try { return localStorage.getItem("sapix_claude_api_key") || ""; } catch { return ""; }
+  });
+  const hasKey = val.startsWith("sk-ant-");
+  const save = () => {
+    try { localStorage.setItem("sapix_claude_api_key", val); } catch {}
+    setOpen(false);
+  };
+  return (
+    <div style={{marginBottom:12,borderRadius:12,
+      background:hasKey?"rgba(74,222,128,.07)":"rgba(239,68,68,.07)",
+      border:`1px solid ${hasKey?"rgba(74,222,128,.25)":"rgba(239,68,68,.25)"}`,
+      padding:"10px 14px"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div>
+          <div style={{fontSize:11,fontWeight:700,color:hasKey?"#4ade80":"#f87171"}}>
+            {hasKey ? "✅ Claude APIキー設定済み" : "⚠️ Claude APIキー未設定"}
+          </div>
+          <div style={{fontSize:9,opacity:.45,marginTop:1}}>
+            {hasKey ? `sk-ant-***${val.slice(-4)}` : "Anthropic Console からAPIキーを取得して入力してください"}
+          </div>
+        </div>
+        <button onClick={()=>setOpen(!open)}
+          style={{padding:"5px 12px",borderRadius:8,border:"1px solid rgba(255,255,255,.2)",
+            background:"rgba(255,255,255,.08)",color:"white",fontSize:11,cursor:"pointer",fontFamily:noto}}>
+          {open ? "閉じる" : "設定"}
+        </button>
+      </div>
+      {open && (
+        <div style={{marginTop:10,display:"flex",gap:6}}>
+          <input type="password" value={val} onChange={e=>setVal(e.target.value)}
+            placeholder="sk-ant-api03-..."
+            style={{flex:1,background:"rgba(0,0,0,.3)",border:"1px solid rgba(255,255,255,.2)",
+              borderRadius:8,padding:"8px 10px",color:"white",fontSize:12,fontFamily:noto,outline:"none"}}/>
+          <button onClick={save}
+            style={{padding:"8px 14px",borderRadius:8,border:"none",background:"#3b82f6",
+              color:"white",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:noto}}>保存</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
 // RateBar: 正答率バー（AnalysisTab用・グローバルコンポーネント）
 // ============================================================
 function RateBar({ label, rate, sub }) {
@@ -9697,7 +9745,7 @@ if (mockConfig.difficulty!=="all"&&s.diff!==parseInt(mockConfig.difficulty)) con
 for (const p of s.problems) probs.push({...p,subject:sid,unit:u.code,unitTitle:u.title,section:s.label});
 }
 }
-return probs.sort(()=>Math.random()-.5).slice(0,Math.min(mockConfig.count,probs.length));
+return probs.sort(()=>Math.random()-.5).slice(0,20);
 };
 const startMock = () => { const p=buildMock(); if(!p.length) return; setMockSession({id:Date.now().toString(),date:todayStr,config:{...mockConfig},problems:p,answers:{},done:false}); setMockAnswers({}); };
 const finishMock = async () => {
@@ -10470,6 +10518,9 @@ return(
 {tab==="mock"&&(
 <div style={{padding:"16px",animation:"fadeUp .4s ease both"}}>
 
+{/* ── APIキー設定（create画面のみ） ── */}
+{mockStep==="config"&&<ApiKeyBanner noto={noto}/>}
+
 {/* ── 採点画面 ── */}
 {mockStep==="scoring"&&mockSession&&(
 <div>
@@ -10574,17 +10625,25 @@ return(
     t.problems.forEach(p=>{if(!grouped[p.subject])grouped[p.subject]=[];grouped[p.subject].push(p);});
 
     const openPrintWindow=(mode)=>{
-      const qSection=(probs,showAnswer)=>probs.map((p,i)=>`
+      const qSection=(probs,mode)=>probs.map((p,i)=>`
         <div class="problem">
           <div class="prob-header">
             <span class="prob-no">問${p.no||i+1}</span>
             <span class="field-tag">${(p.field||p.unit||"").slice(0,20)}</span>
             <span class="pts">${p.pts||5}点</span>
+            ${"★".repeat(Math.min(p.difficulty||1,3))}
           </div>
           <div class="question">${(p.question||p.text||"").replace(/\n/g,"<br>")}</div>
-          ${showAnswer
-            ?`<div class="answer-shown"><b>解答：</b>${(p.answer||"（テキスト参照）").replace(/\n/g,"<br>")}</div>`
-            :`<div class="answer-blank"><div class="aline"></div><div class="aline"></div></div>`
+          ${mode==="answer"
+            ?`<div class="answer-shown"><span class="ans-label">解答</span>${(p.answer||"（テキスト参照）").replace(/\n/g,"<br>")}</div>
+              ${p.explanation?`<div class="explanation"><span class="exp-label">解説</span>${p.explanation.replace(/\n/g,"<br>")}</div>`:""}
+              ${p.hint?`<div class="hint-box">💡 ${p.hint}</div>`:""}
+             `
+            :`<div class="answer-blank">
+                <div style="font-size:10px;color:#9ca3af;margin-bottom:4px;">解答欄</div>
+                <div class="aline"></div>
+                <div class="aline"></div>
+              </div>`
           }
         </div>`).join("");
       const css=`
@@ -10607,11 +10666,16 @@ return(
         .answer-blank .aline{border-bottom:1px solid #9ca3af;margin:5px 0;height:22px;}
         .answer-shown{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:7px 10px;font-size:12px;line-height:1.6;margin-top:5px;}
         .footer{text-align:center;font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:8px;margin-top:16px;}
-        @media print{.prt-btn{display:none;}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.problem{break-inside:avoid;}}`;
+        .ans-label{display:inline-block;background:#16a34a;color:white;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-right:6px;vertical-align:middle;}
+        .answer-shown{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 10px;font-size:12px;line-height:1.7;margin-top:6px;}
+        .explanation{background:#f0f9ff;border:1px solid #bae6fd;border-left:3px solid #0284c7;border-radius:0 6px 6px 0;padding:8px 10px;font-size:11px;line-height:1.8;margin-top:5px;color:#0c4a6e;}
+        .exp-label{display:inline-block;background:#0284c7;color:white;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-right:6px;vertical-align:middle;}
+        .hint-box{background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:5px 8px;font-size:10px;color:#78350f;margin-top:4px;}
+        @media print{.prt-btn{display:none;}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.problem{break-inside:avoid;}.explanation{break-inside:avoid;}}`;
       const body=`
         <div class="page">
           <button class="prt-btn" onclick="window.print()">🖨 PDF保存</button>
-          <h1>${t.name}　${mode==="answer"?"【解答用紙】":"【問題用紙】"}</h1>
+          <h1>${t.name}　${mode==="answer"?"【解答・解説】":"【問題用紙】"}</h1>
           <div class="meta">
             <span>📅 ${t.date}</span><span>📝 ${t.problems.length}問</span>
             <span>💯 ${t.totalPoints}点満点</span>
@@ -10626,9 +10690,9 @@ return(
               <span style="font-size:14px;font-weight:700;color:${subDark[sid]};">${subLabels[sid]}</span>
               <span style="font-size:11px;color:#6b7280;margin-left:auto;">${probs.length}問/${probs.reduce((a,p)=>a+(p.pts||5),0)}点</span>
             </div>
-            ${qSection(probs,mode==="answer")}
+            ${qSection(probs,mode)}
           `).join("")}
-          <div class="footer">${mode==="answer"?"解答用紙 — 採点後はデイリーサポートアプリで記録しましょう":"問題用紙 — 時間を決めて取り組みましょう"}</div>
+          <div class="footer">${mode==="answer"?"解答・解説 — 採点後はデイリーサポートアプリで弱点を記録しましょう":"問題用紙 — 時間を計って本番形式で取り組みましょう"}</div>
         </div>`;
       const w=window.open("","_blank","width=920,height=1100");
       if(w){w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>${css}</style></head><body>${body}</body></html>`);w.document.close();}
@@ -10688,7 +10752,7 @@ return(
         <button onClick={()=>openPrintWindow("answer")}
           style={{padding:"14px 8px",borderRadius:12,border:"1.5px solid rgba(34,197,94,.4)",background:"rgba(34,197,94,.1)",color:"#4ade80",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"'Noto Sans JP',sans-serif",display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
           <span style={{fontSize:22}}>📋</span>
-          <span>解答用紙</span>
+          <span>解答・解説</span>
           <span style={{fontSize:9,opacity:.7,fontWeight:400}}>解答・ヒント付き</span>
         </button>
       </div>
@@ -10714,185 +10778,174 @@ return(
 {mockStep==="config"&&(
 <div>
   {(()=>{
+    const SAPIX_FORMAT={
+      math:    {label:"算数",icon:"∑",pts:150,color:"#3b82f6",sections:[{name:"計算問題",count:3,eachPts:5},{name:"小問集合",count:6,eachPts:10},{name:"応用問題①",count:3,eachPts:15},{name:"応用問題②",count:2,eachPts:15}]},
+      japanese:{label:"国語",icon:"文",pts:150,color:"#ef4444",sections:[{name:"漢字の読み書き",count:10,eachPts:2},{name:"ことばの知識",count:10,eachPts:2},{name:"論説文の読解",count:5,eachPts:10},{name:"物語文の読解",count:5,eachPts:10}]},
+      science: {label:"理科",icon:"⚗",pts:100,color:"#22c55e",sections:[{name:"小問集合",count:5,eachPts:5},{name:"大問①",count:4,eachPts:5},{name:"大問②",count:4,eachPts:5},{name:"大問③",count:4,eachPts:5}]},
+      social:  {label:"社会",icon:"🌏",pts:100,color:"#f59e0b",sections:[{name:"地理総合",count:8,eachPts:4},{name:"歴史通史",count:8,eachPts:4},{name:"公民・時事",count:7,eachPts:4}]},
+    };
     const nextTest=SAPIX_SCHEDULE.find(e=>e.date>=todayStr&&(e.type==="test"||e.type==="sapixopen"));
-    const dsRange=(()=>{const m=nextTest?.memo?.match(/No\.(\d+)〜(\d+)/);return m?{from:parseInt(m[1]),to:parseInt(m[2])}:null;})();
+    const dsRange=(()=>{const m=nextTest&&nextTest.memo&&nextTest.memo.match(/No\.(\d+)〜(\d+)/);return m?{from:parseInt(m[1]),to:parseInt(m[2])}:null;})();
     const weakMap={};
-    IMPORTED_TESTS.forEach(t=>{
+    const allTests=[...IMPORTED_TESTS,...testScores];
+    allTests.forEach(t=>{
       if(!t.weakFields)return;
       Object.entries(t.weakFields).forEach(([sid,fields])=>{
         if(!weakMap[sid])weakMap[sid]=[];
-        fields.filter(f=>f.priority==="high").forEach(f=>weakMap[sid].push(f.field));
+        fields.filter(f=>f.priority==="high"||f.priority==="mid").forEach(f=>{if(!weakMap[sid].includes(f.field))weakMap[sid].push(f.field);});
       });
     });
-
     const doGenerate=async()=>{
       setGenerating(true);setGenError("");setGenProgress("準備中…");
       const subjs=mockConfig.subjects;
-      const subLabels={math:"算数",japanese:"国語",science:"理科",social:"社会"};
-      const subIcons={math:"∑",japanese:"文",science:"⚗",social:"🌏"};
-
-      // 過去問データをサンプルとして使用
-      const pastSamples=PAST_TEST_PROBLEMS.filter(p=>subjs.includes(p.subject)).slice(0,8);
-
-      const weakSummary=subjs.map(sid=>{
-        const fs=(weakMap[sid]||[]).slice(0,3);
-        return fs.length?`${subLabels[sid]}弱点：${fs.join("、")}`:"";
-      }).filter(Boolean).join("\n");
-
+      const diffLabel={"all":"基礎〜発展","1":"基礎★","2":"標準★★","3":"発展★★★"}[mockConfig.difficulty]||"標準";
       const unitInfo=subjs.map(sid=>{
-        const units=(UNITS[sid]||[]).filter(u=>{
-          if(!dsRange)return true;
-          const n=parseInt((u.code||"").replace(/[^0-9]/g,"").slice(-2));
-          return isNaN(n)||(n>=dsRange.from&&n<=dsRange.to);
-        }).slice(0,8).map(u=>`${u.code}「${u.title}」`).join("、");
-        return `【${subLabels[sid]}】${units||"全範囲"}`;
+        const units=(UNITS[sid]||[]).filter(u=>{if(!dsRange)return true;const n=parseInt((u.code||"").replace(/[^0-9]/g,"").slice(-2));return isNaN(n)||(n>=dsRange.from&&n<=dsRange.to);}).slice(0,6).map(u=>u.code+"「"+u.title+"」").join("、");
+        return "【"+SAPIX_FORMAT[sid].label+"】"+(units||"全範囲");
       }).join("\n");
+      const weakSummary=subjs.map(sid=>{const fs=(weakMap[sid]||[]).slice(0,3);return fs.length?SAPIX_FORMAT[sid].label+"弱点："+fs.join("、"):"";}).filter(Boolean).join("\n");
+      const sectionInfo=subjs.map(sid=>{const fmt=SAPIX_FORMAT[sid];return "【"+fmt.label+"】合計"+fmt.pts+"点\n"+fmt.sections.map(s=>"  ・"+s.name+"（"+s.count+"問・各"+s.eachPts+"点）").join("\n");}).join("\\n");
 
-      const diffLabel={"all":"基礎〜発展","1":"基礎★","2":"標準★★","3":"発展★★★"}[mockConfig.difficulty]||"基礎〜発展";
-
-      const prompt=`あなたはSAPIX小学6年生の模擬テスト問題作成専門家です。
-以下の条件で問題を${mockConfig.count}問作成し、JSONのみ返してください（説明文不要）。
-
-条件：
-・科目：${subjs.map(s=>subLabels[s]).join("、")}（合計${mockConfig.count}問を均等に）
-・難易度：${diffLabel}
-・${dsRange?`試験範囲：DS No.${dsRange.from}〜${dsRange.to}中心`:"オープンテスト（範囲なし）"}
-${weakSummary?`・弱点重点分野：\n${weakSummary}`:""}
-
-対象単元：
-${unitInfo}
-
-過去の実際の問題例（この形式・レベルを参考に）：
-${pastSamples.map(p=>`[${subLabels[p.subject]}] ${p.question} → 解答：${p.answer}`).join("\n")}
-
-出力JSON形式：
-{
-  "testName":"テスト名",
-  "totalPoints":合計配点,
-  "problems":[
-    {"no":1,"subject":"math","field":"分野名","difficulty":1,"pts":配点,"question":"問題文（具体的数値含む）","answer":"解答","hint":"ヒント1文"}
-  ]
-}`;
-
+      const testName=nextTest?nextTest.title+"対策模擬テスト":"SAPIX 6年生 模擬テスト";
+      const rangeStr=dsRange?"DS No."+dsRange.from+"〜"+dsRange.to+"中心":"全範囲（組分けテスト形式）";
+      const prompt=
+        "あなたはSAPIX小学6年生のテスト問題作成専門家です。\n"+
+        "以下の構成で問題を作成し、JSONのみ返してください（説明文・コードブロック記号は一切不要）。\n\n"+
+        "【テスト名】"+testName+"\n"+
+        "【難易度】"+diffLabel+"\n"+
+        "【試験範囲】"+rangeStr+"\n"+
+        (weakSummary?"【弱点重点出題】\n"+weakSummary+"\n":"")+
+        "\n【対象単元】\n"+unitInfo+"\n\n"+
+        "【各科目の出題構成】\n"+sectionInfo+"\n\n"+
+        "【出力JSON構造】\n"+
+        "{\n"+
+        "  \"testName\": \"テスト名\",\n"+
+        "  \"subjects\": [\n"+
+        "    {\n"+
+        "      \"subject\": \"math\",\n"+
+        "      \"label\": \"算数\",\n"+
+        "      \"totalPts\": 150,\n"+
+        "      \"sections\": [\n"+
+        "        { \"sectionName\": \"計算問題\", \"problems\": [{\n"+
+        "          \"no\": 1, \"field\": \"分野名\", \"pts\": 5,\n"+
+        "          \"question\": \"問題文（具体的な数値を含む）\",\n"+
+        "          \"answer\": \"解答\",\n"+
+        "          \"explanation\": \"解説（2〜3文）\",\n"+
+        "          \"hint\": \"ヒント1文\"\n"+
+        "        }] }\n"+
+        "      ]\n"+
+        "    }\n"+
+        "  ]\n"+
+        "}\n\n"+
+        "重要：全科目・全セクション・全問題を含むJSONのみ出力。\n"+
+        "算数応用問題は誘導付き、国語読解は本文（4〜8行）を含めること。\n"+
+        "JSONのみ出力し、\`\`\`json などの記号は絶対に含めないこと。";
       try{
         setGenProgress("Claude APIに接続中…");
+        const apiKey=(()=>{try{return localStorage.getItem("sapix_claude_api_key")||"";}catch{return "";}})();
+        if(!apiKey){throw new Error("APIキーが設定されていません。設定ボタンから入力してください。");}
         const res=await fetch("https://api.anthropic.com/v1/messages",{
           method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:4000,messages:[{role:"user",content:prompt}]})
+          headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-request-origin":"https://1110d-ui.github.io"},
+          body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:8000,messages:[{role:"user",content:prompt}]})
         });
-        if(!res.ok)throw new Error(`APIエラー ${res.status}`);
+        if(!res.ok){const errText=await res.text();throw new Error("APIエラー "+res.status+": "+errText.slice(0,100));}
         setGenProgress("問題を解析中…");
         const data=await res.json();
-        const text=data.content?.find(b=>b.type==="text")?.text||"";
-        const m=text.match(/\{[\s\S]*\}/);
-        if(!m)throw new Error("JSON取得失敗");
-        const parsed=JSON.parse(m[0]);
-        if(!parsed.problems?.length)throw new Error("問題が生成されませんでした");
-        const totalPts=parsed.problems.reduce((a,p)=>a+(p.pts||5),0);
-        setGeneratedTest({
-          id:Date.now().toString(),date:todayStr,
-          name:parsed.testName||(nextTest?`【模擬】${nextTest.title}対策`:"【模擬】総合テスト"),
-          subjects:subjs,difficulty:mockConfig.difficulty,
-          totalPoints:parsed.totalPoints||totalPts,
-          problems:parsed.problems.map((p,i)=>({...p,id:`gen-${i}`,pts:p.pts||5})),
-          dsRange,weakBased:Object.keys(weakMap).length>0,aiGenerated:true,
+        const rawText=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+        let jsonStr=rawText.trim().replace(/^```json[\r\n]*/,"").replace(/^```[\r\n]*/,"").replace(/[\r\n]*```$/,"").trim();
+        const firstBrace=jsonStr.indexOf("{");
+        const lastBrace=jsonStr.lastIndexOf("}");
+        if(firstBrace<0||lastBrace<0)throw new Error("JSONが見つかりませんでした。もう一度試してください。");
+        jsonStr=jsonStr.slice(firstBrace,lastBrace+1);
+        let parsed;
+        try{parsed=JSON.parse(jsonStr);}catch(e){throw new Error("JSON解析エラー: "+e.message.slice(0,80));}
+        if(!parsed.subjects||!parsed.subjects.length)throw new Error("問題データが正しく生成されませんでした。");
+        const allProblems=[];let globalNo=1;
+        parsed.subjects.forEach(subj=>{
+          (subj.sections||[]).forEach(sec=>{
+            (sec.problems||[]).forEach(p=>{allProblems.push({...p,no:globalNo++,subject:subj.subject,sectionName:sec.sectionName,pts:p.pts||5});});
+          });
         });
+        if(!allProblems.length)throw new Error("問題が生成されませんでした。");
+        const totalPts=parsed.subjects.reduce((a,s)=>a+(s.totalPts||0),0);
+        setGeneratedTest({id:Date.now().toString(),date:todayStr,name:parsed.testName||testName,subjects:subjs,difficulty:mockConfig.difficulty,totalPoints:totalPts||allProblems.reduce((a,p)=>a+(p.pts||5),0),problems:allProblems,subjectsDetail:parsed.subjects,dsRange,weakBased:Object.keys(weakMap).length>0,aiGenerated:true});
         setMockStep("preview");setMockAnswers({});
       }catch(e){setGenError(e.message);}
       finally{setGenerating(false);setGenProgress("");}
     };
-
     return(<>
-      {/* 次のテスト */}
       {nextTest&&(
         <div style={{marginBottom:13,borderRadius:13,background:"rgba(239,68,68,.1)",border:"1px solid rgba(239,68,68,.3)",padding:"12px 14px"}}>
           <div style={{fontSize:10,color:"#f87171",fontWeight:700,letterSpacing:1,marginBottom:3}}>📅 次のテスト（自動検出）</div>
-          <div style={{fontSize:14,fontWeight:700,fontFamily:"'Noto Serif JP',serif"}}>{nextTest.title}</div>
+          <div style={{fontSize:14,fontWeight:700,fontFamily:serif}}>{nextTest.title}</div>
           <div style={{fontSize:11,opacity:.55,marginTop:2}}>{nextTest.date}</div>
-          {dsRange&&<div style={{fontSize:11,color:"#f87171",marginTop:4,fontWeight:700}}>試験範囲：DS No.{dsRange.from}〜{dsRange.to}（UMAPから自動取得）</div>}
+          {dsRange&&<div style={{fontSize:11,color:"#f87171",marginTop:4,fontWeight:700}}>試験範囲：DS No.{dsRange.from}〜{dsRange.to}</div>}
         </div>
       )}
-
-      {/* 弱点重点 */}
       {Object.keys(weakMap).length>0&&(
         <div style={{marginBottom:13,borderRadius:13,background:"rgba(245,158,11,.07)",border:"1px solid rgba(245,158,11,.22)",padding:"11px 14px"}}>
-          <div style={{fontSize:10,color:"#f59e0b",fontWeight:700,letterSpacing:1,marginBottom:3}}>⚠ 弱点重点出題（自動適用）</div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:5,marginTop:5}}>
+          <div style={{fontSize:10,color:"#f59e0b",fontWeight:700,letterSpacing:1,marginBottom:5}}>⚠ 弱点分野を重点出題（自動適用）</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
             {Object.entries(weakMap).flatMap(([sid,fs])=>fs.slice(0,2).map(f=>(
               <span key={sid+f} style={{fontSize:9,padding:"2px 7px",borderRadius:8,background:"rgba(239,68,68,.14)",color:"#f87171",border:"1px solid rgba(239,68,68,.22)"}}>{f}</span>
             )))}
           </div>
         </div>
       )}
-
-      {/* 過去問参照バッジ */}
-      <div style={{marginBottom:13,borderRadius:13,background:"rgba(34,197,94,.07)",border:"1px solid rgba(34,197,94,.22)",padding:"10px 14px",display:"flex",gap:10,alignItems:"center"}}>
-        <span style={{fontSize:20}}>📝</span>
-        <div>
-          <div style={{fontSize:12,fontWeight:700,color:"#4ade80"}}>実際のテスト問題を参照して生成</div>
-          <div style={{fontSize:10,opacity:.55,marginTop:2}}>3月・4月のテスト問題（{PAST_TEST_PROBLEMS.length}問）をClaude APIに参考として提供します。</div>
-        </div>
-      </div>
-
-      {/* AIバッジ */}
-      <div style={{marginBottom:13,borderRadius:13,background:"rgba(124,58,237,.09)",border:"1px solid rgba(124,58,237,.28)",padding:"10px 14px",display:"flex",gap:10,alignItems:"center"}}>
-        <span style={{fontSize:20}}>✨</span>
-        <div>
-          <div style={{fontSize:12,fontWeight:700,color:"#a78bfa"}}>Claude APIで問題を自動生成</div>
-          <div style={{fontSize:10,opacity:.55,marginTop:2}}>問題用紙・解答用紙の2ファイルをPDFで出力できます。</div>
-        </div>
-      </div>
-
-      {/* 科目 */}
-      <div style={{fontSize:10,opacity:.3,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>科目（複数可）</div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:13}}>
-        {SUBJECTS.map(s=>{const sel=mockConfig.subjects.includes(s.id);return(
-          <button key={s.id} onClick={()=>setMockConfig(p=>({...p,subjects:sel&&p.subjects.length>1?p.subjects.filter(x=>x!==s.id):[...new Set([...p.subjects,s.id])]}))}
-            style={{padding:"11px",borderRadius:11,border:`1.5px solid ${sel?s.accent+"88":"rgba(255,255,255,.1)"}`,background:sel?`${s.color}44`:"rgba(255,255,255,.03)",color:sel?"white":"rgba(255,255,255,.38)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Noto Sans JP',sans-serif",display:"flex",alignItems:"center",gap:8}}>
-            <span style={{fontSize:18}}>{s.icon}</span>
-            <span style={{color:sel?s.accent:"rgba(255,255,255,.38)"}}>{s.label}</span>
-          </button>
-        );})}
-      </div>
-
-      {/* 難易度 */}
-      <div style={{fontSize:10,opacity:.3,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>難易度</div>
-      <div style={{display:"flex",gap:5,marginBottom:13}}>
-        {[["all","すべて","#64748b"],["1","★基礎","#22c55e"],["2","★★標準","#f59e0b"],["3","★★★発展","#ef4444"]].map(([v,l,c])=>(
-          <button key={v} onClick={()=>setMockConfig(p=>({...p,difficulty:v}))} style={{flex:1,padding:"8px 2px",borderRadius:9,border:`1px solid ${mockConfig.difficulty===v?c:"rgba(255,255,255,.1)"}`,background:mockConfig.difficulty===v?`${c}22`:"transparent",color:mockConfig.difficulty===v?c:"rgba(255,255,255,.28)",fontSize:9,fontWeight:700,cursor:"pointer",fontFamily:"'Noto Sans JP',sans-serif"}}>{l}</button>
-        ))}
-      </div>
-
-      {/* 出題数 */}
-      <div style={{fontSize:10,opacity:.3,letterSpacing:2,textTransform:"uppercase",marginBottom:7}}>出題数：<span style={{color:"white",fontFamily:"monospace",fontSize:14}}>{mockConfig.count}</span>問</div>
-      <input type="range" min={5} max={40} step={5} value={mockConfig.count} onChange={e=>setMockConfig(p=>({...p,count:parseInt(e.target.value)}))}
-        style={{width:"100%",marginBottom:20,accentColor:"#7c3aed"}}/>
-
-      {genError&&(
-        <div style={{marginBottom:11,background:"rgba(239,68,68,.1)",border:"1px solid rgba(239,68,68,.28)",borderRadius:10,padding:"9px 12px",fontSize:11,color:"#f87171",lineHeight:1.5}}>⚠ {genError}</div>
-      )}
-
-      <button onClick={doGenerate} disabled={generating}
-        style={{width:"100%",padding:"16px",borderRadius:14,border:"none",background:generating?"rgba(124,58,237,.3)":"linear-gradient(135deg,#7c3aed,#4c1d95)",color:"white",fontSize:16,fontWeight:700,cursor:generating?"default":"pointer",fontFamily:"'Noto Sans JP',sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:10,boxShadow:generating?"none":"0 6px 20px rgba(124,58,237,.32)"}}>
-        {generating?<><span style={{display:"inline-block",animation:"mockSpin 1s linear infinite"}}>⟳</span>{genProgress||"生成中…"}</>:<><span>✨</span>Claude APIで問題を自動生成</>}
-      </button>
-      <style>{`@keyframes mockSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-
-      {/* 過去の履歴 */}
-      {mockSessions.length>0&&(
-        <div style={{marginTop:20}}>
-          <div style={{fontSize:10,opacity:.3,letterSpacing:2,textTransform:"uppercase",marginBottom:9}}>過去の模擬テスト</div>
-          {mockSessions.slice(0,4).map(ms=>(
-            <div key={ms.id} style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"11px 14px",marginBottom:7}}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                <div><div style={{fontSize:12,fontWeight:700}}>{ms.name||"模擬テスト"}</div><div style={{fontSize:9,opacity:.38,marginTop:2}}>{ms.date} · {ms.total}問</div></div>
-                <div style={{textAlign:"right"}}><div style={{fontSize:20,fontWeight:900,fontFamily:"monospace",color:scoreColor(ms.pct)}}>{ms.pct}%</div><div style={{fontSize:9,opacity:.38}}>{ms.correct}/{ms.total}</div></div>
+      <div style={{marginBottom:13,borderRadius:13,background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.07)",padding:"12px 14px"}}>
+        <div style={{fontSize:10,opacity:.4,letterSpacing:1,marginBottom:8}}>テスト形式（SAPIX通常テスト準拠・固定）</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+          {Object.entries(SAPIX_FORMAT).filter(([sid])=>mockConfig.subjects.includes(sid)).map(([sid,fmt])=>(
+            <div key={sid} style={{borderRadius:10,borderLeft:"3px solid "+fmt.color,background:fmt.color+"10",padding:"8px 10px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                <span style={{fontSize:12,fontWeight:700,color:fmt.color}}>{fmt.icon} {fmt.label}</span>
+                <span style={{fontSize:14,fontWeight:900,fontFamily:"monospace",color:"white"}}>{fmt.pts}点</span>
               </div>
+              {fmt.sections.map((s,i)=>(
+                <div key={i} style={{fontSize:9,opacity:.5,marginTop:1}}>{s.name}（{s.count}問）</div>
+              ))}
             </div>
           ))}
         </div>
+      </div>
+      <div style={{marginBottom:13}}>
+        <div style={{fontSize:10,opacity:.3,letterSpacing:2,marginBottom:8}}>出題科目</div>
+        <div style={{display:"flex",gap:6}}>
+          {Object.entries(SAPIX_FORMAT).map(([sid,fmt])=>{
+            const on=mockConfig.subjects.includes(sid);
+            return(
+              <button key={sid} onClick={()=>{const next=on?mockConfig.subjects.filter(s=>s!==sid):[...mockConfig.subjects,sid];if(next.length>0)setMockConfig(p=>({...p,subjects:next}));}}
+                style={{flex:1,padding:"8px 4px",borderRadius:10,border:"1.5px solid "+(on?fmt.color+"99":"rgba(255,255,255,.1)"),background:on?fmt.color+"20":"transparent",color:on?fmt.color:"rgba(255,255,255,.3)",fontSize:10,fontWeight:700,cursor:"pointer",fontFamily:noto}}>
+                <div style={{fontSize:13}}>{fmt.icon}</div>
+                <div>{fmt.label}</div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div style={{marginBottom:18}}>
+        <div style={{fontSize:10,opacity:.3,letterSpacing:2,marginBottom:8}}>難易度</div>
+        <div style={{display:"flex",gap:6}}>
+          {[["all","全レベル","⚖"],["1","基礎★","🌱"],["2","標準★★","📚"],["3","発展★★★","🔥"]].map(([v,l,e])=>(
+            <button key={v} onClick={()=>setMockConfig(p=>({...p,difficulty:v}))}
+              style={{flex:1,padding:"8px 3px",borderRadius:10,border:"1.5px solid "+(mockConfig.difficulty===v?"rgba(167,139,250,.7)":"rgba(255,255,255,.1)"),background:mockConfig.difficulty===v?"rgba(167,139,250,.15)":"transparent",color:mockConfig.difficulty===v?"#a78bfa":"rgba(255,255,255,.3)",fontSize:9,fontWeight:700,cursor:"pointer",fontFamily:noto,lineHeight:1.4}}>
+              <div style={{fontSize:12}}>{e}</div>
+              <div>{l}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+      <button onClick={()=>{setGenerating(true);setGenError("");doGenerate();}} disabled={generating}
+        style={{width:"100%",padding:"15px",borderRadius:13,border:"none",background:generating?"rgba(167,139,250,.15)":"linear-gradient(135deg,#7c3aed,#4f46e5)",color:"white",fontSize:14,fontWeight:700,cursor:generating?"default":"pointer",fontFamily:noto,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+        {generating?<><span style={{display:"inline-block",animation:"mockSpin 1s linear infinite"}}>⟳</span>{genProgress||"生成中…"}</>:<><span>✨</span>Claude APIで問題を自動生成</>}
+      </button>
+      {genError&&(
+        <div style={{marginTop:10,borderRadius:10,background:"rgba(239,68,68,.1)",border:"1px solid rgba(239,68,68,.3)",padding:"10px 12px",fontSize:11,color:"#f87171",lineHeight:1.6}}>
+          ❌ {genError}
+        </div>
       )}
+      <style>{`@keyframes mockSpin{to{transform:rotate(360deg)}}`}</style>
     </>);
   })()}
 </div>
