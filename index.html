@@ -34,7 +34,7 @@ window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
 if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sapix-support/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260521-032';
+const CURRENT_VERSION = '20260524-034';
 async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
 function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
 setTimeout(checkForUpdate,3000);
@@ -1829,6 +1829,53 @@ sections:[
 {id:"math-61-11-ds-1",text:"①〜⑤ 計算・確認問題①（前回単元の復習）",pts:10},
 {id:"math-61-11-ds-2",text:"⑥〜⑩ 計算・確認問題②（拡大・縮小の基本）",pts:10},
 ]},
+],initialAnswers:{}},
+{id:"math-61-12",code:"61-12",title:"変化のグラフ",isSpring:false,
+sections:[
+{id:"math-61-12-k1",label:"導入と基本①（入れ物とグラフ・グラフ読み取り）",diff:1,cat:"導入と基本",
+problems:[
+{id:"math-61-12-k1-1",text:"[1] 4種類の容器とグラフの対応（A〜D）各10点×4",pts:40},
+{id:"math-61-12-k1-2",text:"[2] グラフ読み取り（底面積の比・容器の形）各15点×2",pts:30},
+{id:"math-61-12-k1-3",text:"[3] グラフ読み取り（薬品の体積と重さの関係）各15点×2",pts:30}
+]},
+{id:"math-61-12-k2",label:"導入と基本②（しきりのある水そう）",diff:1,cat:"導入と基本",
+problems:[
+{id:"math-61-12-k2-1",text:"しきりのある水そうグラフ①（左右・時間）(1)〜(4)",pts:40},
+{id:"math-61-12-k2-2",text:"しきりのある水そうグラフ②（左右・時間）(1)〜(4)",pts:40}
+]},
+{id:"math-61-12-k3",label:"導入と基本③（水そうグラフ総合）",diff:1,cat:"導入と基本",
+problems:[
+{id:"math-61-12-k3-1",text:"導入と基本③ グラフ総合問題",pts:40}
+]},
+{id:"math-61-12-ap",label:"アプローチ編①〜⑧",diff:2,cat:"アプローチ",
+problems:[
+{id:"math-61-12-ap-1",text:"①グラフをかく(1) しきりあり水そう・グラフ作成と計算(1)〜(4)",pts:25},
+{id:"math-61-12-ap-2",text:"②グラフをかく(2) しきりあり水そう(1)〜(4)",pts:25},
+{id:"math-61-12-ap-3",text:"③グラフをかく(3) しきりあり水そう・複雑(1)〜(4)",pts:25},
+{id:"math-61-12-ap-4",text:"④容器の中の円柱① 四角柱容器・円柱 時刻・体積(1)(2)",pts:20},
+{id:"math-61-12-ap-5",text:"⑤容器の中の円柱② 四角柱容器・円柱 時刻・体積(1)(2)",pts:20},
+{id:"math-61-12-ap-6",text:"⑥水面の上がり方に注目① 毎分何L・x,y,z(1)(2)",pts:20},
+{id:"math-61-12-ap-7",text:"⑦水面の上がり方に注目② 複雑グラフ x,y,z(1)〜(4)",pts:20},
+{id:"math-61-12-ap-8",text:"⑧水面の上がり方に注目③ 複雑グラフ(1)〜(4)",pts:20}
+]},
+{id:"math-61-12-jissen",label:"実戦編 61A〜61E",diff:3,cat:"実戦",
+problems:[
+{id:"math-61-12-61A-1",text:"61A-[1] グラフ読み取り①流れ出し(1)〜(3) 各10点×3",pts:30},
+{id:"math-61-12-61A-2",text:"61A-[2] グラフ読み取り②A管B管(1)〜(3) 各10点×3",pts:30},
+{id:"math-61-12-61A-3",text:"61A-[3] しきりあり水そう（毎秒6L）(1)〜(4) 各5点×4",pts:20},
+{id:"math-61-12-61A-4",text:"61A-[4] B管使用グラフ(1)〜(4) 各5点×4",pts:20},
+{id:"math-61-12-61B-1",text:"61B-[1] グラフ問題①",pts:25},
+{id:"math-61-12-61B-2",text:"61B-[2] グラフ問題②",pts:25},
+{id:"math-61-12-61B-3",text:"61B-[3] グラフ問題③",pts:25},
+{id:"math-61-12-61B-4",text:"61B-[4] グラフ問題④",pts:25},
+{id:"math-61-12-61C-1",text:"61C [1][2][3] グラフ問題（★★）",pts:100},
+{id:"math-61-12-61D-1",text:"61D [1][2][3] グラフ問題（★★）",pts:100},
+{id:"math-61-12-61E-1",text:"61E [1][2][3] グラフ問題（★★★）",pts:100}
+]},
+{id:"math-61-12-ds",label:"デイリーサポート確認問題",diff:2,cat:"確認問題",
+problems:[
+{id:"math-61-12-ds-1",text:"DS確認問題 変化のグラフ総合",pts:100}
+]}
 ],initialAnswers:{}}],
 japanese: [
 
@@ -2436,7 +2483,33 @@ sections:[
 {id:"japanese-62A-11-dc-3",text:"デイリーチェック⑪〜⑮ 語句の意味・用法",pts:5},
 ]},
 ],initialAnswers:{}}
-],
+,
+{id:"japanese-62A-12",code:"62A-12",title:"かつての日本の風景（物語文）・選択肢問題の攻略4（細部のニュアンスを読み取ろう！）",isSpring:false,
+sections:[
+{id:"jp-62A-12-hon",label:"本文（物語文）・設問",diff:2,cat:"読解問題",
+problems:[
+{id:"jp-62A-12-q1-1",text:"設問1 問(1) 空欄補充・記号選択",pts:5},
+{id:"jp-62A-12-q1-2",text:"設問1 問(2) 傍線部の説明・記号選択",pts:5},
+{id:"jp-62A-12-q1-3",text:"設問1 問(3) 傍線部の説明・記号選択",pts:5},
+{id:"jp-62A-12-q1-4",text:"設問1 問(4) 本文中の心情・記号選択",pts:5},
+{id:"jp-62A-12-q2-1",text:"設問2 問(1)「奉公」の読みをひらがなで",pts:5},
+{id:"jp-62A-12-q2-2",text:"設問2 問(2)「書生」関連の著者・記号選択",pts:5},
+{id:"jp-62A-12-q2-3",text:"設問2 問(3)「困窮」の漢字を書く",pts:5},
+{id:"jp-62A-12-q3-1",text:"設問3 問(1) 傍線㋐「高漫ちき」類義語・反対語 各記号選択",pts:10},
+{id:"jp-62A-12-q3-2",text:"設問3 問(2)「拠なく」の意味・記号選択",pts:5},
+{id:"jp-62A-12-q3-3",text:"設問3 問(3)「( )言葉」の説明・記号選択",pts:5},
+{id:"jp-62A-12-q4-1",text:"設問4 問(1) 空欄A〜C・記号選択",pts:5},
+{id:"jp-62A-12-q4-2",text:"設問4 問(2) 傍線部の心情・記号選択",pts:5},
+{id:"jp-62A-12-q4-3",text:"設問4 問(3) 傍線部の理由・記号選択",pts:5},
+{id:"jp-62A-12-q4-4",text:"設問4 問(4) 本文全体の主題・記号選択",pts:5}
+]},
+{id:"jp-62A-12-chishiki",label:"語彙・知識問題（生活に関する言葉）",diff:1,cat:"知識問題",
+problems:[
+{id:"jp-62A-12-c1",text:"生活に関する言葉 問1 「奉公」他・読み書き",pts:5},
+{id:"jp-62A-12-c2",text:"生活に関する言葉 問2 「書生」他・著者選択",pts:5},
+{id:"jp-62A-12-c3",text:"生活に関する言葉 問3 慣用句・語句の意味",pts:5}
+]}
+],initialAnswers:{}}],
 science: [
 // ============================================================
 // 理科 601 水溶液の性質
@@ -3825,7 +3898,20 @@ sections:[
 ]},
 ],initialAnswers:{},
 },
-],
+{id:"sci-612",code:"630-12",title:"中和計算",isSpring:false,
+sections:[
+{id:"sci-612-q11",label:"問11 確認問題（実験1・実験2の表から計算）",diff:2,cat:"確認問題",
+problems:[
+{id:"sci-612-q11-1",text:"(1) BTB液が緑になる試験管番号（実験1・表1）",pts:10},
+{id:"sci-612-q11-2",text:"(2) 水酸化ナトリウム10cmに含まれる水酸化ナトリウムの量(g)",pts:10},
+{id:"sci-612-q11-3",text:"(3) 水酸化ナトリウム60cmと塩酸25cmを混ぜた固体の量(g)",pts:10},
+{id:"sci-612-q11-4",text:"(4) 実験2の表2から固体の量をグラフに作成",pts:10},
+{id:"sci-612-q11-5",text:"(5) 試験管⑨の液の説明として正しいもの3つ選択（ア〜キ）",pts:10},
+{id:"sci-612-q11-6",text:"(6) 塩酸C105cmと水酸化ナトリウム200cmを混ぜた固体の量(g)",pts:10},
+{id:"sci-612-q11-7",text:"(7) ⑧と⑫の液を混ぜて蒸発させたとき残る固体の種類",pts:20},
+{id:"sci-612-q11-8",text:"(8) 塩酸BとCを比べた濃さの比（ア〜エから選択）",pts:20}
+]}
+],initialAnswers:{}}],
 // ============================================================
 social: [
 // ヘルパー: 社会の確認問題ブロックを生成する共通パターン
@@ -4703,7 +4789,22 @@ sections:[
 {id:"social-6H03-ds2-9",text:"9 商品作物",pts:2},{id:"social-6H03-ds2-10",text:"10 株仲間",pts:2},
 ]},
 ],initialAnswers:{}}
-],
+,
+{id:"social-640-12",code:"640-12",title:"三権分立①・国会",isSpring:false,
+sections:[
+{id:"soc-640-12-q",label:"確認問題 [1] 国会見学の会話文（下線部①〜⑧）",diff:2,cat:"確認問題",
+problems:[
+{id:"soc-640-12-q1-1",text:"[1](1) 下線部①大日本帝国憲法の記号選択",pts:4},
+{id:"soc-640-12-q1-2a",text:"[1](2)① 下線部②国会の種類（記号選択）",pts:3},
+{id:"soc-640-12-q1-2b",text:"[1](2)② 下線部②国会の仕事○×（ア〜キ 各3点×7問）",pts:21},
+{id:"soc-640-12-q1-3a",text:"[1](3)① 下線部③空欄に入る漢字",pts:4},
+{id:"soc-640-12-q1-3b",text:"[1](3)② 天皇の国事行為でないもの・記号選択",pts:4},
+{id:"soc-640-12-q1-4",text:"[1](4) 下線部④国会の地位の理由（記述）",pts:4},
+{id:"soc-640-12-q2-1",text:"[2](1) 三権分立の図・各機関の役割（記号選択）",pts:4},
+{id:"soc-640-12-q2-2",text:"[2](2) 通常国会・臨時国会・特別国会の区別",pts:4},
+{id:"soc-640-12-q2-3",text:"[2](3) 国会の仕事（法律・予算・条約）の説明",pts:4}
+]}
+],initialAnswers:{}}],
 },
 UNIT_PDFS: {
 "math-61-01":"算601数の性質.pdf",
@@ -4759,6 +4860,7 @@ UNIT_PDFS: {
 "social-640-09":"社609外交史.pdf",
 "social-640-10":"社610日本国憲法.pdf",
 "math-61-11":"算611拡大縮小.pdf","japanese-62A-11":"国611.pdf","sci-611":"理611地層.pdf","social-640-11":"社611日本国憲法２.pdf",
+"math-61-12":"算612変化のク_ラフ.pdf","japanese-62A-12":"国612.pdf","sci-612":"理612中和計算.pdf","social-640-12":"社612国会_pdf.pdf",
 },
 WS_UNITS: {
 math: [
@@ -5877,1042 +5979,864 @@ math: [
 {id:"ws-math-11-z2-5",text:"Z②[6] 最難問⑩（25点）",pts:25},
 ]},
 ],initialAnswers:{}}
-],
+,
+{id:"ws-math-12",code:"WS-12",title:"変化のグラフ",sections:[
+{id:"ws-math-12-r1a",label:"R1A（変化のグラフ 基礎①）",diff:1,cat:"R1A",
+problems:[
+{id:"ws-math-12-r1a-1",text:"[1] 直方体容器A→Bへ移す・水深計算 20点",pts:20},
+{id:"ws-math-12-r1a-2",text:"[2] 直方体容器・棒入れ水深 20点",pts:20},
+{id:"ws-math-12-r1a-3",text:"[3] 直方体容器・棒入れ水深（大型） 20点",pts:20},
+{id:"ws-math-12-r1a-4a",text:"[4](1) しきりあり容器・グラフのx値 20点",pts:20},
+{id:"ws-math-12-r1a-4b",text:"[4](2) しきりあり容器・DEの長さ 20点",pts:20}
+]},
+{id:"ws-math-12-r1b",label:"R1B（変化のグラフ 基礎②）",diff:1,cat:"R1B",
+problems:[
+{id:"ws-math-12-r1b-1",text:"[1](1) 直方体容器傾け □の長さ 10点",pts:10},
+{id:"ws-math-12-r1b-1b",text:"[1](2) 傾け後水平に戻した水深 10点",pts:10},
+{id:"ws-math-12-r1b-2",text:"[2] 円柱容器A→B移す・水深（円周率3.14） 20点",pts:20}
+]},
+{id:"ws-math-12-r1c",label:"R1C（変化のグラフ 標準③）",diff:2,cat:"R1C",
+problems:[
+{id:"ws-math-12-r1c-1a",text:"[1](1) しきり2枚・グラフx値 15点",pts:15},
+{id:"ws-math-12-r1c-1b",text:"[1](2) EFの長さ 15点",pts:15},
+{id:"ws-math-12-r1c-1c",text:"[1](3) グラフyの値 15点",pts:15},
+{id:"ws-math-12-r1c-1d",text:"[1](4) グラフzの値 15点",pts:15}
+]},
+{id:"ws-math-12-r2b",label:"R2B（売買損益）",diff:2,cat:"R2B",
+problems:[
+{id:"ws-math-12-r2b-1",text:"[1] 2割5分引き630円→定価計算 25点",pts:25},
+{id:"ws-math-12-r2b-2",text:"[2] 卵120個仕入れ・3割利益の定価 25点",pts:25},
+{id:"ws-math-12-r2b-3",text:"[3] 原価400円→4割増定価→割引476円→何割引 25点",pts:25},
+{id:"ws-math-12-r2b-4",text:"[4] 原価300円→2割増定価→15%引き売値 25点",pts:25}
+]},
+{id:"ws-math-12-x",label:"X（流水算）",diff:2,cat:"X",
+problems:[
+{id:"ws-math-12-x1",text:"x-12① [1] 静水速計算（72km上り8時間・下り6時間） 25点",pts:25},
+{id:"ws-math-12-x2",text:"x-12① [2] 流速計算（80km上り15時間・下り8時間） 25点",pts:25},
+{id:"ws-math-12-x3",text:"x-12① [3] 上り時間（流速毎時3km・48km下り4時間） 25点",pts:25},
+{id:"ws-math-12-x4",text:"x-12① [4] B君上り時間（A君とB君の川・複合） 25点",pts:25},
+{id:"ws-math-12-x5",text:"x-12② [1] 川の流速（A船11km・B船7km・72km） 25点",pts:25},
+{id:"ws-math-12-x6",text:"x-12② [2] C船こぎ上り時間（A:B=3:2の比） 25点",pts:25},
+{id:"ws-math-12-x7",text:"x-12② [3] AB間往復時間（84km・上り1.5倍・静水17.5km） 25点",pts:25},
+{id:"ws-math-12-x8",text:"x-12② [4] B船静水速（A船上り8時間下り5時間・比4:3） 25点",pts:25},
+{id:"ws-math-12-x9",text:"x-12③ [1] 川の流速（A船11km・B船7km・出会い） 25点",pts:25},
+{id:"ws-math-12-x10",text:"x-12③ [2] C船こぎ上り時間（60km・A:B=3:2） 25点",pts:25},
+{id:"ws-math-12-x11",text:"x-12③ [3] AB間往復（1.5倍・静水17.5km） 25点",pts:25},
+{id:"ws-math-12-x12",text:"x-12③ [4] B船の静水速（上り8時間・下り5時間・比4:3） 25点",pts:25}
+]},
+{id:"ws-math-12-z",label:"Z（周期算・信号機・ブザー）",diff:3,cat:"Z",
+problems:[
+{id:"ws-math-12-z1",text:"Z-12① [5] A点滅8秒周期・B点滅7秒周期・3分間同時点灯時間",pts:25},
+{id:"ws-math-12-z2",text:"Z-12① [6] 信号機A（赤40秒青38秒）・B（赤28秒青44秒）(1)次の同時(2)午後1時以後最初の青",pts:50},
+{id:"ws-math-12-z3",text:"Z-12② [7] 3種ブザーA(10秒・5秒)B(3秒・2秒)C(4秒・1秒) (1)3つとも音なし合計秒(2)1つだけ合計秒(3)3つ同時回数と合計秒",pts:75}
+]}
+],initialAnswers:{}}],
 japanese: [
-{id:"ws-jp-01",code:"WS-01",title:"物語文①（心情・場面読解）",sections:[
-{id:"ws-jp-01-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
-{id:"ws-jp-01-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
-{id:"ws-jp-01-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
-{id:"ws-jp-01-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
-{id:"ws-jp-01-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
-{id:"ws-jp-01-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
-{id:"ws-jp-01-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
-{id:"ws-jp-01-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
-{id:"ws-jp-01-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
-{id:"ws-jp-01-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
-{id:"ws-jp-01-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
-{id:"ws-jp-01-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+{id:"ws-jp-01",code:"WS-01",title:"物語文①「オルゴール店」（心情・場面読解）",sections:[
+{id:"ws-jp-01-s1",label:"一 物語文（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-01-s1-p1",text:"問一 記号ア〜エから選ぶ（空欄A〜C）",pts:5},
+{id:"ws-jp-01-s1-p2",text:"問二 傍線部①の説明（記号選択）",pts:5},
+{id:"ws-jp-01-s1-p3",text:"問三 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-01-s1-p4",text:"問四 傍線部③の説明（記号選択）",pts:5},
+{id:"ws-jp-01-s1-p5",text:"問五 傍線部④「コンクール」一位になれるかどうかの理由（記号選択）",pts:5},
+{id:"ws-jp-01-s1-p6",text:"問六 傍線部⑤について（記号選択）",pts:5},
+{id:"ws-jp-01-s1-p7",text:"問七 傍線部⑦「香音のむねの奥底に響いている音楽」の説明（記号選択）",pts:5},
+{id:"ws-jp-01-s1-p8",text:"問八 傍線部⑧「無性にピアノを弾きたかった」理由（40字以内記述）",pts:5}
 ]},
-{id:"ws-jp-01-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
-{id:"ws-jp-01-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
-{id:"ws-jp-01-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
-{id:"ws-jp-01-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
-{id:"ws-jp-01-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
-{id:"ws-jp-01-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
-{id:"ws-jp-01-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
-{id:"ws-jp-01-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
-{id:"ws-jp-01-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
-{id:"ws-jp-01-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
-{id:"ws-jp-01-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+{id:"ws-jp-01-s2",label:"二 論説文「弱さ」（問一〜問四）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-01-s2-p1",text:"問一 傍線部①②「弱い」の意味（記号選択・説明）",pts:5},
+{id:"ws-jp-01-s2-p2",text:"問二 傍線部③の理由（記号選択）",pts:5},
+{id:"ws-jp-01-s2-p3",text:"問三 傍線部④「弱さ」の捉え方（記号選択）",pts:5},
+{id:"ws-jp-01-s2-p4",text:"問四 「弱さ」に関する筆者の主張（記号選択）",pts:5}
+]},
+{id:"ws-jp-01-s3",label:"三 論説文＋資料「弱さ」（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-01-s3-p1",text:"問一 「自分を知る」の意味（記号選択）",pts:5},
+{id:"ws-jp-01-s3-p2",text:"問二 傍線部①②の説明（記号選択）",pts:5},
+{id:"ws-jp-01-s3-p3",text:"問三 「弱さ」を意識化する意味（記述）",pts:5},
+{id:"ws-jp-01-s3-p4",text:"問四 「弱い人」と「強い人」の対比（記述）",pts:5},
+{id:"ws-jp-01-s3-p5",text:"問五 空欄X・Zに当てはまる語（抜き出し）",pts:5},
+{id:"ws-jp-01-s3-p6",text:"問六 傍線部5「自分を知る」の内容（記号選択）",pts:5},
+{id:"ws-jp-01-s3-p7",text:"問七 条件①②③の整理（記述）",pts:5},
+{id:"ws-jp-01-s3-p8",text:"問八 80字以上100字以内で記述",pts:5}
+]},
+{id:"ws-jp-01-s4",label:"ウィークリーステップ（知識問題）",diff:1,cat:"読解",problems:[
+{id:"ws-jp-01-s4-p1",text:"一 動物の名前を含む慣用句（記号選択）",pts:5},
+{id:"ws-jp-01-s4-p2",text:"二 動物の名前・語句（記号選択）",pts:5},
+{id:"ws-jp-01-s4-p3",text:"三 慣用句・ことわざ（記号選択）",pts:5},
+{id:"ws-jp-01-s4-p4",text:"四 会話文の敬語（記号選択・記述）",pts:5}
 ]}
 ],initialAnswers:{}},
-{id:"ws-jp-02",code:"WS-02",title:"説明文①（論旨・要旨読解）",sections:[
-{id:"ws-jp-02-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
-{id:"ws-jp-02-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
-{id:"ws-jp-02-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
-{id:"ws-jp-02-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
-{id:"ws-jp-02-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
-{id:"ws-jp-02-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
-{id:"ws-jp-02-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
-{id:"ws-jp-02-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
-{id:"ws-jp-02-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
-{id:"ws-jp-02-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
-{id:"ws-jp-02-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
-{id:"ws-jp-02-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+
+{id:"ws-jp-02",code:"WS-02",title:"説明文①「人種差別体験」・物語文②「スウィング」（論旨・場面読解）",sections:[
+{id:"ws-jp-02-s1",label:"一 説明文（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-02-s1-p1",text:"問一 傍線部①「実感」の意味（記号選択）",pts:5},
+{id:"ws-jp-02-s1-p2",text:"問二 傍線部②〜④の記号選択",pts:5},
+{id:"ws-jp-02-s1-p3",text:"問三 傍線部⑤「不親切な対応」の理由（記号選択）",pts:5},
+{id:"ws-jp-02-s1-p4",text:"問四 傍線部⑥の記号選択",pts:5},
+{id:"ws-jp-02-s1-p5",text:"問五 「それはたまらない」と感じた理由（記号選択）",pts:5},
+{id:"ws-jp-02-s1-p6",text:"問六 文章全体の構成（記号選択）",pts:5},
+{id:"ws-jp-02-s1-p7",text:"問七 心情の変化（記号選択）",pts:5},
+{id:"ws-jp-02-s1-p8",text:"問八 筆者の主張（30字以内記述）",pts:5}
 ]},
-{id:"ws-jp-02-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
-{id:"ws-jp-02-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
-{id:"ws-jp-02-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
-{id:"ws-jp-02-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
-{id:"ws-jp-02-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
-{id:"ws-jp-02-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
-{id:"ws-jp-02-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
-{id:"ws-jp-02-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
-{id:"ws-jp-02-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
-{id:"ws-jp-02-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
-{id:"ws-jp-02-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+{id:"ws-jp-02-s2",label:"二 物語文（問一〜問六）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-02-s2-p1",text:"問一 傍線部①の説明（記号選択）",pts:5},
+{id:"ws-jp-02-s2-p2",text:"問二 傍線部②③の記号選択",pts:5},
+{id:"ws-jp-02-s2-p3",text:"問三 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-02-s2-p4",text:"問四 傍線部⑤の説明（記号選択）",pts:5},
+{id:"ws-jp-02-s2-p5",text:"問五 傍線部⑥の理由（記号選択）",pts:5},
+{id:"ws-jp-02-s2-p6",text:"問六 傍線部⑦の説明（記号選択）",pts:5}
+]},
+{id:"ws-jp-02-s3",label:"三 説明文「多様性」（問一〜問五）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-02-s3-p1",text:"問一 傍線部①②の説明（字数制限あり記述）",pts:5},
+{id:"ws-jp-02-s3-p2",text:"問二 傍線部③の説明（記述）",pts:5},
+{id:"ws-jp-02-s3-p3",text:"問三 筆者の考え（記述）",pts:5},
+{id:"ws-jp-02-s3-p4",text:"問四 段落の並べ替え（記号選択）",pts:5},
+{id:"ws-jp-02-s3-p5",text:"問五 筆者の主張（記述）",pts:5}
+]},
+{id:"ws-jp-02-s4",label:"ウィークリーステップ（知識問題）",diff:1,cat:"読解",problems:[
+{id:"ws-jp-02-s4-p1",text:"一 慣用句・ことわざ（語句の組み合わせ）",pts:5}
 ]}
 ],initialAnswers:{}},
-{id:"ws-jp-04",code:"WS-04",title:"物語文②（人物・関係性読解）",sections:[
-{id:"ws-jp-04-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
-{id:"ws-jp-04-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
-{id:"ws-jp-04-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
-{id:"ws-jp-04-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
-{id:"ws-jp-04-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
-{id:"ws-jp-04-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
-{id:"ws-jp-04-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
-{id:"ws-jp-04-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
-{id:"ws-jp-04-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
-{id:"ws-jp-04-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
-{id:"ws-jp-04-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
-{id:"ws-jp-04-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+
+{id:"ws-jp-04",code:"WS-04",title:"詩・短歌・俳句①「初秋の詩」・物語文③「宿題帳」（心情・情景）",sections:[
+{id:"ws-jp-04-s1",label:"一 詩・短歌・俳句（問五〜問九）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-04-s1-p1",text:"問五 傍線部②「臨場感」の意味（記号選択）",pts:5},
+{id:"ws-jp-04-s1-p2",text:"問六 傍線部③・④の説明（記号選択）",pts:5},
+{id:"ws-jp-04-s1-p3",text:"問七 詩の解釈（記号選択）",pts:5},
+{id:"ws-jp-04-s1-p4",text:"問八 詩の全体構成（記号選択）",pts:5},
+{id:"ws-jp-04-s1-p5",text:"問九 A 詩・短歌・俳句の技法（記号選択）",pts:5},
+{id:"ws-jp-04-s1-p6",text:"問九 B・C 詩の技法（記号選択）",pts:5}
 ]},
-{id:"ws-jp-04-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
-{id:"ws-jp-04-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
-{id:"ws-jp-04-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
-{id:"ws-jp-04-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
-{id:"ws-jp-04-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
-{id:"ws-jp-04-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
-{id:"ws-jp-04-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
-{id:"ws-jp-04-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
-{id:"ws-jp-04-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
-{id:"ws-jp-04-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
-{id:"ws-jp-04-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+{id:"ws-jp-04-s2",label:"二 物語文（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-04-s2-p1",text:"問一 傍線部①の説明（記号選択）",pts:5},
+{id:"ws-jp-04-s2-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-04-s2-p3",text:"問三 傍線部③の心情（記号選択）",pts:5},
+{id:"ws-jp-04-s2-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-04-s2-p5",text:"問五 傍線部⑤の説明（記号選択）",pts:5},
+{id:"ws-jp-04-s2-p6",text:"問六 傍線部⑥の気持ちを35字以内で記述",pts:5},
+{id:"ws-jp-04-s2-p7",text:"問七 傍線部⑦の説明（記号選択）",pts:5},
+{id:"ws-jp-04-s2-p8",text:"問八 本文の特徴（記号選択）",pts:5}
+]},
+{id:"ws-jp-04-s3",label:"三 説明文「お茶と学び」（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-04-s3-p1",text:"問一 空欄①②（記号選択）",pts:5},
+{id:"ws-jp-04-s3-p2",text:"問二 傍線部②の説明（記述）",pts:5},
+{id:"ws-jp-04-s3-p3",text:"問三 傍線部③の理由（記号選択）",pts:5},
+{id:"ws-jp-04-s3-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-04-s3-p5",text:"問五 空欄⑤に入る語句（抜き出し）",pts:5},
+{id:"ws-jp-04-s3-p6",text:"問六 傍線部⑥の理由（記述）",pts:5},
+{id:"ws-jp-04-s3-p7",text:"問七 本文の主旨（記号選択）",pts:5},
+{id:"ws-jp-04-s3-p8",text:"問八 先生の「学び」の考え方（40字以内記述）",pts:5}
+]},
+{id:"ws-jp-04-s4",label:"ウィークリーステップ（知識問題）",diff:1,cat:"読解",problems:[
+{id:"ws-jp-04-s4-p1",text:"一 慣用句・ことわざの読み方",pts:5},
+{id:"ws-jp-04-s4-p2",text:"二 詩・短歌・俳句の知識",pts:5}
 ]}
 ],initialAnswers:{}},
-{id:"ws-jp-05",code:"WS-05",title:"説明文②（具体例・主張読解）",sections:[
-{id:"ws-jp-05-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
-{id:"ws-jp-05-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
-{id:"ws-jp-05-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
-{id:"ws-jp-05-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
-{id:"ws-jp-05-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
-{id:"ws-jp-05-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
-{id:"ws-jp-05-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
-{id:"ws-jp-05-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
-{id:"ws-jp-05-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
-{id:"ws-jp-05-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
-{id:"ws-jp-05-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
-{id:"ws-jp-05-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+
+{id:"ws-jp-05",code:"WS-05",title:"物語文④「誕生日のレストラン」・説明文②「美の感覚」（設問別読解）",sections:[
+{id:"ws-jp-05-s1",label:"一 物語文（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-05-s1-p1",text:"問一 傍線部①の説明（記号選択）",pts:5},
+{id:"ws-jp-05-s1-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-05-s1-p3",text:"問三 傍線部③の心情（記号選択）",pts:5},
+{id:"ws-jp-05-s1-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-05-s1-p5",text:"問五 傍線部⑤の説明（記号選択）",pts:5},
+{id:"ws-jp-05-s1-p6",text:"問六 傍線部⑥の気持ちを説明（記号選択）",pts:5},
+{id:"ws-jp-05-s1-p7",text:"問七 傍線部⑦の理由（20〜25字記述）",pts:5},
+{id:"ws-jp-05-s1-p8",text:"問八 本文全体から読み取れる雨音の気持ち",pts:5}
 ]},
-{id:"ws-jp-05-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
-{id:"ws-jp-05-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
-{id:"ws-jp-05-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
-{id:"ws-jp-05-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
-{id:"ws-jp-05-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
-{id:"ws-jp-05-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
-{id:"ws-jp-05-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
-{id:"ws-jp-05-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
-{id:"ws-jp-05-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
-{id:"ws-jp-05-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
-{id:"ws-jp-05-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+{id:"ws-jp-05-s2",label:"二 説明文（問一〜問四）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-05-s2-p1",text:"問一 本文の空欄X・Yに入る言葉（記号選択）",pts:5},
+{id:"ws-jp-05-s2-p2",text:"問二 傍線部①②の説明（記号選択）",pts:5},
+{id:"ws-jp-05-s2-p3",text:"問三 傍線部③「状況の美」の説明（記述）",pts:5},
+{id:"ws-jp-05-s2-p4",text:"問四 「日本人の美意識」（記述）",pts:5}
+]},
+{id:"ws-jp-05-s3",label:"三 物語文「グラウンドキーパー」（問一〜問七）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-05-s3-p1",text:"問一 傍線部①の説明（記号選択）",pts:5},
+{id:"ws-jp-05-s3-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-05-s3-p3",text:"問三 傍線部③の心情（記述）",pts:5},
+{id:"ws-jp-05-s3-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-05-s3-p5",text:"問五 傍線部⑤の理由（百字以内記述）",pts:5},
+{id:"ws-jp-05-s3-p6",text:"問六 傍線部⑥の内容（記号選択）",pts:5},
+{id:"ws-jp-05-s3-p7",text:"問七 傍線部⑦の説明（記号選択）",pts:5}
+]},
+{id:"ws-jp-05-s4",label:"ウィークリーステップ（知識問題）",diff:1,cat:"読解",problems:[
+{id:"ws-jp-05-s4-p1",text:"一 語句の意味（記号選択）",pts:5},
+{id:"ws-jp-05-s4-p2",text:"二 空欄補充（言葉の知識）",pts:5}
 ]}
 ],initialAnswers:{}},
-{id:"ws-jp-06",code:"WS-06",title:"物語文③（心情変化・対比）",sections:[
-{id:"ws-jp-06-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
-{id:"ws-jp-06-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
-{id:"ws-jp-06-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
-{id:"ws-jp-06-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
-{id:"ws-jp-06-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
-{id:"ws-jp-06-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
-{id:"ws-jp-06-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
-{id:"ws-jp-06-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
-{id:"ws-jp-06-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
-{id:"ws-jp-06-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
-{id:"ws-jp-06-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
-{id:"ws-jp-06-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+
+{id:"ws-jp-06",code:"WS-06",title:"説明文③「させていただく」（言語表現・論旨）",sections:[
+{id:"ws-jp-06-s1",label:"一 説明文（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-06-s1-p1",text:"問一 空欄A・B・Cに入る表現（記号選択）",pts:5},
+{id:"ws-jp-06-s1-p2",text:"問二 傍線部①の説明（記号選択）",pts:5},
+{id:"ws-jp-06-s1-p3",text:"問三 傍線部②の理由（記号選択）",pts:5},
+{id:"ws-jp-06-s1-p4",text:"問四 傍線部④の意味（記号選択）",pts:5},
+{id:"ws-jp-06-s1-p5",text:"問五 傍線部B「便利」の説明（40字以内記述）",pts:5},
+{id:"ws-jp-06-s1-p6",text:"問六 傍線部④「手数 手落ち」の説明（記号選択）",pts:5},
+{id:"ws-jp-06-s1-p7",text:"問七 本文の構成（記号選択）",pts:5},
+{id:"ws-jp-06-s1-p8",text:"問八 本文の特徴（記号選択）",pts:5}
 ]},
-{id:"ws-jp-06-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
-{id:"ws-jp-06-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
-{id:"ws-jp-06-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
-{id:"ws-jp-06-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
-{id:"ws-jp-06-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
-{id:"ws-jp-06-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
-{id:"ws-jp-06-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
-{id:"ws-jp-06-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
-{id:"ws-jp-06-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
-{id:"ws-jp-06-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
-{id:"ws-jp-06-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+{id:"ws-jp-06-s2",label:"二 物語文「ぼく・父・蓮」（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-06-s2-p1",text:"問一 傍線部①の感情（記号選択）",pts:5},
+{id:"ws-jp-06-s2-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-06-s2-p3",text:"問三 傍線部③の心情（記号選択）",pts:5},
+{id:"ws-jp-06-s2-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-06-s2-p5",text:"問五 傍線部⑤の説明（記号選択）",pts:5},
+{id:"ws-jp-06-s2-p6",text:"問六 傍線部⑥の理由（記号選択）",pts:5},
+{id:"ws-jp-06-s2-p7",text:"問七 本文全体の主題（記号選択）",pts:5},
+{id:"ws-jp-06-s2-p8",text:"問八 ぼくの心情の変化（記述）",pts:5}
+]},
+{id:"ws-jp-06-s3",label:"三 説明文「点を取ること・全体を見ること」（問一〜問六）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-06-s3-p1",text:"問一 傍線部①の意味（記号選択）",pts:5},
+{id:"ws-jp-06-s3-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-06-s3-p3",text:"問三 傍線部③の説明（記号選択）",pts:5},
+{id:"ws-jp-06-s3-p4",text:"問四 空欄⑦に当てはまる語（抜き出し）",pts:5},
+{id:"ws-jp-06-s3-p5",text:"問五 傍線部⑤の説明（記号選択）",pts:5},
+{id:"ws-jp-06-s3-p6",text:"問六 本文の主旨（記述）",pts:5}
+]},
+{id:"ws-jp-06-s4",label:"ウィークリーステップ（知識問題）",diff:1,cat:"読解",problems:[
+{id:"ws-jp-06-s4-p1",text:"一 語句の意味（記号選択）",pts:5}
 ]}
 ],initialAnswers:{}},
-{id:"ws-jp-07",code:"WS-07",title:"物語文④（設問別読解）",sections:[
-{id:"ws-jp-07-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
-{id:"ws-jp-07-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
-{id:"ws-jp-07-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
-{id:"ws-jp-07-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
-{id:"ws-jp-07-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
-{id:"ws-jp-07-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
-{id:"ws-jp-07-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
-{id:"ws-jp-07-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
-{id:"ws-jp-07-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
-{id:"ws-jp-07-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
-{id:"ws-jp-07-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
-{id:"ws-jp-07-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+
+{id:"ws-jp-07",code:"WS-07",title:"物語文⑤「ゆり子・初江」（視点・人物描写）",sections:[
+{id:"ws-jp-07-s1",label:"一 物語文（問一〜問十）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-07-s1-p1",text:"問一 傍線部①②の関係（記号選択）",pts:5},
+{id:"ws-jp-07-s1-p2",text:"問二 空欄[A]〜[D]に入る語（記号選択）",pts:5},
+{id:"ws-jp-07-s1-p3",text:"問三 傍線部③の説明（記号選択）",pts:5},
+{id:"ws-jp-07-s1-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-07-s1-p5",text:"問五 傍線部⑤「両極端の間を迷っている」（記号選択）",pts:5},
+{id:"ws-jp-07-s1-p6",text:"問六 傍線部⑥の説明（記号選択）",pts:5},
+{id:"ws-jp-07-s1-p7",text:"問七 傍線部⑦「香音のむねの奥底」の説明（70字以内記述）",pts:5},
+{id:"ws-jp-07-s1-p8",text:"問八 空欄⑧の意味（記号選択）",pts:5},
+{id:"ws-jp-07-s1-p9",text:"問九 傍線部aの表現（記号選択）",pts:5},
+{id:"ws-jp-07-s1-p10",text:"問十 初江の「安心」の説明（40字以内記述）",pts:5}
 ]},
-{id:"ws-jp-07-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
-{id:"ws-jp-07-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
-{id:"ws-jp-07-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
-{id:"ws-jp-07-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
-{id:"ws-jp-07-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
-{id:"ws-jp-07-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
-{id:"ws-jp-07-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
-{id:"ws-jp-07-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
-{id:"ws-jp-07-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
-{id:"ws-jp-07-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
-{id:"ws-jp-07-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+{id:"ws-jp-07-s2",label:"二 物語文（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-07-s2-p1",text:"問一 傍線部①②の記号選択",pts:5},
+{id:"ws-jp-07-s2-p2",text:"問二 空欄のカタカナを漢字に直す",pts:5},
+{id:"ws-jp-07-s2-p3",text:"問三 傍線部③「解消」の説明（記号選択）",pts:5},
+{id:"ws-jp-07-s2-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-07-s2-p5",text:"問五 傍線部⑤「それはなぜか」の説明（記号選択）",pts:5},
+{id:"ws-jp-07-s2-p6",text:"問六 傍線部⑥の説明（記号選択）",pts:5},
+{id:"ws-jp-07-s2-p7",text:"問七 傍線部⑦の理由（70字以内記述）",pts:5},
+{id:"ws-jp-07-s2-p8",text:"問八 傍線部⑧の説明（記号選択）",pts:5}
+]},
+{id:"ws-jp-07-s3",label:"三 物語文「ヒロシとおじさん」（問一）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-07-s3-p1",text:"問一 本文の表現の特徴（記号選択）",pts:5}
+]},
+{id:"ws-jp-07-s4",label:"ウィークリーステップ（知識問題）",diff:1,cat:"読解",problems:[
+{id:"ws-jp-07-s4-p1",text:"一 語句・慣用表現",pts:5}
 ]}
 ],initialAnswers:{}},
-{id:"ws-jp-08",code:"WS-08",title:"物語文⑤（視点・描写読解）",sections:[
-{id:"ws-jp-08-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
-{id:"ws-jp-08-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
-{id:"ws-jp-08-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
-{id:"ws-jp-08-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
-{id:"ws-jp-08-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
-{id:"ws-jp-08-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
-{id:"ws-jp-08-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
-{id:"ws-jp-08-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
-{id:"ws-jp-08-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
-{id:"ws-jp-08-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
-{id:"ws-jp-08-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
-{id:"ws-jp-08-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+
+{id:"ws-jp-08",code:"WS-08",title:"説明文④「村での暮らし・動物観」・物語文⑥「イジメ・スダレ」",sections:[
+{id:"ws-jp-08-s1",label:"一 説明文（問四〜問九）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-08-s1-p1",text:"問四 傍線部①の説明（記号選択）",pts:5},
+{id:"ws-jp-08-s1-p2",text:"問五 傍線部②の意味（20字以内記述）",pts:5},
+{id:"ws-jp-08-s1-p3",text:"問六 傍線部③の意味（記号選択）",pts:5},
+{id:"ws-jp-08-s1-p4",text:"問七 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-08-s1-p5",text:"問八 傍線部⑤の主張（記号選択）",pts:5},
+{id:"ws-jp-08-s1-p6",text:"問九 筆者の考える「村」の意味（5字抜き出し）",pts:5}
 ]},
-{id:"ws-jp-08-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
-{id:"ws-jp-08-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
-{id:"ws-jp-08-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
-{id:"ws-jp-08-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
-{id:"ws-jp-08-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
-{id:"ws-jp-08-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
-{id:"ws-jp-08-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
-{id:"ws-jp-08-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
-{id:"ws-jp-08-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
-{id:"ws-jp-08-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
-{id:"ws-jp-08-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+{id:"ws-jp-08-s2",label:"二 物語文（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-08-s2-p1",text:"問一 傍線部①「荒れた気持ち」（記号選択）",pts:5},
+{id:"ws-jp-08-s2-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-08-s2-p3",text:"問三 傍線部③の心情（記号選択）",pts:5},
+{id:"ws-jp-08-s2-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-08-s2-p5",text:"問五 傍線部⑤の心情（記号選択）",pts:5},
+{id:"ws-jp-08-s2-p6",text:"問六 傍線部⑥の説明（記号選択）",pts:5},
+{id:"ws-jp-08-s2-p7",text:"問七 傍線部⑦の説明（記号選択）",pts:5},
+{id:"ws-jp-08-s2-p8",text:"問八 クラスの人間関係（記述）",pts:5}
+]},
+{id:"ws-jp-08-s3",label:"三 ウィークリーステップ 知識の総完成〜08",diff:1,cat:"読解",problems:[
+{id:"ws-jp-08-s3-p1",text:"一 動物の話（語句・記号選択）",pts:5},
+{id:"ws-jp-08-s3-p2",text:"二 語句・漢字の読み書き",pts:5},
+{id:"ws-jp-08-s3-p3",text:"三 慣用句・ことわざ（記号選択）",pts:5},
+{id:"ws-jp-08-s3-p4",text:"四 会話文・慣用表現（記号選択）",pts:5}
 ]}
 ],initialAnswers:{}},
-{id:"ws-jp-09",code:"WS-09",title:"説明文③（因果関係・論述）",sections:[
-{id:"ws-jp-09-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
-{id:"ws-jp-09-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
-{id:"ws-jp-09-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
-{id:"ws-jp-09-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
-{id:"ws-jp-09-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
-{id:"ws-jp-09-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
-{id:"ws-jp-09-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
-{id:"ws-jp-09-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
-{id:"ws-jp-09-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
-{id:"ws-jp-09-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
-{id:"ws-jp-09-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
-{id:"ws-jp-09-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+
+{id:"ws-jp-09",code:"WS-09",title:"物語文⑦「秘密の小屋」（心情・場面）",sections:[
+{id:"ws-jp-09-s1",label:"一 物語文（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-09-s1-p1",text:"問一 傍線部①〜空欄A〜Cに入る語（記号選択）",pts:5},
+{id:"ws-jp-09-s1-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-09-s1-p3",text:"問三 傍線部③の心情（記号選択）",pts:5},
+{id:"ws-jp-09-s1-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-09-s1-p5",text:"問五 傍線部⑤の説明（記号選択）",pts:5},
+{id:"ws-jp-09-s1-p6",text:"問六 空欄⑥に入る語（記号選択）",pts:5},
+{id:"ws-jp-09-s1-p7",text:"問七 本文中の「ぼくたち」の気持ち（記号選択）",pts:5},
+{id:"ws-jp-09-s1-p8",text:"問八 本文全体の主題（記述）",pts:5}
 ]},
-{id:"ws-jp-09-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
-{id:"ws-jp-09-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
-{id:"ws-jp-09-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
-{id:"ws-jp-09-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
-{id:"ws-jp-09-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
-{id:"ws-jp-09-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
-{id:"ws-jp-09-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
-{id:"ws-jp-09-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
-{id:"ws-jp-09-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
-{id:"ws-jp-09-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
-{id:"ws-jp-09-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+{id:"ws-jp-09-s2",label:"二 説明文「世間・迷惑」（問一〜問十）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-09-s2-p1",text:"問一 空欄a〜eのカタカナを漢字に直す",pts:5},
+{id:"ws-jp-09-s2-p2",text:"問二 傍線部①②の説明（記号選択）",pts:5},
+{id:"ws-jp-09-s2-p3",text:"問三 傍線部③の説明（記号選択）",pts:5},
+{id:"ws-jp-09-s2-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-09-s2-p5",text:"問五 傍線部⑤の記号選択",pts:5},
+{id:"ws-jp-09-s2-p6",text:"問六 傍線部⑥の説明（記号選択）",pts:5},
+{id:"ws-jp-09-s2-p7",text:"問七 傍線部⑦の理由（記号選択）",pts:5},
+{id:"ws-jp-09-s2-p8",text:"問八 「対立・迷惑」の意味（記号選択）",pts:5},
+{id:"ws-jp-09-s2-p9",text:"問九 筆者の「求められる能力」（記号選択）",pts:5},
+{id:"ws-jp-09-s2-p10",text:"問十 傍線部⑦の心情を30字以内で記述",pts:5}
+]},
+{id:"ws-jp-09-s3",label:"三 物語文「美乃里の夏」（問一〜問六）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-09-s3-p1",text:"問一 傍線部①の説明（記号選択）",pts:5},
+{id:"ws-jp-09-s3-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-09-s3-p3",text:"問三 傍線部③の説明（記述）",pts:5},
+{id:"ws-jp-09-s3-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-09-s3-p5",text:"問五 傍線部⑤の理由（100字以内記述）",pts:5},
+{id:"ws-jp-09-s3-p6",text:"問六 木島さんの気持ち（記述）",pts:5}
+]},
+{id:"ws-jp-09-s4",label:"ウィークリーステップ（知識問題）",diff:1,cat:"読解",problems:[
+{id:"ws-jp-09-s4-p1",text:"一 語句・慣用表現（記号選択）",pts:5}
 ]}
 ],initialAnswers:{}},
-{id:"ws-jp-10",code:"WS-10",title:"物語文⑥（総合・記述強化）",sections:[
-{id:"ws-jp-10-q",label:"読解問題（問二〜問十）",diff:2,cat:"読解問題",problems:[
-{id:"ws-jp-10-q2",text:"問二 50〜行目までの本文中の空欄[A]〜[D]にあてはまる言葉",pts:5},
-{id:"ws-jp-10-q3",text:"問三 本文中の空欄（1）に当てはまる表現を本文中から探す",pts:5},
-{id:"ws-jp-10-q4",text:"問四 本文中の空欄（2）に当てはまる部分を本文中から探す",pts:5},
-{id:"ws-jp-10-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
-{id:"ws-jp-10-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
-{id:"ws-jp-10-q6b",text:"問六 下線部について二語を使って説明（20〜25字以内）②",pts:5},
-{id:"ws-jp-10-q7",text:"問七 本文中の空欄に当てはまる「初江」の様子を表す二語",pts:5},
-{id:"ws-jp-10-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
-{id:"ws-jp-10-q9",text:"問九 下線部の表現について・本文中から読み取れる時間（5字）",pts:5},
-{id:"ws-jp-10-q10a",text:"問十 一文目と二文目の関係を記号で",pts:5},
-{id:"ws-jp-10-q10b",text:"問十 初江の「安」の気持ちを詳しく五十字以内で説明",pts:8}
+
+{id:"ws-jp-10",code:"WS-10",title:"説明文⑤「勉強の価値」・物語文「ハラスメント」（論述・場面）",sections:[
+{id:"ws-jp-10-s1",label:"一 説明文（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-10-s1-p1",text:"問一 傍線部①の説明（記号選択）",pts:5},
+{id:"ws-jp-10-s1-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-10-s1-p3",text:"問三 傍線部③の説明（記号選択）",pts:5},
+{id:"ws-jp-10-s1-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-10-s1-p5",text:"問五 傍線部⑤の説明（記号選択）",pts:5},
+{id:"ws-jp-10-s1-p6",text:"問六 「兌換する」の意味（記号選択）",pts:5},
+{id:"ws-jp-10-s1-p7",text:"問七 傍線部⑦の説明（記号選択）",pts:5},
+{id:"ws-jp-10-s1-p8",text:"問八 「反応」の説明（記号選択）",pts:5}
 ]},
-{id:"ws-jp-10-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
-{id:"ws-jp-10-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
-{id:"ws-jp-10-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
-{id:"ws-jp-10-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
-{id:"ws-jp-10-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
-{id:"ws-jp-10-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
-{id:"ws-jp-10-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
-{id:"ws-jp-10-ws-7",text:"ウィークリーステップ(7) 言葉の意味・用法①",pts:5},
-{id:"ws-jp-10-ws-8",text:"ウィークリーステップ(8) 言葉の意味・用法②",pts:5},
-{id:"ws-jp-10-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
-{id:"ws-jp-10-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5}
+{id:"ws-jp-10-s2",label:"二 説明文「ハラスメント・社会」（問一〜問五）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-10-s2-p1",text:"問一 傍線部①の説明（記号選択）",pts:5},
+{id:"ws-jp-10-s2-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-10-s2-p3",text:"問三 傍線部③の説明（記述）",pts:5},
+{id:"ws-jp-10-s2-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-10-s2-p5",text:"問五 「アリ=3」の計算理由（記述）",pts:5}
+]},
+{id:"ws-jp-10-s3",label:"三 ウィークリーステップ 知識の総完成〜10",diff:1,cat:"読解",problems:[
+{id:"ws-jp-10-s3-p1",text:"一 主語と述語の対応（文法）",pts:5},
+{id:"ws-jp-10-s3-p2",text:"二 語句の品詞・用法",pts:5},
+{id:"ws-jp-10-s3-p3",text:"三 文学作品・文体",pts:5},
+{id:"ws-jp-10-s3-p4",text:"四 文節・文の構造",pts:5},
+{id:"ws-jp-10-s3-p5",text:"五 漢文・故事成語",pts:5},
+{id:"ws-jp-10-s3-p6",text:"六 文学史・俳句の季語",pts:5}
 ]}
 ],initialAnswers:{}},
-{id:"ws-jp-11",code:"WS-11",title:"物語文⑦・詩・俳句読解",sections:[
-{id:"ws-jp-11-q",label:"読解問題（問二〜問十一）",diff:2,cat:"読解問題",problems:[
-{id:"ws-jp-11-q2",text:"問二 本文中の空欄Aに当てはまる表現を文中から探して答えなさい",pts:5},
-{id:"ws-jp-11-q3",text:"問三 本文中の空欄（1）に当てはまることばを文中から探して答えなさい",pts:5},
-{id:"ws-jp-11-q4",text:"問四 本文中の空欄（2）に当てはまる部分を文中から探して答えなさい",pts:5},
-{id:"ws-jp-11-q5",text:"問五 下線部について・本文中の言葉で説明（25〜30字）",pts:8},
-{id:"ws-jp-11-q6a",text:"問六 下線部のイ・ロから選ぶ①",pts:3},
-{id:"ws-jp-11-q6b",text:"問六 下線部について二語を使って説明（20〜25字）②",pts:5},
-{id:"ws-jp-11-q7",text:"問七 本文中の空欄に当てはまる語句（心情を表す）を答えなさい",pts:5},
-{id:"ws-jp-11-q8",text:"問八 最もふさわしいものをイ・ロ・ハから選ぶ",pts:5},
-{id:"ws-jp-11-q9",text:"問九 下線部の表現について・本文中から読み取れる情報を答えなさい",pts:5},
-{id:"ws-jp-11-q10a",text:"問十 一文目と二文目の関係を記号で答えなさい",pts:5},
-{id:"ws-jp-11-q10b",text:"問十 登場人物の気持ちを五十字以内で説明しなさい",pts:8},
+
+{id:"ws-jp-11",code:"WS-11",title:"物語文⑧・詩・俳句読解「総合読解」",sections:[
+{id:"ws-jp-11-s1",label:"一 物語文（問一〜問八）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-11-s1-p1",text:"問一 傍線部①の説明（記号選択）",pts:5},
+{id:"ws-jp-11-s1-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-11-s1-p3",text:"問三 傍線部③の心情（記号選択）",pts:5},
+{id:"ws-jp-11-s1-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-11-s1-p5",text:"問五 傍線部⑤の説明（記号選択）",pts:5},
+{id:"ws-jp-11-s1-p6",text:"問六 傍線部⑥の説明（記述）",pts:5},
+{id:"ws-jp-11-s1-p7",text:"問七 傍線部⑦の理由（記号選択）",pts:5},
+{id:"ws-jp-11-s1-p8",text:"問八 本文全体の主題（記述）",pts:5}
 ]},
-{id:"ws-jp-11-ws",label:"ウィークリーステップ（漢字・言葉）",diff:1,cat:"ウィークリーステップ",problems:[
-{id:"ws-jp-11-ws-1",text:"ウィークリーステップ(1) 漢字の書き取り①",pts:5},
-{id:"ws-jp-11-ws-2",text:"ウィークリーステップ(2) 漢字の書き取り②",pts:5},
-{id:"ws-jp-11-ws-3",text:"ウィークリーステップ(3) 漢字の書き取り③",pts:5},
-{id:"ws-jp-11-ws-4",text:"ウィークリーステップ(4) 漢字の書き取り④",pts:5},
-{id:"ws-jp-11-ws-5",text:"ウィークリーステップ(5) 漢字の書き取り⑤",pts:5},
-{id:"ws-jp-11-ws-6",text:"ウィークリーステップ(6) 漢字の書き取り⑥",pts:5},
-{id:"ws-jp-11-ws-7",text:"ウィークリーステップ(7) 言葉の意味①",pts:5},
-{id:"ws-jp-11-ws-8",text:"ウィークリーステップ(8) 言葉の意味②",pts:5},
-{id:"ws-jp-11-ws-9",text:"ウィークリーステップ(9) 四字熟語・慣用句①",pts:5},
-{id:"ws-jp-11-ws-10",text:"ウィークリーステップ(10) 四字熟語・慣用句②",pts:5},
+{id:"ws-jp-11-s2",label:"二 説明文（問一〜問七）",diff:2,cat:"読解",problems:[
+{id:"ws-jp-11-s2-p1",text:"問一 傍線部①の説明（記号選択）",pts:5},
+{id:"ws-jp-11-s2-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-11-s2-p3",text:"問三 空欄に入る語（記号選択）",pts:5},
+{id:"ws-jp-11-s2-p4",text:"問四 傍線部④の説明（記号選択）",pts:5},
+{id:"ws-jp-11-s2-p5",text:"問五 傍線部⑤の理由（記述）",pts:5},
+{id:"ws-jp-11-s2-p6",text:"問六 筆者の主張（記号選択）",pts:5},
+{id:"ws-jp-11-s2-p7",text:"問七 本文全体の構成（記述）",pts:5}
 ]},
+{id:"ws-jp-11-s3",label:"ウィークリーステップ（知識問題）",diff:1,cat:"読解",problems:[
+{id:"ws-jp-11-s3-p1",text:"一 語句・慣用表現",pts:5},
+{id:"ws-jp-11-s3-p2",text:"二 詩・短歌・俳句の知識",pts:5}
+]}
 ],initialAnswers:{}}
-],
+,
+{id:"ws-jp-12",code:"WS-12",title:"物語文⑨「チューニング」・総合読解",sections:[
+{id:"ws-jp-12-s1",label:"一 物語文「チューニング」（問一〜問九）",diff:2,cat:"読解問題",
+problems:[
+{id:"ws-jp-12-s1-p1",text:"問一 傍線部①「依頼されたピアノ」の説明（記号選択）",pts:5},
+{id:"ws-jp-12-s1-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-12-s1-p3",text:"問三 傍線部③「チューニング・A音の高さ」空欄補充（記号選択）",pts:5},
+{id:"ws-jp-12-s1-p4",text:"問四 傍線部④「肩をすくめて」の心情（記号選択）",pts:5},
+{id:"ws-jp-12-s1-p5",text:"問五 傍線部⑤「るみ子さんの気持ち」（記号選択）",pts:5},
+{id:"ws-jp-12-s1-p6",text:"問六 傍線部⑥「仕事を断りたい」理由・25字以内記述",pts:8},
+{id:"ws-jp-12-s1-p7",text:"問七 傍線部⑦「スポンジのつなぎ」の説明（記号選択）",pts:5},
+{id:"ws-jp-12-s1-p8",text:"問八 傍線部⑧「チョコレートケーキ」の様子の説明（記号選択）",pts:5},
+{id:"ws-jp-12-s1-p9",text:"問九 傍線部⑨の前回と今回の調律の違い・A,Bに入る語（各15字以上）",pts:10}
+]},
+{id:"ws-jp-12-s2",label:"二 説明文（問一〜問四）",diff:2,cat:"読解問題",
+problems:[
+{id:"ws-jp-12-s2-p1",text:"問一 本文の語句の終止形（行く）の形",pts:5},
+{id:"ws-jp-12-s2-p2",text:"問二 傍線部②の説明（記号選択）",pts:5},
+{id:"ws-jp-12-s2-p3",text:"問三 傍線部③の説明（記述）",pts:5},
+{id:"ws-jp-12-s2-p4",text:"問四 五字抜き出し",pts:5}
+]},
+{id:"ws-jp-12-s3",label:"ウィークリーステップ 知識の総完成〜12",diff:1,cat:"知識問題",
+problems:[
+{id:"ws-jp-12-ws1",text:"一 名詞と代名詞を探す（各文から4つ）×4",pts:8},
+{id:"ws-jp-12-ws2",text:"二 言葉の言い切り（終止形）を書く×4",pts:8},
+{id:"ws-jp-12-ws3",text:"三 空欄に入ることばをひらがなで×5",pts:10},
+{id:"ws-jp-12-ws4",text:"四 つなぎのことば（接続詞）記号選択×6",pts:12},
+{id:"ws-jp-12-ws5",text:"五 語群から一つ選ぶ×5",pts:10}
+]}
+],initialAnswers:{}}],
 science: [
 {id:"ws-sci-01",code:"WS-01",title:"水の三態と熱",sections:[
-{id:"ws-sci-01-x1",label:"X1（水の状態変化（融解・気化・凝固・液化））",diff:1,cat:"X",problems:[
-{id:"ws-sci-01-x1-1",text:"水の状態変化（融解・気化・凝固・液化）(1) 問題1",pts:10},
-{id:"ws-sci-01-x1-2",text:"水の状態変化（融解・気化・凝固・液化）(2) 問題2",pts:10},
-{id:"ws-sci-01-x1-3",text:"水の状態変化（融解・気化・凝固・液化）(3) 問題3",pts:10},
-{id:"ws-sci-01-x1-4",text:"水の状態変化（融解・気化・凝固・液化）(4) 問題4",pts:10},
-{id:"ws-sci-01-x1-5",text:"水の状態変化（融解・気化・凝固・液化）(5) 問題5",pts:10},
-{id:"ws-sci-01-x1-6",text:"水の状態変化（融解・気化・凝固・液化）(6) 問題6",pts:10},
-{id:"ws-sci-01-x1-7",text:"水の状態変化（融解・気化・凝固・液化）(7) 問題7",pts:10},
-{id:"ws-sci-01-x1-8",text:"水の状態変化（融解・気化・凝固・液化）(8) 問題8",pts:10}
-]},{id:"ws-sci-01-x2",label:"X2（熱の伝わり方（伝導・対流・放射））",diff:1,cat:"X",problems:[
-{id:"ws-sci-01-x2-1",text:"熱の伝わり方（伝導・対流・放射）(1) 問題1",pts:10},
-{id:"ws-sci-01-x2-2",text:"熱の伝わり方（伝導・対流・放射）(2) 問題2",pts:10},
-{id:"ws-sci-01-x2-3",text:"熱の伝わり方（伝導・対流・放射）(3) 問題3",pts:10},
-{id:"ws-sci-01-x2-4",text:"熱の伝わり方（伝導・対流・放射）(4) 問題4",pts:10},
-{id:"ws-sci-01-x2-5",text:"熱の伝わり方（伝導・対流・放射）(5) 問題5",pts:10},
-{id:"ws-sci-01-x2-6",text:"熱の伝わり方（伝導・対流・放射）(6) 問題6",pts:10},
-{id:"ws-sci-01-x2-7",text:"熱の伝わり方（伝導・対流・放射）(7) 問題7",pts:10},
-{id:"ws-sci-01-x2-8",text:"熱の伝わり方（伝導・対流・放射）(8) 問題8",pts:10}
-]},{id:"ws-sci-01-x3",label:"X3（温度変化グラフの読み取り）",diff:1,cat:"X",problems:[
-{id:"ws-sci-01-x3-1",text:"温度変化グラフの読み取り(1) 問題1",pts:10},
-{id:"ws-sci-01-x3-2",text:"温度変化グラフの読み取り(2) 問題2",pts:10},
-{id:"ws-sci-01-x3-3",text:"温度変化グラフの読み取り(3) 問題3",pts:10},
-{id:"ws-sci-01-x3-4",text:"温度変化グラフの読み取り(4) 問題4",pts:10},
-{id:"ws-sci-01-x3-5",text:"温度変化グラフの読み取り(5) 問題5",pts:10},
-{id:"ws-sci-01-x3-6",text:"温度変化グラフの読み取り(6) 問題6",pts:10},
-{id:"ws-sci-01-x3-7",text:"温度変化グラフの読み取り(7) 問題7",pts:10},
-{id:"ws-sci-01-x3-8",text:"温度変化グラフの読み取り(8) 問題8",pts:10}
-]},{id:"ws-sci-01-y1",label:"Y1（水の三態総合問題①）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-01-y1-1",text:"水の三態総合問題①(1) 問題1",pts:10},
-{id:"ws-sci-01-y1-2",text:"水の三態総合問題①(2) 問題2",pts:10},
-{id:"ws-sci-01-y1-3",text:"水の三態総合問題①(3) 問題3",pts:10},
-{id:"ws-sci-01-y1-4",text:"水の三態総合問題①(4) 問題4",pts:10},
-{id:"ws-sci-01-y1-5",text:"水の三態総合問題①(5) 問題5",pts:10},
-{id:"ws-sci-01-y1-6",text:"水の三態総合問題①(6) 問題6",pts:10},
-{id:"ws-sci-01-y1-7",text:"水の三態総合問題①(7) 問題7",pts:10},
-{id:"ws-sci-01-y1-8",text:"水の三態総合問題①(8) 問題8",pts:10}
-]},{id:"ws-sci-01-y2",label:"Y2（水と熱の計算問題）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-01-y2-1",text:"水と熱の計算問題(1) 問題1",pts:10},
-{id:"ws-sci-01-y2-2",text:"水と熱の計算問題(2) 問題2",pts:10},
-{id:"ws-sci-01-y2-3",text:"水と熱の計算問題(3) 問題3",pts:10},
-{id:"ws-sci-01-y2-4",text:"水と熱の計算問題(4) 問題4",pts:10},
-{id:"ws-sci-01-y2-5",text:"水と熱の計算問題(5) 問題5",pts:10},
-{id:"ws-sci-01-y2-6",text:"水と熱の計算問題(6) 問題6",pts:10},
-{id:"ws-sci-01-y2-7",text:"水と熱の計算問題(7) 問題7",pts:10},
-{id:"ws-sci-01-y2-8",text:"水と熱の計算問題(8) 問題8",pts:10}
-]},{id:"ws-sci-01-z1",label:"Z1（発展問題①（混合水の温度計算））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-01-z1-1",text:"発展問題①（混合水の温度計算）(1) 問題1",pts:10},
-{id:"ws-sci-01-z1-2",text:"発展問題①（混合水の温度計算）(2) 問題2",pts:10},
-{id:"ws-sci-01-z1-3",text:"発展問題①（混合水の温度計算）(3) 問題3",pts:10},
-{id:"ws-sci-01-z1-4",text:"発展問題①（混合水の温度計算）(4) 問題4",pts:10},
-{id:"ws-sci-01-z1-5",text:"発展問題①（混合水の温度計算）(5) 問題5",pts:10},
-{id:"ws-sci-01-z1-6",text:"発展問題①（混合水の温度計算）(6) 問題6",pts:10}
-]},{id:"ws-sci-01-z2",label:"Z2（発展問題②（状態変化の応用））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-01-z2-1",text:"発展問題②（状態変化の応用）(1) 問題1",pts:10},
-{id:"ws-sci-01-z2-2",text:"発展問題②（状態変化の応用）(2) 問題2",pts:10},
-{id:"ws-sci-01-z2-3",text:"発展問題②（状態変化の応用）(3) 問題3",pts:10},
-{id:"ws-sci-01-z2-4",text:"発展問題②（状態変化の応用）(4) 問題4",pts:10},
-{id:"ws-sci-01-z2-5",text:"発展問題②（状態変化の応用）(5) 問題5",pts:10},
-{id:"ws-sci-01-z2-6",text:"発展問題②（状態変化の応用）(6) 問題6",pts:10}
-]},{id:"ws-sci-01-z3",label:"Z3（最難問（複合計算））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-01-z3-1",text:"最難問（複合計算）(1) 問題1",pts:10},
-{id:"ws-sci-01-z3-2",text:"最難問（複合計算）(2) 問題2",pts:10},
-{id:"ws-sci-01-z3-3",text:"最難問（複合計算）(3) 問題3",pts:10},
-{id:"ws-sci-01-z3-4",text:"最難問（複合計算）(4) 問題4",pts:10},
-{id:"ws-sci-01-z3-5",text:"最難問（複合計算）(5) 問題5",pts:10},
-{id:"ws-sci-01-z3-6",text:"最難問（複合計算）(6) 問題6",pts:10}
+{id:"ws-sci-01-x1",label:"X1 水や水の状態変化",diff:2,cat:"X",problems:[
+{id:"ws-sci-01-x1-1",text:"X1(1) 実験装置の誤り・器具名",pts:10},
+{id:"ws-sci-01-x1-2",text:"X1(2)(3) フラスコAとBの器具の説明",pts:10},
+{id:"ws-sci-01-x1-3",text:"X1(4)(5) 水を加熱したときの変化の順序",pts:10},
+{id:"ws-sci-01-x1-4",text:"X1(6) ガラス管先端の変化の状態変化の名称",pts:10},
+{id:"ws-sci-01-x1-5",text:"X1(7) 状態変化と重さ・体積の変化",pts:10},
+{id:"ws-sci-01-x1-6",text:"X1(8)〜(11) 氷と食塩を混ぜた実験・グラフの読み取り",pts:10}
+]},
+{id:"ws-sci-01-x2",label:"X2 水の混合と熱量計算",diff:2,cat:"X",problems:[
+{id:"ws-sci-01-x2-1",text:"X2(1) 水と湯の温度変化グラフ作成",pts:10},
+{id:"ws-sci-01-x2-2",text:"X2(2)(3) 熱量と温度変化の計算",pts:10},
+{id:"ws-sci-01-x2-3",text:"X2(4) 混合水の温度計算",pts:10},
+{id:"ws-sci-01-x2-4",text:"X2(5) 氷を加熱したときのグラフ作成",pts:10},
+{id:"ws-sci-01-x2-5",text:"X2(6) 氷と水を混ぜたときの温度計算",pts:10},
+{id:"ws-sci-01-x2-6",text:"X2(7) 身のまわりの状態変化の現象名",pts:10}
+]},
+{id:"ws-sci-01-x3",label:"X3 熱量と熱の伝わり方（発展）",diff:3,cat:"X",problems:[
+{id:"ws-sci-01-x3-1",text:"X3(1)(2) 熱カロリー・熱量の計算",pts:10},
+{id:"ws-sci-01-x3-2",text:"X3(3)(4)(5)(6) 混合水の温度計算（複雑）",pts:10},
+{id:"ws-sci-01-x3-3",text:"X3(7) 状態変化の種類と現象",pts:10}
+]},
+{id:"ws-sci-01-y1",label:"Y1 湿度・乾湿計",diff:2,cat:"Y",problems:[
+{id:"ws-sci-01-y1-1",text:"Y1(1) 乾湿計から湿度・露点を読み取る",pts:10},
+{id:"ws-sci-01-y1-2",text:"Y1(2) フェーン現象の計算（湿度・温度）",pts:10}
+]},
+{id:"ws-sci-01-y2",label:"Y2 大気中の水（複合問題）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-01-y2-1",text:"Y2 大気中の水・雲の発生に関する問題",pts:10}
+]},
+{id:"ws-sci-01-z1",label:"Z1 水と生命（記述問題）",diff:2,cat:"Z",problems:[
+{id:"ws-sci-01-z1-1",text:"Z1(1)(2) 下線部①②食品・気体の活用例",pts:10},
+{id:"ws-sci-01-z1-2",text:"Z1(3)(4)(5) 血液・ハビタブルゾーン・温室効果",pts:10},
+{id:"ws-sci-01-z1-3",text:"Z1(6)〜(11) 炭素循環・省エネ・燃料電池",pts:10}
+]},
+{id:"ws-sci-01-z2",label:"Z2 水の循環（長文読解）",diff:3,cat:"Z",problems:[
+{id:"ws-sci-01-z2-1",text:"Z2 水の循環に関する長文問題",pts:10}
+]},
+{id:"ws-sci-01-z3",label:"Z3 総合問題",diff:3,cat:"Z",problems:[
+{id:"ws-sci-01-z3-1",text:"Z3 水・熱・状態変化の総合問題",pts:10}
 ]}
 ],initialAnswers:{}},
-{id:"ws-sci-02",code:"WS-02",title:"植物の成長・光合成・蒸散",sections:[
-{id:"ws-sci-02-x1",label:"X1（葉のつくり（葉脈・維管束・気孔・細胞））",diff:1,cat:"X",problems:[
-{id:"ws-sci-02-x1-1",text:"葉のつくり（葉脈・維管束・気孔・細胞）(1) 問題1",pts:10},
-{id:"ws-sci-02-x1-2",text:"葉のつくり（葉脈・維管束・気孔・細胞）(2) 問題2",pts:10},
-{id:"ws-sci-02-x1-3",text:"葉のつくり（葉脈・維管束・気孔・細胞）(3) 問題3",pts:10},
-{id:"ws-sci-02-x1-4",text:"葉のつくり（葉脈・維管束・気孔・細胞）(4) 問題4",pts:10},
-{id:"ws-sci-02-x1-5",text:"葉のつくり（葉脈・維管束・気孔・細胞）(5) 問題5",pts:10},
-{id:"ws-sci-02-x1-6",text:"葉のつくり（葉脈・維管束・気孔・細胞）(6) 問題6",pts:10},
-{id:"ws-sci-02-x1-7",text:"葉のつくり（葉脈・維管束・気孔・細胞）(7) 問題7",pts:10},
-{id:"ws-sci-02-x1-8",text:"葉のつくり（葉脈・維管束・気孔・細胞）(8) 問題8",pts:10}
-]},{id:"ws-sci-02-x2",label:"X2（茎・根のつくり（道管・師管・形成層））",diff:1,cat:"X",problems:[
-{id:"ws-sci-02-x2-1",text:"茎・根のつくり（道管・師管・形成層）(1) 問題1",pts:10},
-{id:"ws-sci-02-x2-2",text:"茎・根のつくり（道管・師管・形成層）(2) 問題2",pts:10},
-{id:"ws-sci-02-x2-3",text:"茎・根のつくり（道管・師管・形成層）(3) 問題3",pts:10},
-{id:"ws-sci-02-x2-4",text:"茎・根のつくり（道管・師管・形成層）(4) 問題4",pts:10},
-{id:"ws-sci-02-x2-5",text:"茎・根のつくり（道管・師管・形成層）(5) 問題5",pts:10},
-{id:"ws-sci-02-x2-6",text:"茎・根のつくり（道管・師管・形成層）(6) 問題6",pts:10},
-{id:"ws-sci-02-x2-7",text:"茎・根のつくり（道管・師管・形成層）(7) 問題7",pts:10},
-{id:"ws-sci-02-x2-8",text:"茎・根のつくり（道管・師管・形成層）(8) 問題8",pts:10}
-]},{id:"ws-sci-02-x3",label:"X3（種子植物の分類（単子葉・双子葉・裸子））",diff:1,cat:"X",problems:[
-{id:"ws-sci-02-x3-1",text:"種子植物の分類（単子葉・双子葉・裸子）(1) 問題1",pts:10},
-{id:"ws-sci-02-x3-2",text:"種子植物の分類（単子葉・双子葉・裸子）(2) 問題2",pts:10},
-{id:"ws-sci-02-x3-3",text:"種子植物の分類（単子葉・双子葉・裸子）(3) 問題3",pts:10},
-{id:"ws-sci-02-x3-4",text:"種子植物の分類（単子葉・双子葉・裸子）(4) 問題4",pts:10},
-{id:"ws-sci-02-x3-5",text:"種子植物の分類（単子葉・双子葉・裸子）(5) 問題5",pts:10},
-{id:"ws-sci-02-x3-6",text:"種子植物の分類（単子葉・双子葉・裸子）(6) 問題6",pts:10},
-{id:"ws-sci-02-x3-7",text:"種子植物の分類（単子葉・双子葉・裸子）(7) 問題7",pts:10},
-{id:"ws-sci-02-x3-8",text:"種子植物の分類（単子葉・双子葉・裸子）(8) 問題8",pts:10}
-]},{id:"ws-sci-02-y1",label:"Y1（食品・植物の利用（12種類の食材分類））",diff:2,cat:"Y",problems:[
-{id:"ws-sci-02-y1-1",text:"食品・植物の利用（12種類の食材分類）(1) 問題1",pts:10},
-{id:"ws-sci-02-y1-2",text:"食品・植物の利用（12種類の食材分類）(2) 問題2",pts:10},
-{id:"ws-sci-02-y1-3",text:"食品・植物の利用（12種類の食材分類）(3) 問題3",pts:10},
-{id:"ws-sci-02-y1-4",text:"食品・植物の利用（12種類の食材分類）(4) 問題4",pts:10},
-{id:"ws-sci-02-y1-5",text:"食品・植物の利用（12種類の食材分類）(5) 問題5",pts:10},
-{id:"ws-sci-02-y1-6",text:"食品・植物の利用（12種類の食材分類）(6) 問題6",pts:10},
-{id:"ws-sci-02-y1-7",text:"食品・植物の利用（12種類の食材分類）(7) 問題7",pts:10},
-{id:"ws-sci-02-y1-8",text:"食品・植物の利用（12種類の食材分類）(8) 問題8",pts:10}
-]},{id:"ws-sci-02-y2",label:"Y2（植物の観察（ダイコン・カブの比較））",diff:2,cat:"Y",problems:[
-{id:"ws-sci-02-y2-1",text:"植物の観察（ダイコン・カブの比較）(1) 問題1",pts:10},
-{id:"ws-sci-02-y2-2",text:"植物の観察（ダイコン・カブの比較）(2) 問題2",pts:10},
-{id:"ws-sci-02-y2-3",text:"植物の観察（ダイコン・カブの比較）(3) 問題3",pts:10},
-{id:"ws-sci-02-y2-4",text:"植物の観察（ダイコン・カブの比較）(4) 問題4",pts:10},
-{id:"ws-sci-02-y2-5",text:"植物の観察（ダイコン・カブの比較）(5) 問題5",pts:10},
-{id:"ws-sci-02-y2-6",text:"植物の観察（ダイコン・カブの比較）(6) 問題6",pts:10},
-{id:"ws-sci-02-y2-7",text:"植物の観察（ダイコン・カブの比較）(7) 問題7",pts:10},
-{id:"ws-sci-02-y2-8",text:"植物の観察（ダイコン・カブの比較）(8) 問題8",pts:10}
-]},{id:"ws-sci-02-z1",label:"Z1（単子葉と双子葉の比較（年輪・茎断面））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-02-z1-1",text:"単子葉と双子葉の比較（年輪・茎断面）(1) 問題1",pts:10},
-{id:"ws-sci-02-z1-2",text:"単子葉と双子葉の比較（年輪・茎断面）(2) 問題2",pts:10},
-{id:"ws-sci-02-z1-3",text:"単子葉と双子葉の比較（年輪・茎断面）(3) 問題3",pts:10},
-{id:"ws-sci-02-z1-4",text:"単子葉と双子葉の比較（年輪・茎断面）(4) 問題4",pts:10},
-{id:"ws-sci-02-z1-5",text:"単子葉と双子葉の比較（年輪・茎断面）(5) 問題5",pts:10},
-{id:"ws-sci-02-z1-6",text:"単子葉と双子葉の比較（年輪・茎断面）(6) 問題6",pts:10}
-]},{id:"ws-sci-02-z2",label:"Z2（光合成と呼吸の計算問題）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-02-z2-1",text:"光合成と呼吸の計算問題(1) 問題1",pts:10},
-{id:"ws-sci-02-z2-2",text:"光合成と呼吸の計算問題(2) 問題2",pts:10},
-{id:"ws-sci-02-z2-3",text:"光合成と呼吸の計算問題(3) 問題3",pts:10},
-{id:"ws-sci-02-z2-4",text:"光合成と呼吸の計算問題(4) 問題4",pts:10},
-{id:"ws-sci-02-z2-5",text:"光合成と呼吸の計算問題(5) 問題5",pts:10},
-{id:"ws-sci-02-z2-6",text:"光合成と呼吸の計算問題(6) 問題6",pts:10}
-]},{id:"ws-sci-02-z3",label:"Z3（植物総合難問）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-02-z3-1",text:"植物総合難問(1) 問題1",pts:10},
-{id:"ws-sci-02-z3-2",text:"植物総合難問(2) 問題2",pts:10},
-{id:"ws-sci-02-z3-3",text:"植物総合難問(3) 問題3",pts:10},
-{id:"ws-sci-02-z3-4",text:"植物総合難問(4) 問題4",pts:10},
-{id:"ws-sci-02-z3-5",text:"植物総合難問(5) 問題5",pts:10},
-{id:"ws-sci-02-z3-6",text:"植物総合難問(6) 問題6",pts:10}
+
+{id:"ws-sci-02",code:"WS-02",title:"植物のつくり",sections:[
+{id:"ws-sci-02-x1",label:"X1 ウィークリーチェック（WS-01の復習）",diff:1,cat:"X",problems:[
+{id:"ws-sci-02-x1-1",text:"X1(1)(2) 熱の伝わり方（伝導・対流・放射）",pts:10},
+{id:"ws-sci-02-x1-2",text:"X1(3)(4)(5) 熱の移動の具体例",pts:10},
+{id:"ws-sci-02-x1-3",text:"X1(6)(7)(8) 状態変化の具体例・放射の例",pts:10},
+{id:"ws-sci-02-x1-4",text:"X1(9)(10) 熱量計算",pts:10}
+]},
+{id:"ws-sci-02-x2",label:"X2 植物の分類",diff:2,cat:"X",problems:[
+{id:"ws-sci-02-x2-1",text:"X2(1) 植物12種のスケッチ名前当て",pts:10},
+{id:"ws-sci-02-x2-2",text:"X2(2)(3) 花を咲かせない植物・胚乳のある種子",pts:10},
+{id:"ws-sci-02-x2-3",text:"X2(4)(5) 種子植物の分類図・仲間分け",pts:10}
+]},
+{id:"ws-sci-02-x3",label:"X3 植物の仲間分け（発展）",diff:2,cat:"X",problems:[
+{id:"ws-sci-02-x3-1",text:"X3(1)〜(5) 植物12種の詳細分類・図示",pts:10}
+]},
+{id:"ws-sci-02-x4",label:"X4 植物と食品",diff:2,cat:"X",problems:[
+{id:"ws-sci-02-x4-1",text:"X4(1)〜(6) 食品由来の植物・図示問題",pts:10},
+{id:"ws-sci-02-x4-2",text:"X4(7)(8) 植物分類表への当てはめ",pts:10}
+]},
+{id:"ws-sci-02-y1",label:"Y1 身近な食品と植物",diff:2,cat:"Y",problems:[
+{id:"ws-sci-02-y1-1",text:"Y1(1)〜(4) 食品の食べる部位分類",pts:10},
+{id:"ws-sci-02-y1-2",text:"Y1(5)(6) 植物の芽・茎の成長",pts:10},
+{id:"ws-sci-02-y1-3",text:"Y1(7)(8) 植物分類図完成",pts:10}
+]},
+{id:"ws-sci-02-y2",label:"Y2 植物の働き",diff:2,cat:"Y",problems:[
+{id:"ws-sci-02-y2-1",text:"Y2 光合成・呼吸・蒸散の実験",pts:10}
+]},
+{id:"ws-sci-02-y3",label:"Y3 植物の総合問題",diff:3,cat:"Y",problems:[
+{id:"ws-sci-02-y3-1",text:"Y3 植物全体の総合問題",pts:10}
+]},
+{id:"ws-sci-02-z1",label:"Z1 植物と環境（記述）",diff:2,cat:"Z",problems:[
+{id:"ws-sci-02-z1-1",text:"Z1 植物と環境・生態系に関する問題",pts:10}
+]},
+{id:"ws-sci-02-z2",label:"Z2 植物の応用",diff:3,cat:"Z",problems:[
+{id:"ws-sci-02-z2-1",text:"Z2 植物の応用・実験考察",pts:10}
+]},
+{id:"ws-sci-02-z3",label:"Z3 総合記述",diff:3,cat:"Z",problems:[
+{id:"ws-sci-02-z3-1",text:"Z3 植物総合記述問題",pts:10}
 ]}
 ],initialAnswers:{}},
+
 {id:"ws-sci-03",code:"WS-03",title:"花と受粉",sections:[
-{id:"ws-sci-03-x1",label:"X1（花のつくり（めしべ・おしべ・花びら・がく））",diff:1,cat:"X",problems:[
-{id:"ws-sci-03-x1-1",text:"花のつくり（めしべ・おしべ・花びら・がく）(1) 問題1",pts:10},
-{id:"ws-sci-03-x1-2",text:"花のつくり（めしべ・おしべ・花びら・がく）(2) 問題2",pts:10},
-{id:"ws-sci-03-x1-3",text:"花のつくり（めしべ・おしべ・花びら・がく）(3) 問題3",pts:10},
-{id:"ws-sci-03-x1-4",text:"花のつくり（めしべ・おしべ・花びら・がく）(4) 問題4",pts:10},
-{id:"ws-sci-03-x1-5",text:"花のつくり（めしべ・おしべ・花びら・がく）(5) 問題5",pts:10},
-{id:"ws-sci-03-x1-6",text:"花のつくり（めしべ・おしべ・花びら・がく）(6) 問題6",pts:10},
-{id:"ws-sci-03-x1-7",text:"花のつくり（めしべ・おしべ・花びら・がく）(7) 問題7",pts:10},
-{id:"ws-sci-03-x1-8",text:"花のつくり（めしべ・おしべ・花びら・がく）(8) 問題8",pts:10}
-]},{id:"ws-sci-03-x2",label:"X2（受粉の仕組み（虫媒花・風媒花・自家受粉））",diff:1,cat:"X",problems:[
-{id:"ws-sci-03-x2-1",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(1) 問題1",pts:10},
-{id:"ws-sci-03-x2-2",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(2) 問題2",pts:10},
-{id:"ws-sci-03-x2-3",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(3) 問題3",pts:10},
-{id:"ws-sci-03-x2-4",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(4) 問題4",pts:10},
-{id:"ws-sci-03-x2-5",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(5) 問題5",pts:10},
-{id:"ws-sci-03-x2-6",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(6) 問題6",pts:10},
-{id:"ws-sci-03-x2-7",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(7) 問題7",pts:10},
-{id:"ws-sci-03-x2-8",text:"受粉の仕組み（虫媒花・風媒花・自家受粉）(8) 問題8",pts:10}
-]},{id:"ws-sci-03-x3",label:"X3（果実と種子の形成）",diff:1,cat:"X",problems:[
-{id:"ws-sci-03-x3-1",text:"果実と種子の形成(1) 問題1",pts:10},
-{id:"ws-sci-03-x3-2",text:"果実と種子の形成(2) 問題2",pts:10},
-{id:"ws-sci-03-x3-3",text:"果実と種子の形成(3) 問題3",pts:10},
-{id:"ws-sci-03-x3-4",text:"果実と種子の形成(4) 問題4",pts:10},
-{id:"ws-sci-03-x3-5",text:"果実と種子の形成(5) 問題5",pts:10},
-{id:"ws-sci-03-x3-6",text:"果実と種子の形成(6) 問題6",pts:10},
-{id:"ws-sci-03-x3-7",text:"果実と種子の形成(7) 問題7",pts:10},
-{id:"ws-sci-03-x3-8",text:"果実と種子の形成(8) 問題8",pts:10}
-]},{id:"ws-sci-03-y1",label:"Y1（受粉実験の考察問題）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-03-y1-1",text:"受粉実験の考察問題(1) 問題1",pts:10},
-{id:"ws-sci-03-y1-2",text:"受粉実験の考察問題(2) 問題2",pts:10},
-{id:"ws-sci-03-y1-3",text:"受粉実験の考察問題(3) 問題3",pts:10},
-{id:"ws-sci-03-y1-4",text:"受粉実験の考察問題(4) 問題4",pts:10},
-{id:"ws-sci-03-y1-5",text:"受粉実験の考察問題(5) 問題5",pts:10},
-{id:"ws-sci-03-y1-6",text:"受粉実験の考察問題(6) 問題6",pts:10},
-{id:"ws-sci-03-y1-7",text:"受粉実験の考察問題(7) 問題7",pts:10},
-{id:"ws-sci-03-y1-8",text:"受粉実験の考察問題(8) 問題8",pts:10}
-]},{id:"ws-sci-03-y2",label:"Y2（花と受粉の総合問題）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-03-y2-1",text:"花と受粉の総合問題(1) 問題1",pts:10},
-{id:"ws-sci-03-y2-2",text:"花と受粉の総合問題(2) 問題2",pts:10},
-{id:"ws-sci-03-y2-3",text:"花と受粉の総合問題(3) 問題3",pts:10},
-{id:"ws-sci-03-y2-4",text:"花と受粉の総合問題(4) 問題4",pts:10},
-{id:"ws-sci-03-y2-5",text:"花と受粉の総合問題(5) 問題5",pts:10},
-{id:"ws-sci-03-y2-6",text:"花と受粉の総合問題(6) 問題6",pts:10},
-{id:"ws-sci-03-y2-7",text:"花と受粉の総合問題(7) 問題7",pts:10},
-{id:"ws-sci-03-y2-8",text:"花と受粉の総合問題(8) 問題8",pts:10}
-]},{id:"ws-sci-03-z1",label:"Z1（発展問題①（人工授粉・DNA））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-03-z1-1",text:"発展問題①（人工授粉・DNA）(1) 問題1",pts:10},
-{id:"ws-sci-03-z1-2",text:"発展問題①（人工授粉・DNA）(2) 問題2",pts:10},
-{id:"ws-sci-03-z1-3",text:"発展問題①（人工授粉・DNA）(3) 問題3",pts:10},
-{id:"ws-sci-03-z1-4",text:"発展問題①（人工授粉・DNA）(4) 問題4",pts:10},
-{id:"ws-sci-03-z1-5",text:"発展問題①（人工授粉・DNA）(5) 問題5",pts:10},
-{id:"ws-sci-03-z1-6",text:"発展問題①（人工授粉・DNA）(6) 問題6",pts:10}
-]},{id:"ws-sci-03-z2",label:"Z2（発展問題②）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-03-z2-1",text:"発展問題②(1) 問題1",pts:10},
-{id:"ws-sci-03-z2-2",text:"発展問題②(2) 問題2",pts:10},
-{id:"ws-sci-03-z2-3",text:"発展問題②(3) 問題3",pts:10},
-{id:"ws-sci-03-z2-4",text:"発展問題②(4) 問題4",pts:10},
-{id:"ws-sci-03-z2-5",text:"発展問題②(5) 問題5",pts:10},
-{id:"ws-sci-03-z2-6",text:"発展問題②(6) 問題6",pts:10}
-]},{id:"ws-sci-03-z3",label:"Z3（最難問）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-03-z3-1",text:"最難問(1) 問題1",pts:10},
-{id:"ws-sci-03-z3-2",text:"最難問(2) 問題2",pts:10},
-{id:"ws-sci-03-z3-3",text:"最難問(3) 問題3",pts:10},
-{id:"ws-sci-03-z3-4",text:"最難問(4) 問題4",pts:10},
-{id:"ws-sci-03-z3-5",text:"最難問(5) 問題5",pts:10},
-{id:"ws-sci-03-z3-6",text:"最難問(6) 問題6",pts:10}
+{id:"ws-sci-03-x1",label:"X1 ウィークリーチェック（WS-02の復習）",diff:1,cat:"X",problems:[
+{id:"ws-sci-03-x1-1",text:"X1 植物10種の名前と分類（表への記入）",pts:10}
+]},
+{id:"ws-sci-03-x2",label:"X2 花のつくりと受粉",diff:2,cat:"X",problems:[
+{id:"ws-sci-03-x2-1",text:"X2(1) 植物A〜Fの花粉の図・虫媒花の選択",pts:10},
+{id:"ws-sci-03-x2-2",text:"X2(2) 被子植物A〜Eの花・実・種子の対応",pts:10},
+{id:"ws-sci-03-x2-3",text:"X2(3) アサガオ・ヘチマの受粉実験",pts:10}
+]},
+{id:"ws-sci-03-x3",label:"X3 受粉と種子の発生（発展）",diff:3,cat:"X",problems:[
+{id:"ws-sci-03-x3-1",text:"X3 花から種子ができる過程・実験考察",pts:10},
+{id:"ws-sci-03-x3-2",text:"X3 受粉の仕組みの応用問題",pts:10}
+]},
+{id:"ws-sci-03-y1",label:"Y1 植物の成長と季節",diff:2,cat:"Y",problems:[
+{id:"ws-sci-03-y1-1",text:"Y1 植物の成長・季節ごとの変化",pts:10}
+]},
+{id:"ws-sci-03-y2",label:"Y2 植物の総合問題",diff:3,cat:"Y",problems:[
+{id:"ws-sci-03-y2-1",text:"Y2 植物の成長・受粉の総合問題",pts:10}
+]},
+{id:"ws-sci-03-z1",label:"Z1 植物と生態系",diff:2,cat:"Z",problems:[
+{id:"ws-sci-03-z1-1",text:"Z1 植物と生態系・食物連鎖",pts:10}
+]},
+{id:"ws-sci-03-z2",label:"Z2 植物の応用・環境",diff:3,cat:"Z",problems:[
+{id:"ws-sci-03-z2-1",text:"Z2 植物と環境変化",pts:10}
+]},
+{id:"ws-sci-03-z3",label:"Z3 総合記述",diff:3,cat:"Z",problems:[
+{id:"ws-sci-03-z3-1",text:"Z3 花と受粉の総合記述",pts:10}
 ]}
 ],initialAnswers:{}},
-{id:"ws-sci-04",code:"WS-04",title:"岩石・地層",sections:[
-{id:"ws-sci-04-x1",label:"X1（火成岩の種類と特徴（花こう岩・玄武岩・安山岩））",diff:1,cat:"X",problems:[
-{id:"ws-sci-04-x1-1",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(1) 問題1",pts:10},
-{id:"ws-sci-04-x1-2",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(2) 問題2",pts:10},
-{id:"ws-sci-04-x1-3",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(3) 問題3",pts:10},
-{id:"ws-sci-04-x1-4",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(4) 問題4",pts:10},
-{id:"ws-sci-04-x1-5",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(5) 問題5",pts:10},
-{id:"ws-sci-04-x1-6",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(6) 問題6",pts:10},
-{id:"ws-sci-04-x1-7",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(7) 問題7",pts:10},
-{id:"ws-sci-04-x1-8",text:"火成岩の種類と特徴（花こう岩・玄武岩・安山岩）(8) 問題8",pts:10}
-]},{id:"ws-sci-04-x2",label:"X2（堆積岩の種類（砂岩・泥岩・石灰岩・チャート））",diff:1,cat:"X",problems:[
-{id:"ws-sci-04-x2-1",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(1) 問題1",pts:10},
-{id:"ws-sci-04-x2-2",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(2) 問題2",pts:10},
-{id:"ws-sci-04-x2-3",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(3) 問題3",pts:10},
-{id:"ws-sci-04-x2-4",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(4) 問題4",pts:10},
-{id:"ws-sci-04-x2-5",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(5) 問題5",pts:10},
-{id:"ws-sci-04-x2-6",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(6) 問題6",pts:10},
-{id:"ws-sci-04-x2-7",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(7) 問題7",pts:10},
-{id:"ws-sci-04-x2-8",text:"堆積岩の種類（砂岩・泥岩・石灰岩・チャート）(8) 問題8",pts:10}
-]},{id:"ws-sci-04-x3",label:"X3（地層の読み取り（かぎ層・傾き・化石））",diff:1,cat:"X",problems:[
-{id:"ws-sci-04-x3-1",text:"地層の読み取り（かぎ層・傾き・化石）(1) 問題1",pts:10},
-{id:"ws-sci-04-x3-2",text:"地層の読み取り（かぎ層・傾き・化石）(2) 問題2",pts:10},
-{id:"ws-sci-04-x3-3",text:"地層の読み取り（かぎ層・傾き・化石）(3) 問題3",pts:10},
-{id:"ws-sci-04-x3-4",text:"地層の読み取り（かぎ層・傾き・化石）(4) 問題4",pts:10},
-{id:"ws-sci-04-x3-5",text:"地層の読み取り（かぎ層・傾き・化石）(5) 問題5",pts:10},
-{id:"ws-sci-04-x3-6",text:"地層の読み取り（かぎ層・傾き・化石）(6) 問題6",pts:10},
-{id:"ws-sci-04-x3-7",text:"地層の読み取り（かぎ層・傾き・化石）(7) 問題7",pts:10},
-{id:"ws-sci-04-x3-8",text:"地層の読み取り（かぎ層・傾き・化石）(8) 問題8",pts:10}
-]},{id:"ws-sci-04-y1",label:"Y1（ボーリング調査の読み取り問題）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-04-y1-1",text:"ボーリング調査の読み取り問題(1) 問題1",pts:10},
-{id:"ws-sci-04-y1-2",text:"ボーリング調査の読み取り問題(2) 問題2",pts:10},
-{id:"ws-sci-04-y1-3",text:"ボーリング調査の読み取り問題(3) 問題3",pts:10},
-{id:"ws-sci-04-y1-4",text:"ボーリング調査の読み取り問題(4) 問題4",pts:10},
-{id:"ws-sci-04-y1-5",text:"ボーリング調査の読み取り問題(5) 問題5",pts:10},
-{id:"ws-sci-04-y1-6",text:"ボーリング調査の読み取り問題(6) 問題6",pts:10},
-{id:"ws-sci-04-y1-7",text:"ボーリング調査の読み取り問題(7) 問題7",pts:10},
-{id:"ws-sci-04-y1-8",text:"ボーリング調査の読み取り問題(8) 問題8",pts:10}
-]},{id:"ws-sci-04-y2",label:"Y2（岩石・地層の総合問題）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-04-y2-1",text:"岩石・地層の総合問題(1) 問題1",pts:10},
-{id:"ws-sci-04-y2-2",text:"岩石・地層の総合問題(2) 問題2",pts:10},
-{id:"ws-sci-04-y2-3",text:"岩石・地層の総合問題(3) 問題3",pts:10},
-{id:"ws-sci-04-y2-4",text:"岩石・地層の総合問題(4) 問題4",pts:10},
-{id:"ws-sci-04-y2-5",text:"岩石・地層の総合問題(5) 問題5",pts:10},
-{id:"ws-sci-04-y2-6",text:"岩石・地層の総合問題(6) 問題6",pts:10},
-{id:"ws-sci-04-y2-7",text:"岩石・地層の総合問題(7) 問題7",pts:10},
-{id:"ws-sci-04-y2-8",text:"岩石・地層の総合問題(8) 問題8",pts:10}
-]},{id:"ws-sci-04-z1",label:"Z1（断層・しゅう曲・侵食の発展問題①）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-04-z1-1",text:"断層・しゅう曲・侵食の発展問題①(1) 問題1",pts:10},
-{id:"ws-sci-04-z1-2",text:"断層・しゅう曲・侵食の発展問題①(2) 問題2",pts:10},
-{id:"ws-sci-04-z1-3",text:"断層・しゅう曲・侵食の発展問題①(3) 問題3",pts:10},
-{id:"ws-sci-04-z1-4",text:"断層・しゅう曲・侵食の発展問題①(4) 問題4",pts:10},
-{id:"ws-sci-04-z1-5",text:"断層・しゅう曲・侵食の発展問題①(5) 問題5",pts:10},
-{id:"ws-sci-04-z1-6",text:"断層・しゅう曲・侵食の発展問題①(6) 問題6",pts:10}
-]},{id:"ws-sci-04-z2",label:"Z2（地質時代・示準化石の問題②）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-04-z2-1",text:"地質時代・示準化石の問題②(1) 問題1",pts:10},
-{id:"ws-sci-04-z2-2",text:"地質時代・示準化石の問題②(2) 問題2",pts:10},
-{id:"ws-sci-04-z2-3",text:"地質時代・示準化石の問題②(3) 問題3",pts:10},
-{id:"ws-sci-04-z2-4",text:"地質時代・示準化石の問題②(4) 問題4",pts:10},
-{id:"ws-sci-04-z2-5",text:"地質時代・示準化石の問題②(5) 問題5",pts:10},
-{id:"ws-sci-04-z2-6",text:"地質時代・示準化石の問題②(6) 問題6",pts:10}
-]},{id:"ws-sci-04-z3",label:"Z3（最難問）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-04-z3-1",text:"最難問(1) 問題1",pts:10},
-{id:"ws-sci-04-z3-2",text:"最難問(2) 問題2",pts:10},
-{id:"ws-sci-04-z3-3",text:"最難問(3) 問題3",pts:10},
-{id:"ws-sci-04-z3-4",text:"最難問(4) 問題4",pts:10},
-{id:"ws-sci-04-z3-5",text:"最難問(5) 問題5",pts:10},
-{id:"ws-sci-04-z3-6",text:"最難問(6) 問題6",pts:10}
+
+{id:"ws-sci-04",code:"WS-04",title:"岩石",sections:[
+{id:"ws-sci-04-x1",label:"X1 ウィークリーチェック（WS-03の復習）",diff:1,cat:"X",problems:[
+{id:"ws-sci-04-x1-1",text:"X1 植物の分類・受粉の復習問題",pts:10}
+]},
+{id:"ws-sci-04-x2",label:"X2 岩石の種類と地層",diff:2,cat:"X",problems:[
+{id:"ws-sci-04-x2-1",text:"X2(1)〜(4) レキ岩・石灰岩・火山岩・花崗岩の特徴",pts:10},
+{id:"ws-sci-04-x2-2",text:"X2(5)(6)(7) 示相化石・地層の読み取り",pts:10},
+{id:"ws-sci-04-x2-3",text:"X2(8)(9)(10) 地層の形成・断層・回数",pts:10}
+]},
+{id:"ws-sci-04-x3",label:"X3 地層の読み取り（発展）",diff:3,cat:"X",problems:[
+{id:"ws-sci-04-x3-1",text:"X3 複雑な地層断面図の読み取り",pts:10},
+{id:"ws-sci-04-x3-2",text:"X3 地層形成の順序・隆起・沈降",pts:10}
+]},
+{id:"ws-sci-04-y1",label:"Y1 火山と地震",diff:2,cat:"Y",problems:[
+{id:"ws-sci-04-y1-1",text:"Y1 火山のつくり・噴火・地震の波",pts:10}
+]},
+{id:"ws-sci-04-y2",label:"Y2 地震の計算",diff:3,cat:"Y",problems:[
+{id:"ws-sci-04-y2-1",text:"Y2 地震の初期微動・主要動の到達時刻計算",pts:10}
+]},
+{id:"ws-sci-04-z1",label:"Z1 岩石・地層の総合",diff:2,cat:"Z",problems:[
+{id:"ws-sci-04-z1-1",text:"Z1 岩石・地層の総合問題",pts:10}
+]},
+{id:"ws-sci-04-z2",label:"Z2 地球の変動",diff:3,cat:"Z",problems:[
+{id:"ws-sci-04-z2-1",text:"Z2 地球の変動・プレートテクトニクス",pts:10}
+]},
+{id:"ws-sci-04-z3",label:"Z3 総合記述",diff:3,cat:"Z",problems:[
+{id:"ws-sci-04-z3-1",text:"Z3 岩石・地層の総合記述",pts:10}
 ]}
 ],initialAnswers:{}},
-{id:"ws-sci-05",code:"WS-05",title:"人体・消化",sections:[
-{id:"ws-sci-05-x1",label:"X1（消化器官の名前と役割（口・食道・胃・小腸・大腸））",diff:1,cat:"X",problems:[
-{id:"ws-sci-05-x1-1",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(1) 問題1",pts:10},
-{id:"ws-sci-05-x1-2",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(2) 問題2",pts:10},
-{id:"ws-sci-05-x1-3",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(3) 問題3",pts:10},
-{id:"ws-sci-05-x1-4",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(4) 問題4",pts:10},
-{id:"ws-sci-05-x1-5",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(5) 問題5",pts:10},
-{id:"ws-sci-05-x1-6",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(6) 問題6",pts:10},
-{id:"ws-sci-05-x1-7",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(7) 問題7",pts:10},
-{id:"ws-sci-05-x1-8",text:"消化器官の名前と役割（口・食道・胃・小腸・大腸）(8) 問題8",pts:10}
-]},{id:"ws-sci-05-x2",label:"X2（消化液と消化酵素（アミラーゼ・ペプシン・胆汁））",diff:1,cat:"X",problems:[
-{id:"ws-sci-05-x2-1",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(1) 問題1",pts:10},
-{id:"ws-sci-05-x2-2",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(2) 問題2",pts:10},
-{id:"ws-sci-05-x2-3",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(3) 問題3",pts:10},
-{id:"ws-sci-05-x2-4",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(4) 問題4",pts:10},
-{id:"ws-sci-05-x2-5",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(5) 問題5",pts:10},
-{id:"ws-sci-05-x2-6",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(6) 問題6",pts:10},
-{id:"ws-sci-05-x2-7",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(7) 問題7",pts:10},
-{id:"ws-sci-05-x2-8",text:"消化液と消化酵素（アミラーゼ・ペプシン・胆汁）(8) 問題8",pts:10}
-]},{id:"ws-sci-05-x3",label:"X3（栄養素の吸収（柔毛・毛細血管・リンパ管））",diff:1,cat:"X",problems:[
-{id:"ws-sci-05-x3-1",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(1) 問題1",pts:10},
-{id:"ws-sci-05-x3-2",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(2) 問題2",pts:10},
-{id:"ws-sci-05-x3-3",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(3) 問題3",pts:10},
-{id:"ws-sci-05-x3-4",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(4) 問題4",pts:10},
-{id:"ws-sci-05-x3-5",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(5) 問題5",pts:10},
-{id:"ws-sci-05-x3-6",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(6) 問題6",pts:10},
-{id:"ws-sci-05-x3-7",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(7) 問題7",pts:10},
-{id:"ws-sci-05-x3-8",text:"栄養素の吸収（柔毛・毛細血管・リンパ管）(8) 問題8",pts:10}
-]},{id:"ws-sci-05-y1",label:"Y1（消化実験の考察問題）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-05-y1-1",text:"消化実験の考察問題(1) 問題1",pts:10},
-{id:"ws-sci-05-y1-2",text:"消化実験の考察問題(2) 問題2",pts:10},
-{id:"ws-sci-05-y1-3",text:"消化実験の考察問題(3) 問題3",pts:10},
-{id:"ws-sci-05-y1-4",text:"消化実験の考察問題(4) 問題4",pts:10},
-{id:"ws-sci-05-y1-5",text:"消化実験の考察問題(5) 問題5",pts:10},
-{id:"ws-sci-05-y1-6",text:"消化実験の考察問題(6) 問題6",pts:10},
-{id:"ws-sci-05-y1-7",text:"消化実験の考察問題(7) 問題7",pts:10},
-{id:"ws-sci-05-y1-8",text:"消化実験の考察問題(8) 問題8",pts:10}
-]},{id:"ws-sci-05-y2",label:"Y2（人体消化の総合問題）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-05-y2-1",text:"人体消化の総合問題(1) 問題1",pts:10},
-{id:"ws-sci-05-y2-2",text:"人体消化の総合問題(2) 問題2",pts:10},
-{id:"ws-sci-05-y2-3",text:"人体消化の総合問題(3) 問題3",pts:10},
-{id:"ws-sci-05-y2-4",text:"人体消化の総合問題(4) 問題4",pts:10},
-{id:"ws-sci-05-y2-5",text:"人体消化の総合問題(5) 問題5",pts:10},
-{id:"ws-sci-05-y2-6",text:"人体消化の総合問題(6) 問題6",pts:10},
-{id:"ws-sci-05-y2-7",text:"人体消化の総合問題(7) 問題7",pts:10},
-{id:"ws-sci-05-y2-8",text:"人体消化の総合問題(8) 問題8",pts:10}
-]},{id:"ws-sci-05-z1",label:"Z1（消化の計算問題①（デンプンの分解量））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-05-z1-1",text:"消化の計算問題①（デンプンの分解量）(1) 問題1",pts:10},
-{id:"ws-sci-05-z1-2",text:"消化の計算問題①（デンプンの分解量）(2) 問題2",pts:10},
-{id:"ws-sci-05-z1-3",text:"消化の計算問題①（デンプンの分解量）(3) 問題3",pts:10},
-{id:"ws-sci-05-z1-4",text:"消化の計算問題①（デンプンの分解量）(4) 問題4",pts:10},
-{id:"ws-sci-05-z1-5",text:"消化の計算問題①（デンプンの分解量）(5) 問題5",pts:10},
-{id:"ws-sci-05-z1-6",text:"消化の計算問題①（デンプンの分解量）(6) 問題6",pts:10}
-]},{id:"ws-sci-05-z2",label:"Z2（消化の計算問題②）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-05-z2-1",text:"消化の計算問題②(1) 問題1",pts:10},
-{id:"ws-sci-05-z2-2",text:"消化の計算問題②(2) 問題2",pts:10},
-{id:"ws-sci-05-z2-3",text:"消化の計算問題②(3) 問題3",pts:10},
-{id:"ws-sci-05-z2-4",text:"消化の計算問題②(4) 問題4",pts:10},
-{id:"ws-sci-05-z2-5",text:"消化の計算問題②(5) 問題5",pts:10},
-{id:"ws-sci-05-z2-6",text:"消化の計算問題②(6) 問題6",pts:10}
-]},{id:"ws-sci-05-z3",label:"Z3（最難問（複合））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-05-z3-1",text:"最難問（複合）(1) 問題1",pts:10},
-{id:"ws-sci-05-z3-2",text:"最難問（複合）(2) 問題2",pts:10},
-{id:"ws-sci-05-z3-3",text:"最難問（複合）(3) 問題3",pts:10},
-{id:"ws-sci-05-z3-4",text:"最難問（複合）(4) 問題4",pts:10},
-{id:"ws-sci-05-z3-5",text:"最難問（複合）(5) 問題5",pts:10},
-{id:"ws-sci-05-z3-6",text:"最難問（複合）(6) 問題6",pts:10}
+
+{id:"ws-sci-05",code:"WS-05",title:"人体と消化",sections:[
+{id:"ws-sci-05-x1",label:"X1 ウィークリーチェック（WS-04の復習）",diff:1,cat:"X",problems:[
+{id:"ws-sci-05-x1-1",text:"X1 岩石・地層の復習問題",pts:10}
+]},
+{id:"ws-sci-05-x2",label:"X2 消化の仕組み",diff:2,cat:"X",problems:[
+{id:"ws-sci-05-x2-1",text:"X2(1) 消化の流れ・空欄補充（①〜⑦）",pts:10},
+{id:"ws-sci-05-x2-2",text:"X2(2) だ液のはたらきを調べる実験",pts:10}
+]},
+{id:"ws-sci-05-x3",label:"X3 消化の実験（口中のだ液）",diff:2,cat:"X",problems:[
+{id:"ws-sci-05-x3-1",text:"X3(1)〜(4) だ液と温度の実験・ヨウ素液",pts:10}
+]},
+{id:"ws-sci-05-x4",label:"X4 消化実験（セロハン）",diff:3,cat:"X",problems:[
+{id:"ws-sci-05-x4-1",text:"X4(1)〜(4) セロハン袋でのデンプン・ブドウ糖の実験",pts:10}
+]},
+{id:"ws-sci-05-y1",label:"Y1 体の各器官のはたらき",diff:2,cat:"Y",problems:[
+{id:"ws-sci-05-y1-1",text:"Y1 肺・心臓・腎臓・肝臓などの機能",pts:10}
+]},
+{id:"ws-sci-05-y2",label:"Y2 血液循環",diff:3,cat:"Y",problems:[
+{id:"ws-sci-05-y2-1",text:"Y2 血液循環・動脈・静脈・毛細血管",pts:10}
+]},
+{id:"ws-sci-05-z1",label:"Z1 人体の総合問題",diff:2,cat:"Z",problems:[
+{id:"ws-sci-05-z1-1",text:"Z1 人体の各器官の総合問題",pts:10}
+]},
+{id:"ws-sci-05-z2",label:"Z2 食物連鎖・人体",diff:3,cat:"Z",problems:[
+{id:"ws-sci-05-z2-1",text:"Z2 食物連鎖と人体に関する問題",pts:10}
+]},
+{id:"ws-sci-05-z3",label:"Z3 総合記述",diff:3,cat:"Z",problems:[
+{id:"ws-sci-05-z3-1",text:"Z3 人体・消化の総合記述",pts:10}
 ]}
 ],initialAnswers:{}},
-{id:"ws-sci-06",code:"WS-06",title:"動物の分類",sections:[
-{id:"ws-sci-06-x1",label:"X1（脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類））",diff:1,cat:"X",problems:[
-{id:"ws-sci-06-x1-1",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(1) 問題1",pts:10},
-{id:"ws-sci-06-x1-2",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(2) 問題2",pts:10},
-{id:"ws-sci-06-x1-3",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(3) 問題3",pts:10},
-{id:"ws-sci-06-x1-4",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(4) 問題4",pts:10},
-{id:"ws-sci-06-x1-5",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(5) 問題5",pts:10},
-{id:"ws-sci-06-x1-6",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(6) 問題6",pts:10},
-{id:"ws-sci-06-x1-7",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(7) 問題7",pts:10},
-{id:"ws-sci-06-x1-8",text:"脊椎動物5種類の特徴（哺乳類・鳥類・は虫類・両生類・魚類）(8) 問題8",pts:10}
-]},{id:"ws-sci-06-x2",label:"X2（昆虫の体のつくり（頭・胸・腹・複眼・単眼））",diff:1,cat:"X",problems:[
-{id:"ws-sci-06-x2-1",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(1) 問題1",pts:10},
-{id:"ws-sci-06-x2-2",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(2) 問題2",pts:10},
-{id:"ws-sci-06-x2-3",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(3) 問題3",pts:10},
-{id:"ws-sci-06-x2-4",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(4) 問題4",pts:10},
-{id:"ws-sci-06-x2-5",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(5) 問題5",pts:10},
-{id:"ws-sci-06-x2-6",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(6) 問題6",pts:10},
-{id:"ws-sci-06-x2-7",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(7) 問題7",pts:10},
-{id:"ws-sci-06-x2-8",text:"昆虫の体のつくり（頭・胸・腹・複眼・単眼）(8) 問題8",pts:10}
-]},{id:"ws-sci-06-x3",label:"X3（無脊椎動物（甲殻類・軟体動物・節足動物））",diff:1,cat:"X",problems:[
-{id:"ws-sci-06-x3-1",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(1) 問題1",pts:10},
-{id:"ws-sci-06-x3-2",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(2) 問題2",pts:10},
-{id:"ws-sci-06-x3-3",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(3) 問題3",pts:10},
-{id:"ws-sci-06-x3-4",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(4) 問題4",pts:10},
-{id:"ws-sci-06-x3-5",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(5) 問題5",pts:10},
-{id:"ws-sci-06-x3-6",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(6) 問題6",pts:10},
-{id:"ws-sci-06-x3-7",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(7) 問題7",pts:10},
-{id:"ws-sci-06-x3-8",text:"無脊椎動物（甲殻類・軟体動物・節足動物）(8) 問題8",pts:10}
-]},{id:"ws-sci-06-y1",label:"Y1（動物の特徴比較問題（表を使った分類））",diff:2,cat:"Y",problems:[
-{id:"ws-sci-06-y1-1",text:"動物の特徴比較問題（表を使った分類）(1) 問題1",pts:10},
-{id:"ws-sci-06-y1-2",text:"動物の特徴比較問題（表を使った分類）(2) 問題2",pts:10},
-{id:"ws-sci-06-y1-3",text:"動物の特徴比較問題（表を使った分類）(3) 問題3",pts:10},
-{id:"ws-sci-06-y1-4",text:"動物の特徴比較問題（表を使った分類）(4) 問題4",pts:10},
-{id:"ws-sci-06-y1-5",text:"動物の特徴比較問題（表を使った分類）(5) 問題5",pts:10},
-{id:"ws-sci-06-y1-6",text:"動物の特徴比較問題（表を使った分類）(6) 問題6",pts:10},
-{id:"ws-sci-06-y1-7",text:"動物の特徴比較問題（表を使った分類）(7) 問題7",pts:10},
-{id:"ws-sci-06-y1-8",text:"動物の特徴比較問題（表を使った分類）(8) 問題8",pts:10}
-]},{id:"ws-sci-06-y2",label:"Y2（動物の生態と環境の総合問題）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-06-y2-1",text:"動物の生態と環境の総合問題(1) 問題1",pts:10},
-{id:"ws-sci-06-y2-2",text:"動物の生態と環境の総合問題(2) 問題2",pts:10},
-{id:"ws-sci-06-y2-3",text:"動物の生態と環境の総合問題(3) 問題3",pts:10},
-{id:"ws-sci-06-y2-4",text:"動物の生態と環境の総合問題(4) 問題4",pts:10},
-{id:"ws-sci-06-y2-5",text:"動物の生態と環境の総合問題(5) 問題5",pts:10},
-{id:"ws-sci-06-y2-6",text:"動物の生態と環境の総合問題(6) 問題6",pts:10},
-{id:"ws-sci-06-y2-7",text:"動物の生態と環境の総合問題(7) 問題7",pts:10},
-{id:"ws-sci-06-y2-8",text:"動物の生態と環境の総合問題(8) 問題8",pts:10}
-]},{id:"ws-sci-06-z1",label:"Z1（動物の分類難問①）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-06-z1-1",text:"動物の分類難問①(1) 問題1",pts:10},
-{id:"ws-sci-06-z1-2",text:"動物の分類難問①(2) 問題2",pts:10},
-{id:"ws-sci-06-z1-3",text:"動物の分類難問①(3) 問題3",pts:10},
-{id:"ws-sci-06-z1-4",text:"動物の分類難問①(4) 問題4",pts:10},
-{id:"ws-sci-06-z1-5",text:"動物の分類難問①(5) 問題5",pts:10},
-{id:"ws-sci-06-z1-6",text:"動物の分類難問①(6) 問題6",pts:10}
-]},{id:"ws-sci-06-z2",label:"Z2（動物の進化・食物連鎖②）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-06-z2-1",text:"動物の進化・食物連鎖②(1) 問題1",pts:10},
-{id:"ws-sci-06-z2-2",text:"動物の進化・食物連鎖②(2) 問題2",pts:10},
-{id:"ws-sci-06-z2-3",text:"動物の進化・食物連鎖②(3) 問題3",pts:10},
-{id:"ws-sci-06-z2-4",text:"動物の進化・食物連鎖②(4) 問題4",pts:10},
-{id:"ws-sci-06-z2-5",text:"動物の進化・食物連鎖②(5) 問題5",pts:10},
-{id:"ws-sci-06-z2-6",text:"動物の進化・食物連鎖②(6) 問題6",pts:10}
-]},{id:"ws-sci-06-z3",label:"Z3（最難問）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-06-z3-1",text:"最難問(1) 問題1",pts:10},
-{id:"ws-sci-06-z3-2",text:"最難問(2) 問題2",pts:10},
-{id:"ws-sci-06-z3-3",text:"最難問(3) 問題3",pts:10},
-{id:"ws-sci-06-z3-4",text:"最難問(4) 問題4",pts:10},
-{id:"ws-sci-06-z3-5",text:"最難問(5) 問題5",pts:10},
-{id:"ws-sci-06-z3-6",text:"最難問(6) 問題6",pts:10}
+
+{id:"ws-sci-06",code:"WS-06",title:"動物",sections:[
+{id:"ws-sci-06-x1",label:"X1 ウィークリーチェック（WS-05の復習）",diff:1,cat:"X",problems:[
+{id:"ws-sci-06-x1-1",text:"X1 人体・消化の復習問題",pts:10}
+]},
+{id:"ws-sci-06-x2",label:"X2 動物の分類",diff:2,cat:"X",problems:[
+{id:"ws-sci-06-x2-1",text:"X2(1) 動物A〜J（ほ乳類・両生類・変温動物）の分類",pts:10},
+{id:"ws-sci-06-x2-2",text:"X2(2)(3) 胎児の様子・空欄補充（酸素・産声）",pts:10},
+{id:"ws-sci-06-x2-3",text:"X2(4)(5)(6)(7)(8) 昆虫の分類・食べ物・越冬方法",pts:10}
+]},
+{id:"ws-sci-06-x3",label:"X3 昆虫の生態（発展）",diff:3,cat:"X",problems:[
+{id:"ws-sci-06-x3-1",text:"X3 昆虫の生活環境・幼虫の場所",pts:10},
+{id:"ws-sci-06-x3-2",text:"X3 動物の特徴と分類の応用",pts:10}
+]},
+{id:"ws-sci-06-y1",label:"Y1 水中の動物",diff:2,cat:"Y",problems:[
+{id:"ws-sci-06-y1-1",text:"Y1 魚類・水中生物の特徴",pts:10}
+]},
+{id:"ws-sci-06-y2",label:"Y2 生態系・食物連鎖",diff:3,cat:"Y",problems:[
+{id:"ws-sci-06-y2-1",text:"Y2 生態系の食物連鎖・生物の数量関係",pts:10}
+]},
+{id:"ws-sci-06-z1",label:"Z1 動物の総合問題",diff:2,cat:"Z",problems:[
+{id:"ws-sci-06-z1-1",text:"Z1 動物全体の総合問題",pts:10}
+]},
+{id:"ws-sci-06-z2",label:"Z2 生物と環境",diff:3,cat:"Z",problems:[
+{id:"ws-sci-06-z2-1",text:"Z2 生物と環境変化・外来種",pts:10}
+]},
+{id:"ws-sci-06-z3",label:"Z3 総合記述",diff:3,cat:"Z",problems:[
+{id:"ws-sci-06-z3-1",text:"Z3 動物・生態系の総合記述",pts:10}
 ]}
 ],initialAnswers:{}},
-{id:"ws-sci-07",code:"WS-07",title:"電流・電気回路",sections:[
-{id:"ws-sci-07-x1",label:"X1（直列・並列回路の電流と電圧）",diff:1,cat:"X",problems:[
-{id:"ws-sci-07-x1-1",text:"直列・並列回路の電流と電圧(1) 問題1",pts:10},
-{id:"ws-sci-07-x1-2",text:"直列・並列回路の電流と電圧(2) 問題2",pts:10},
-{id:"ws-sci-07-x1-3",text:"直列・並列回路の電流と電圧(3) 問題3",pts:10},
-{id:"ws-sci-07-x1-4",text:"直列・並列回路の電流と電圧(4) 問題4",pts:10},
-{id:"ws-sci-07-x1-5",text:"直列・並列回路の電流と電圧(5) 問題5",pts:10},
-{id:"ws-sci-07-x1-6",text:"直列・並列回路の電流と電圧(6) 問題6",pts:10},
-{id:"ws-sci-07-x1-7",text:"直列・並列回路の電流と電圧(7) 問題7",pts:10},
-{id:"ws-sci-07-x1-8",text:"直列・並列回路の電流と電圧(8) 問題8",pts:10}
-]},{id:"ws-sci-07-x2",label:"X2（電磁石のはたらきと強さを変える方法）",diff:1,cat:"X",problems:[
-{id:"ws-sci-07-x2-1",text:"電磁石のはたらきと強さを変える方法(1) 問題1",pts:10},
-{id:"ws-sci-07-x2-2",text:"電磁石のはたらきと強さを変える方法(2) 問題2",pts:10},
-{id:"ws-sci-07-x2-3",text:"電磁石のはたらきと強さを変える方法(3) 問題3",pts:10},
-{id:"ws-sci-07-x2-4",text:"電磁石のはたらきと強さを変える方法(4) 問題4",pts:10},
-{id:"ws-sci-07-x2-5",text:"電磁石のはたらきと強さを変える方法(5) 問題5",pts:10},
-{id:"ws-sci-07-x2-6",text:"電磁石のはたらきと強さを変える方法(6) 問題6",pts:10},
-{id:"ws-sci-07-x2-7",text:"電磁石のはたらきと強さを変える方法(7) 問題7",pts:10},
-{id:"ws-sci-07-x2-8",text:"電磁石のはたらきと強さを変える方法(8) 問題8",pts:10}
-]},{id:"ws-sci-07-x3",label:"X3（電熱線の発熱と電流・抵抗の関係）",diff:1,cat:"X",problems:[
-{id:"ws-sci-07-x3-1",text:"電熱線の発熱と電流・抵抗の関係(1) 問題1",pts:10},
-{id:"ws-sci-07-x3-2",text:"電熱線の発熱と電流・抵抗の関係(2) 問題2",pts:10},
-{id:"ws-sci-07-x3-3",text:"電熱線の発熱と電流・抵抗の関係(3) 問題3",pts:10},
-{id:"ws-sci-07-x3-4",text:"電熱線の発熱と電流・抵抗の関係(4) 問題4",pts:10},
-{id:"ws-sci-07-x3-5",text:"電熱線の発熱と電流・抵抗の関係(5) 問題5",pts:10},
-{id:"ws-sci-07-x3-6",text:"電熱線の発熱と電流・抵抗の関係(6) 問題6",pts:10},
-{id:"ws-sci-07-x3-7",text:"電熱線の発熱と電流・抵抗の関係(7) 問題7",pts:10},
-{id:"ws-sci-07-x3-8",text:"電熱線の発熱と電流・抵抗の関係(8) 問題8",pts:10}
-]},{id:"ws-sci-07-y1",label:"Y1（複合回路の電流計算問題）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-07-y1-1",text:"複合回路の電流計算問題(1) 問題1",pts:10},
-{id:"ws-sci-07-y1-2",text:"複合回路の電流計算問題(2) 問題2",pts:10},
-{id:"ws-sci-07-y1-3",text:"複合回路の電流計算問題(3) 問題3",pts:10},
-{id:"ws-sci-07-y1-4",text:"複合回路の電流計算問題(4) 問題4",pts:10},
-{id:"ws-sci-07-y1-5",text:"複合回路の電流計算問題(5) 問題5",pts:10},
-{id:"ws-sci-07-y1-6",text:"複合回路の電流計算問題(6) 問題6",pts:10},
-{id:"ws-sci-07-y1-7",text:"複合回路の電流計算問題(7) 問題7",pts:10},
-{id:"ws-sci-07-y1-8",text:"複合回路の電流計算問題(8) 問題8",pts:10}
-]},{id:"ws-sci-07-y2",label:"Y2（電流総合問題）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-07-y2-1",text:"電流総合問題(1) 問題1",pts:10},
-{id:"ws-sci-07-y2-2",text:"電流総合問題(2) 問題2",pts:10},
-{id:"ws-sci-07-y2-3",text:"電流総合問題(3) 問題3",pts:10},
-{id:"ws-sci-07-y2-4",text:"電流総合問題(4) 問題4",pts:10},
-{id:"ws-sci-07-y2-5",text:"電流総合問題(5) 問題5",pts:10},
-{id:"ws-sci-07-y2-6",text:"電流総合問題(6) 問題6",pts:10},
-{id:"ws-sci-07-y2-7",text:"電流総合問題(7) 問題7",pts:10},
-{id:"ws-sci-07-y2-8",text:"電流総合問題(8) 問題8",pts:10}
-]},{id:"ws-sci-07-z1",label:"Z1（複雑回路の計算①）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-07-z1-1",text:"複雑回路の計算①(1) 問題1",pts:10},
-{id:"ws-sci-07-z1-2",text:"複雑回路の計算①(2) 問題2",pts:10},
-{id:"ws-sci-07-z1-3",text:"複雑回路の計算①(3) 問題3",pts:10},
-{id:"ws-sci-07-z1-4",text:"複雑回路の計算①(4) 問題4",pts:10},
-{id:"ws-sci-07-z1-5",text:"複雑回路の計算①(5) 問題5",pts:10},
-{id:"ws-sci-07-z1-6",text:"複雑回路の計算①(6) 問題6",pts:10}
-]},{id:"ws-sci-07-z2",label:"Z2（ダイオード・LED回路②）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-07-z2-1",text:"ダイオード・LED回路②(1) 問題1",pts:10},
-{id:"ws-sci-07-z2-2",text:"ダイオード・LED回路②(2) 問題2",pts:10},
-{id:"ws-sci-07-z2-3",text:"ダイオード・LED回路②(3) 問題3",pts:10},
-{id:"ws-sci-07-z2-4",text:"ダイオード・LED回路②(4) 問題4",pts:10},
-{id:"ws-sci-07-z2-5",text:"ダイオード・LED回路②(5) 問題5",pts:10},
-{id:"ws-sci-07-z2-6",text:"ダイオード・LED回路②(6) 問題6",pts:10}
-]},{id:"ws-sci-07-z3",label:"Z3（最難問（スイッチ複合回路））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-07-z3-1",text:"最難問（スイッチ複合回路）(1) 問題1",pts:10},
-{id:"ws-sci-07-z3-2",text:"最難問（スイッチ複合回路）(2) 問題2",pts:10},
-{id:"ws-sci-07-z3-3",text:"最難問（スイッチ複合回路）(3) 問題3",pts:10},
-{id:"ws-sci-07-z3-4",text:"最難問（スイッチ複合回路）(4) 問題4",pts:10},
-{id:"ws-sci-07-z3-5",text:"最難問（スイッチ複合回路）(5) 問題5",pts:10},
-{id:"ws-sci-07-z3-6",text:"最難問（スイッチ複合回路）(6) 問題6",pts:10}
+
+{id:"ws-sci-07",code:"WS-07",title:"電流",sections:[
+{id:"ws-sci-07-x1",label:"X1 ウィークリーチェック（WS-06の復習）",diff:1,cat:"X",problems:[
+{id:"ws-sci-07-x1-1",text:"X1 動物の分類・生態系の復習問題",pts:10}
+]},
+{id:"ws-sci-07-x2",label:"X2 回路と電流の大きさ",diff:2,cat:"X",problems:[
+{id:"ws-sci-07-x2-1",text:"X2(1) 直列・並列回路の電流の大きさ計算",pts:10},
+{id:"ws-sci-07-x2-2",text:"X2(2)(3)(4) 方位磁針の向きと電流の方向",pts:10}
+]},
+{id:"ws-sci-07-x3",label:"X3 電流と方位磁針",diff:2,cat:"X",problems:[
+{id:"ws-sci-07-x3-1",text:"X3(1)〜(4) 方位磁針A〜Kの針の振れ",pts:10}
+]},
+{id:"ws-sci-07-x4",label:"X4 電磁石（方位磁針の向き）",diff:3,cat:"X",problems:[
+{id:"ws-sci-07-x4-1",text:"X4(1)〜(4) 方位磁針C〜Eと電流方向",pts:10}
+]},
+{id:"ws-sci-07-x5",label:"X5 電磁石（立体配置）",diff:3,cat:"X",problems:[
+{id:"ws-sci-07-x5-1",text:"X5 導線の立体配置と方位磁針F・Gの向き",pts:10}
+]},
+{id:"ws-sci-07-y1",label:"Y1 電磁石の応用",diff:2,cat:"Y",problems:[
+{id:"ws-sci-07-y1-1",text:"Y1 電磁石の巻き数・強さ",pts:10}
+]},
+{id:"ws-sci-07-y2",label:"Y2 電流と発熱",diff:2,cat:"Y",problems:[
+{id:"ws-sci-07-y2-1",text:"Y2 電流・抵抗・発熱の計算",pts:10}
+]},
+{id:"ws-sci-07-z1",label:"Z1 電流の総合",diff:2,cat:"Z",problems:[
+{id:"ws-sci-07-z1-1",text:"Z1 電流・電磁石の総合問題",pts:10}
+]},
+{id:"ws-sci-07-z2",label:"Z2 電流の応用",diff:3,cat:"Z",problems:[
+{id:"ws-sci-07-z2-1",text:"Z2 電流の応用・モーター",pts:10}
+]},
+{id:"ws-sci-07-z3",label:"Z3 総合記述",diff:3,cat:"Z",problems:[
+{id:"ws-sci-07-z3-1",text:"Z3 電流の総合記述",pts:10}
 ]}
 ],initialAnswers:{}},
-{id:"ws-sci-08",code:"WS-08",title:"星と宇宙",sections:[
-{id:"ws-sci-08-x1",label:"X1（星の種類・等級・色と温度）",diff:1,cat:"X",problems:[
-{id:"ws-sci-08-x1-1",text:"星の種類・等級・色と温度(1) 問題1",pts:10},
-{id:"ws-sci-08-x1-2",text:"星の種類・等級・色と温度(2) 問題2",pts:10},
-{id:"ws-sci-08-x1-3",text:"星の種類・等級・色と温度(3) 問題3",pts:10},
-{id:"ws-sci-08-x1-4",text:"星の種類・等級・色と温度(4) 問題4",pts:10},
-{id:"ws-sci-08-x1-5",text:"星の種類・等級・色と温度(5) 問題5",pts:10},
-{id:"ws-sci-08-x1-6",text:"星の種類・等級・色と温度(6) 問題6",pts:10},
-{id:"ws-sci-08-x1-7",text:"星の種類・等級・色と温度(7) 問題7",pts:10},
-{id:"ws-sci-08-x1-8",text:"星の種類・等級・色と温度(8) 問題8",pts:10}
-]},{id:"ws-sci-08-x2",label:"X2（星座と季節の変化・北極星の観察）",diff:1,cat:"X",problems:[
-{id:"ws-sci-08-x2-1",text:"星座と季節の変化・北極星の観察(1) 問題1",pts:10},
-{id:"ws-sci-08-x2-2",text:"星座と季節の変化・北極星の観察(2) 問題2",pts:10},
-{id:"ws-sci-08-x2-3",text:"星座と季節の変化・北極星の観察(3) 問題3",pts:10},
-{id:"ws-sci-08-x2-4",text:"星座と季節の変化・北極星の観察(4) 問題4",pts:10},
-{id:"ws-sci-08-x2-5",text:"星座と季節の変化・北極星の観察(5) 問題5",pts:10},
-{id:"ws-sci-08-x2-6",text:"星座と季節の変化・北極星の観察(6) 問題6",pts:10},
-{id:"ws-sci-08-x2-7",text:"星座と季節の変化・北極星の観察(7) 問題7",pts:10},
-{id:"ws-sci-08-x2-8",text:"星座と季節の変化・北極星の観察(8) 問題8",pts:10}
-]},{id:"ws-sci-08-x3",label:"X3（月の満ち欠けと月食・日食）",diff:1,cat:"X",problems:[
-{id:"ws-sci-08-x3-1",text:"月の満ち欠けと月食・日食(1) 問題1",pts:10},
-{id:"ws-sci-08-x3-2",text:"月の満ち欠けと月食・日食(2) 問題2",pts:10},
-{id:"ws-sci-08-x3-3",text:"月の満ち欠けと月食・日食(3) 問題3",pts:10},
-{id:"ws-sci-08-x3-4",text:"月の満ち欠けと月食・日食(4) 問題4",pts:10},
-{id:"ws-sci-08-x3-5",text:"月の満ち欠けと月食・日食(5) 問題5",pts:10},
-{id:"ws-sci-08-x3-6",text:"月の満ち欠けと月食・日食(6) 問題6",pts:10},
-{id:"ws-sci-08-x3-7",text:"月の満ち欠けと月食・日食(7) 問題7",pts:10},
-{id:"ws-sci-08-x3-8",text:"月の満ち欠けと月食・日食(8) 問題8",pts:10}
-]},{id:"ws-sci-08-y1",label:"Y1（天球図と星の動きの計算）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-08-y1-1",text:"天球図と星の動きの計算(1) 問題1",pts:10},
-{id:"ws-sci-08-y1-2",text:"天球図と星の動きの計算(2) 問題2",pts:10},
-{id:"ws-sci-08-y1-3",text:"天球図と星の動きの計算(3) 問題3",pts:10},
-{id:"ws-sci-08-y1-4",text:"天球図と星の動きの計算(4) 問題4",pts:10},
-{id:"ws-sci-08-y1-5",text:"天球図と星の動きの計算(5) 問題5",pts:10},
-{id:"ws-sci-08-y1-6",text:"天球図と星の動きの計算(6) 問題6",pts:10},
-{id:"ws-sci-08-y1-7",text:"天球図と星の動きの計算(7) 問題7",pts:10},
-{id:"ws-sci-08-y1-8",text:"天球図と星の動きの計算(8) 問題8",pts:10}
-]},{id:"ws-sci-08-y2",label:"Y2（宇宙総合問題）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-08-y2-1",text:"宇宙総合問題(1) 問題1",pts:10},
-{id:"ws-sci-08-y2-2",text:"宇宙総合問題(2) 問題2",pts:10},
-{id:"ws-sci-08-y2-3",text:"宇宙総合問題(3) 問題3",pts:10},
-{id:"ws-sci-08-y2-4",text:"宇宙総合問題(4) 問題4",pts:10},
-{id:"ws-sci-08-y2-5",text:"宇宙総合問題(5) 問題5",pts:10},
-{id:"ws-sci-08-y2-6",text:"宇宙総合問題(6) 問題6",pts:10},
-{id:"ws-sci-08-y2-7",text:"宇宙総合問題(7) 問題7",pts:10},
-{id:"ws-sci-08-y2-8",text:"宇宙総合問題(8) 問題8",pts:10}
-]},{id:"ws-sci-08-z1",label:"Z1（発展問題①（星の運動計算））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-08-z1-1",text:"発展問題①（星の運動計算）(1) 問題1",pts:10},
-{id:"ws-sci-08-z1-2",text:"発展問題①（星の運動計算）(2) 問題2",pts:10},
-{id:"ws-sci-08-z1-3",text:"発展問題①（星の運動計算）(3) 問題3",pts:10},
-{id:"ws-sci-08-z1-4",text:"発展問題①（星の運動計算）(4) 問題4",pts:10},
-{id:"ws-sci-08-z1-5",text:"発展問題①（星の運動計算）(5) 問題5",pts:10},
-{id:"ws-sci-08-z1-6",text:"発展問題①（星の運動計算）(6) 問題6",pts:10}
-]},{id:"ws-sci-08-z2",label:"Z2（発展問題②（月食・日食の計算））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-08-z2-1",text:"発展問題②（月食・日食の計算）(1) 問題1",pts:10},
-{id:"ws-sci-08-z2-2",text:"発展問題②（月食・日食の計算）(2) 問題2",pts:10},
-{id:"ws-sci-08-z2-3",text:"発展問題②（月食・日食の計算）(3) 問題3",pts:10},
-{id:"ws-sci-08-z2-4",text:"発展問題②（月食・日食の計算）(4) 問題4",pts:10},
-{id:"ws-sci-08-z2-5",text:"発展問題②（月食・日食の計算）(5) 問題5",pts:10},
-{id:"ws-sci-08-z2-6",text:"発展問題②（月食・日食の計算）(6) 問題6",pts:10}
-]},{id:"ws-sci-08-z3",label:"Z3（最難問）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-08-z3-1",text:"最難問(1) 問題1",pts:10},
-{id:"ws-sci-08-z3-2",text:"最難問(2) 問題2",pts:10},
-{id:"ws-sci-08-z3-3",text:"最難問(3) 問題3",pts:10},
-{id:"ws-sci-08-z3-4",text:"最難問(4) 問題4",pts:10},
-{id:"ws-sci-08-z3-5",text:"最難問(5) 問題5",pts:10},
-{id:"ws-sci-08-z3-6",text:"最難問(6) 問題6",pts:10}
+
+{id:"ws-sci-08",code:"WS-08",title:"星",sections:[
+{id:"ws-sci-08-x1",label:"X1 ウィークリーチェック（WS-07の復習）",diff:1,cat:"X",problems:[
+{id:"ws-sci-08-x1-1",text:"X1 電流・回路の復習問題",pts:10}
+]},
+{id:"ws-sci-08-x2",label:"X2 星座の特徴",diff:2,cat:"X",problems:[
+{id:"ws-sci-08-x2-1",text:"X2(1)〜(4) 星座の季節・1等星・夏の大三角・北極星",pts:10},
+{id:"ws-sci-08-x2-2",text:"X2(5)(6)(7) 北緯36度での北極星高度・南中高度",pts:10}
+]},
+{id:"ws-sci-08-x3",label:"X3 星座早見の使い方",diff:2,cat:"X",problems:[
+{id:"ws-sci-08-x3-1",text:"X3(1)〜(8) 星座早見の読み取り・使い方",pts:10}
+]},
+{id:"ws-sci-08-y1",label:"Y1 太陽の動き",diff:2,cat:"Y",problems:[
+{id:"ws-sci-08-y1-1",text:"Y1 太陽の日周運動・南中高度の計算",pts:10}
+]},
+{id:"ws-sci-08-y2",label:"Y2 月の動きと見え方",diff:3,cat:"Y",problems:[
+{id:"ws-sci-08-y2-1",text:"Y2 月の満ち欠け・位置と時刻の関係",pts:10}
+]},
+{id:"ws-sci-08-z1",label:"Z1 星と季節（総合）",diff:2,cat:"Z",problems:[
+{id:"ws-sci-08-z1-1",text:"Z1 星の動き・季節と星座の総合問題",pts:10}
+]},
+{id:"ws-sci-08-z2",label:"Z2 太陽系・宇宙",diff:3,cat:"Z",problems:[
+{id:"ws-sci-08-z2-1",text:"Z2 太陽系の惑星・公転",pts:10}
+]},
+{id:"ws-sci-08-z3",label:"Z3 総合記述",diff:3,cat:"Z",problems:[
+{id:"ws-sci-08-z3-1",text:"Z3 星・太陽・月の総合記述",pts:10}
 ]}
 ],initialAnswers:{}},
+
 {id:"ws-sci-09",code:"WS-09",title:"気体の発生計算・金属の燃焼計算",sections:[
-{id:"ws-sci-09-x1",label:"X1（塩酸と金属（鉄・アルミニウム・亜鉛）の反応）",diff:1,cat:"X",problems:[
-{id:"ws-sci-09-x1-1",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(1) 問題1",pts:10},
-{id:"ws-sci-09-x1-2",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(2) 問題2",pts:10},
-{id:"ws-sci-09-x1-3",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(3) 問題3",pts:10},
-{id:"ws-sci-09-x1-4",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(4) 問題4",pts:10},
-{id:"ws-sci-09-x1-5",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(5) 問題5",pts:10},
-{id:"ws-sci-09-x1-6",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(6) 問題6",pts:10},
-{id:"ws-sci-09-x1-7",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(7) 問題7",pts:10},
-{id:"ws-sci-09-x1-8",text:"塩酸と金属（鉄・アルミニウム・亜鉛）の反応(8) 問題8",pts:10}
-]},{id:"ws-sci-09-x2",label:"X2（石灰石と塩酸の反応（二酸化炭素発生））",diff:1,cat:"X",problems:[
-{id:"ws-sci-09-x2-1",text:"石灰石と塩酸の反応（二酸化炭素発生）(1) 問題1",pts:10},
-{id:"ws-sci-09-x2-2",text:"石灰石と塩酸の反応（二酸化炭素発生）(2) 問題2",pts:10},
-{id:"ws-sci-09-x2-3",text:"石灰石と塩酸の反応（二酸化炭素発生）(3) 問題3",pts:10},
-{id:"ws-sci-09-x2-4",text:"石灰石と塩酸の反応（二酸化炭素発生）(4) 問題4",pts:10},
-{id:"ws-sci-09-x2-5",text:"石灰石と塩酸の反応（二酸化炭素発生）(5) 問題5",pts:10},
-{id:"ws-sci-09-x2-6",text:"石灰石と塩酸の反応（二酸化炭素発生）(6) 問題6",pts:10},
-{id:"ws-sci-09-x2-7",text:"石灰石と塩酸の反応（二酸化炭素発生）(7) 問題7",pts:10},
-{id:"ws-sci-09-x2-8",text:"石灰石と塩酸の反応（二酸化炭素発生）(8) 問題8",pts:10}
-]},{id:"ws-sci-09-x3",label:"X3（炭素・マグネシウム・銅の燃焼計算）",diff:1,cat:"X",problems:[
-{id:"ws-sci-09-x3-1",text:"炭素・マグネシウム・銅の燃焼計算(1) 問題1",pts:10},
-{id:"ws-sci-09-x3-2",text:"炭素・マグネシウム・銅の燃焼計算(2) 問題2",pts:10},
-{id:"ws-sci-09-x3-3",text:"炭素・マグネシウム・銅の燃焼計算(3) 問題3",pts:10},
-{id:"ws-sci-09-x3-4",text:"炭素・マグネシウム・銅の燃焼計算(4) 問題4",pts:10},
-{id:"ws-sci-09-x3-5",text:"炭素・マグネシウム・銅の燃焼計算(5) 問題5",pts:10},
-{id:"ws-sci-09-x3-6",text:"炭素・マグネシウム・銅の燃焼計算(6) 問題6",pts:10},
-{id:"ws-sci-09-x3-7",text:"炭素・マグネシウム・銅の燃焼計算(7) 問題7",pts:10},
-{id:"ws-sci-09-x3-8",text:"炭素・マグネシウム・銅の燃焼計算(8) 問題8",pts:10}
-]},{id:"ws-sci-09-y1",label:"Y1（気体発生のグラフ読取り問題①）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-09-y1-1",text:"気体発生のグラフ読取り問題①(1) 問題1",pts:10},
-{id:"ws-sci-09-y1-2",text:"気体発生のグラフ読取り問題①(2) 問題2",pts:10},
-{id:"ws-sci-09-y1-3",text:"気体発生のグラフ読取り問題①(3) 問題3",pts:10},
-{id:"ws-sci-09-y1-4",text:"気体発生のグラフ読取り問題①(4) 問題4",pts:10},
-{id:"ws-sci-09-y1-5",text:"気体発生のグラフ読取り問題①(5) 問題5",pts:10},
-{id:"ws-sci-09-y1-6",text:"気体発生のグラフ読取り問題①(6) 問題6",pts:10},
-{id:"ws-sci-09-y1-7",text:"気体発生のグラフ読取り問題①(7) 問題7",pts:10},
-{id:"ws-sci-09-y1-8",text:"気体発生のグラフ読取り問題①(8) 問題8",pts:10}
-]},{id:"ws-sci-09-y2",label:"Y2（気体発生のグラフ読取り問題②）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-09-y2-1",text:"気体発生のグラフ読取り問題②(1) 問題1",pts:10},
-{id:"ws-sci-09-y2-2",text:"気体発生のグラフ読取り問題②(2) 問題2",pts:10},
-{id:"ws-sci-09-y2-3",text:"気体発生のグラフ読取り問題②(3) 問題3",pts:10},
-{id:"ws-sci-09-y2-4",text:"気体発生のグラフ読取り問題②(4) 問題4",pts:10},
-{id:"ws-sci-09-y2-5",text:"気体発生のグラフ読取り問題②(5) 問題5",pts:10},
-{id:"ws-sci-09-y2-6",text:"気体発生のグラフ読取り問題②(6) 問題6",pts:10},
-{id:"ws-sci-09-y2-7",text:"気体発生のグラフ読取り問題②(7) 問題7",pts:10},
-{id:"ws-sci-09-y2-8",text:"気体発生のグラフ読取り問題②(8) 問題8",pts:10}
-]},{id:"ws-sci-09-y3",label:"Y3（金属燃焼の計算問題③）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-09-y3-1",text:"金属燃焼の計算問題③(1) 問題1",pts:10},
-{id:"ws-sci-09-y3-2",text:"金属燃焼の計算問題③(2) 問題2",pts:10},
-{id:"ws-sci-09-y3-3",text:"金属燃焼の計算問題③(3) 問題3",pts:10},
-{id:"ws-sci-09-y3-4",text:"金属燃焼の計算問題③(4) 問題4",pts:10},
-{id:"ws-sci-09-y3-5",text:"金属燃焼の計算問題③(5) 問題5",pts:10},
-{id:"ws-sci-09-y3-6",text:"金属燃焼の計算問題③(6) 問題6",pts:10},
-{id:"ws-sci-09-y3-7",text:"金属燃焼の計算問題③(7) 問題7",pts:10},
-{id:"ws-sci-09-y3-8",text:"金属燃焼の計算問題③(8) 問題8",pts:10}
-]},{id:"ws-sci-09-y4",label:"Y4（過不足計算問題④）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-09-y4-1",text:"過不足計算問題④(1) 問題1",pts:10},
-{id:"ws-sci-09-y4-2",text:"過不足計算問題④(2) 問題2",pts:10},
-{id:"ws-sci-09-y4-3",text:"過不足計算問題④(3) 問題3",pts:10},
-{id:"ws-sci-09-y4-4",text:"過不足計算問題④(4) 問題4",pts:10},
-{id:"ws-sci-09-y4-5",text:"過不足計算問題④(5) 問題5",pts:10},
-{id:"ws-sci-09-y4-6",text:"過不足計算問題④(6) 問題6",pts:10},
-{id:"ws-sci-09-y4-7",text:"過不足計算問題④(7) 問題7",pts:10},
-{id:"ws-sci-09-y4-8",text:"過不足計算問題④(8) 問題8",pts:10}
-]},{id:"ws-sci-09-z1",label:"Z1（発展計算①（混合気体））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-09-z1-1",text:"発展計算①（混合気体）(1) 問題1",pts:10},
-{id:"ws-sci-09-z1-2",text:"発展計算①（混合気体）(2) 問題2",pts:10},
-{id:"ws-sci-09-z1-3",text:"発展計算①（混合気体）(3) 問題3",pts:10},
-{id:"ws-sci-09-z1-4",text:"発展計算①（混合気体）(4) 問題4",pts:10},
-{id:"ws-sci-09-z1-5",text:"発展計算①（混合気体）(5) 問題5",pts:10},
-{id:"ws-sci-09-z1-6",text:"発展計算①（混合気体）(6) 問題6",pts:10}
-]},{id:"ws-sci-09-z2",label:"Z2（発展計算②（混合金属））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-09-z2-1",text:"発展計算②（混合金属）(1) 問題1",pts:10},
-{id:"ws-sci-09-z2-2",text:"発展計算②（混合金属）(2) 問題2",pts:10},
-{id:"ws-sci-09-z2-3",text:"発展計算②（混合金属）(3) 問題3",pts:10},
-{id:"ws-sci-09-z2-4",text:"発展計算②（混合金属）(4) 問題4",pts:10},
-{id:"ws-sci-09-z2-5",text:"発展計算②（混合金属）(5) 問題5",pts:10},
-{id:"ws-sci-09-z2-6",text:"発展計算②（混合金属）(6) 問題6",pts:10}
-]},{id:"ws-sci-09-z3",label:"Z3（最難問）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-09-z3-1",text:"最難問(1) 問題1",pts:10},
-{id:"ws-sci-09-z3-2",text:"最難問(2) 問題2",pts:10},
-{id:"ws-sci-09-z3-3",text:"最難問(3) 問題3",pts:10},
-{id:"ws-sci-09-z3-4",text:"最難問(4) 問題4",pts:10},
-{id:"ws-sci-09-z3-5",text:"最難問(5) 問題5",pts:10},
-{id:"ws-sci-09-z3-6",text:"最難問(6) 問題6",pts:10}
+{id:"ws-sci-09-x1",label:"X1 ウィークリーチェック（WS-08の復習）",diff:1,cat:"X",problems:[
+{id:"ws-sci-09-x1-1",text:"X1 星・太陽・月の復習問題",pts:10}
+]},
+{id:"ws-sci-09-x2",label:"X2 気体の発生（基礎）",diff:1,cat:"X",problems:[
+{id:"ws-sci-09-x2-1",text:"X2 気体の種類と発生方法・性質",pts:10}
+]},
+{id:"ws-sci-09-x3",label:"X3 気体の体積計算",diff:2,cat:"X",problems:[
+{id:"ws-sci-09-x3-1",text:"X3 塩酸と鉄/亜鉛の反応・気体量の計算",pts:10}
+]},
+{id:"ws-sci-09-x4",label:"X4 中和計算",diff:2,cat:"X",problems:[
+{id:"ws-sci-09-x4-1",text:"X4 塩酸と水酸化ナトリウムの中和計算",pts:10}
+]},
+{id:"ws-sci-09-x5",label:"X5 金属の燃焼計算（基礎）",diff:2,cat:"X",problems:[
+{id:"ws-sci-09-x5-1",text:"X5 マグネシウム・銅の燃焼と質量の比",pts:10}
+]},
+{id:"ws-sci-09-x6",label:"X6 金属の燃焼計算（発展）",diff:3,cat:"X",problems:[
+{id:"ws-sci-09-x6-1",text:"X6 不完全燃焼・混合金属の燃焼計算",pts:10}
+]},
+{id:"ws-sci-09-y1",label:"Y1 気体の発生計算（応用）",diff:2,cat:"Y",problems:[
+{id:"ws-sci-09-y1-1",text:"Y1 複数の酸と金属の反応計算",pts:10}
+]},
+{id:"ws-sci-09-y2",label:"Y2 中和・燃焼の複合計算",diff:3,cat:"Y",problems:[
+{id:"ws-sci-09-y2-1",text:"Y2 中和と燃焼の複合計算",pts:10}
+]},
+{id:"ws-sci-09-y3",label:"Y3 発展計算問題",diff:3,cat:"Y",problems:[
+{id:"ws-sci-09-y3-1",text:"Y3 気体・燃焼の発展計算",pts:10}
+]},
+{id:"ws-sci-09-y4",label:"Y4 最難関計算",diff:3,cat:"Y",problems:[
+{id:"ws-sci-09-y4-1",text:"Y4 複雑な化学計算の総合問題",pts:10}
+]},
+{id:"ws-sci-09-z1",label:"Z1 化学の総合（記述）",diff:2,cat:"Z",problems:[
+{id:"ws-sci-09-z1-1",text:"Z1 気体・燃焼の総合記述問題",pts:10}
+]},
+{id:"ws-sci-09-z2",label:"Z2 化学実験の考察",diff:3,cat:"Z",problems:[
+{id:"ws-sci-09-z2-1",text:"Z2 化学実験の考察・グラフ読み取り",pts:10}
+]},
+{id:"ws-sci-09-z3",label:"Z3 総合記述",diff:3,cat:"Z",problems:[
+{id:"ws-sci-09-z3-1",text:"Z3 化学計算の総合記述",pts:10}
 ]}
 ],initialAnswers:{}},
-{id:"ws-sci-10",code:"WS-10",title:"てこのつり合い",sections:[
-{id:"ws-sci-10-x1",label:"X1（てこの基本（支点・力点・作用点・モーメント））",diff:1,cat:"X",problems:[
-{id:"ws-sci-10-x1-1",text:"てこの基本（支点・力点・作用点・モーメント）(1) 問題1",pts:10},
-{id:"ws-sci-10-x1-2",text:"てこの基本（支点・力点・作用点・モーメント）(2) 問題2",pts:10},
-{id:"ws-sci-10-x1-3",text:"てこの基本（支点・力点・作用点・モーメント）(3) 問題3",pts:10},
-{id:"ws-sci-10-x1-4",text:"てこの基本（支点・力点・作用点・モーメント）(4) 問題4",pts:10},
-{id:"ws-sci-10-x1-5",text:"てこの基本（支点・力点・作用点・モーメント）(5) 問題5",pts:10},
-{id:"ws-sci-10-x1-6",text:"てこの基本（支点・力点・作用点・モーメント）(6) 問題6",pts:10},
-{id:"ws-sci-10-x1-7",text:"てこの基本（支点・力点・作用点・モーメント）(7) 問題7",pts:10},
-{id:"ws-sci-10-x1-8",text:"てこの基本（支点・力点・作用点・モーメント）(8) 問題8",pts:10}
-]},{id:"ws-sci-10-x2",label:"X2（棒の重さを考えたてこのつり合い）",diff:1,cat:"X",problems:[
-{id:"ws-sci-10-x2-1",text:"棒の重さを考えたてこのつり合い(1) 問題1",pts:10},
-{id:"ws-sci-10-x2-2",text:"棒の重さを考えたてこのつり合い(2) 問題2",pts:10},
-{id:"ws-sci-10-x2-3",text:"棒の重さを考えたてこのつり合い(3) 問題3",pts:10},
-{id:"ws-sci-10-x2-4",text:"棒の重さを考えたてこのつり合い(4) 問題4",pts:10},
-{id:"ws-sci-10-x2-5",text:"棒の重さを考えたてこのつり合い(5) 問題5",pts:10},
-{id:"ws-sci-10-x2-6",text:"棒の重さを考えたてこのつり合い(6) 問題6",pts:10},
-{id:"ws-sci-10-x2-7",text:"棒の重さを考えたてこのつり合い(7) 問題7",pts:10},
-{id:"ws-sci-10-x2-8",text:"棒の重さを考えたてこのつり合い(8) 問題8",pts:10}
-]},{id:"ws-sci-10-x3",label:"X3（複合てこ・モービルのつり合い）",diff:1,cat:"X",problems:[
-{id:"ws-sci-10-x3-1",text:"複合てこ・モービルのつり合い(1) 問題1",pts:10},
-{id:"ws-sci-10-x3-2",text:"複合てこ・モービルのつり合い(2) 問題2",pts:10},
-{id:"ws-sci-10-x3-3",text:"複合てこ・モービルのつり合い(3) 問題3",pts:10},
-{id:"ws-sci-10-x3-4",text:"複合てこ・モービルのつり合い(4) 問題4",pts:10},
-{id:"ws-sci-10-x3-5",text:"複合てこ・モービルのつり合い(5) 問題5",pts:10},
-{id:"ws-sci-10-x3-6",text:"複合てこ・モービルのつり合い(6) 問題6",pts:10},
-{id:"ws-sci-10-x3-7",text:"複合てこ・モービルのつり合い(7) 問題7",pts:10},
-{id:"ws-sci-10-x3-8",text:"複合てこ・モービルのつり合い(8) 問題8",pts:10}
-]},{id:"ws-sci-10-y1",label:"Y1（滑車・輪軸との組み合わせ①）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-10-y1-1",text:"滑車・輪軸との組み合わせ①(1) 問題1",pts:10},
-{id:"ws-sci-10-y1-2",text:"滑車・輪軸との組み合わせ①(2) 問題2",pts:10},
-{id:"ws-sci-10-y1-3",text:"滑車・輪軸との組み合わせ①(3) 問題3",pts:10},
-{id:"ws-sci-10-y1-4",text:"滑車・輪軸との組み合わせ①(4) 問題4",pts:10},
-{id:"ws-sci-10-y1-5",text:"滑車・輪軸との組み合わせ①(5) 問題5",pts:10},
-{id:"ws-sci-10-y1-6",text:"滑車・輪軸との組み合わせ①(6) 問題6",pts:10},
-{id:"ws-sci-10-y1-7",text:"滑車・輪軸との組み合わせ①(7) 問題7",pts:10},
-{id:"ws-sci-10-y1-8",text:"滑車・輪軸との組み合わせ①(8) 問題8",pts:10}
-]},{id:"ws-sci-10-y2",label:"Y2（てこ総合計算②）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-10-y2-1",text:"てこ総合計算②(1) 問題1",pts:10},
-{id:"ws-sci-10-y2-2",text:"てこ総合計算②(2) 問題2",pts:10},
-{id:"ws-sci-10-y2-3",text:"てこ総合計算②(3) 問題3",pts:10},
-{id:"ws-sci-10-y2-4",text:"てこ総合計算②(4) 問題4",pts:10},
-{id:"ws-sci-10-y2-5",text:"てこ総合計算②(5) 問題5",pts:10},
-{id:"ws-sci-10-y2-6",text:"てこ総合計算②(6) 問題6",pts:10},
-{id:"ws-sci-10-y2-7",text:"てこ総合計算②(7) 問題7",pts:10},
-{id:"ws-sci-10-y2-8",text:"てこ総合計算②(8) 問題8",pts:10}
-]},{id:"ws-sci-10-y3",label:"Y3（複雑なつり合い問題③）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-10-y3-1",text:"複雑なつり合い問題③(1) 問題1",pts:10},
-{id:"ws-sci-10-y3-2",text:"複雑なつり合い問題③(2) 問題2",pts:10},
-{id:"ws-sci-10-y3-3",text:"複雑なつり合い問題③(3) 問題3",pts:10},
-{id:"ws-sci-10-y3-4",text:"複雑なつり合い問題③(4) 問題4",pts:10},
-{id:"ws-sci-10-y3-5",text:"複雑なつり合い問題③(5) 問題5",pts:10},
-{id:"ws-sci-10-y3-6",text:"複雑なつり合い問題③(6) 問題6",pts:10},
-{id:"ws-sci-10-y3-7",text:"複雑なつり合い問題③(7) 問題7",pts:10},
-{id:"ws-sci-10-y3-8",text:"複雑なつり合い問題③(8) 問題8",pts:10}
-]},{id:"ws-sci-10-y4",label:"Y4（棒ABの3本使いの問題④）",diff:2,cat:"Y",problems:[
-{id:"ws-sci-10-y4-1",text:"棒ABの3本使いの問題④(1) 問題1",pts:10},
-{id:"ws-sci-10-y4-2",text:"棒ABの3本使いの問題④(2) 問題2",pts:10},
-{id:"ws-sci-10-y4-3",text:"棒ABの3本使いの問題④(3) 問題3",pts:10},
-{id:"ws-sci-10-y4-4",text:"棒ABの3本使いの問題④(4) 問題4",pts:10},
-{id:"ws-sci-10-y4-5",text:"棒ABの3本使いの問題④(5) 問題5",pts:10},
-{id:"ws-sci-10-y4-6",text:"棒ABの3本使いの問題④(6) 問題6",pts:10},
-{id:"ws-sci-10-y4-7",text:"棒ABの3本使いの問題④(7) 問題7",pts:10},
-{id:"ws-sci-10-y4-8",text:"棒ABの3本使いの問題④(8) 問題8",pts:10}
-]},{id:"ws-sci-10-z1",label:"Z1（発展問題①（定規と三角形のつり合い））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-10-z1-1",text:"発展問題①（定規と三角形のつり合い）(1) 問題1",pts:10},
-{id:"ws-sci-10-z1-2",text:"発展問題①（定規と三角形のつり合い）(2) 問題2",pts:10},
-{id:"ws-sci-10-z1-3",text:"発展問題①（定規と三角形のつり合い）(3) 問題3",pts:10},
-{id:"ws-sci-10-z1-4",text:"発展問題①（定規と三角形のつり合い）(4) 問題4",pts:10},
-{id:"ws-sci-10-z1-5",text:"発展問題①（定規と三角形のつり合い）(5) 問題5",pts:10},
-{id:"ws-sci-10-z1-6",text:"発展問題①（定規と三角形のつり合い）(6) 問題6",pts:10}
-]},{id:"ws-sci-10-z2",label:"Z2（発展問題②（バット・ひもの問題））",diff:3,cat:"Z",problems:[
-{id:"ws-sci-10-z2-1",text:"発展問題②（バット・ひもの問題）(1) 問題1",pts:10},
-{id:"ws-sci-10-z2-2",text:"発展問題②（バット・ひもの問題）(2) 問題2",pts:10},
-{id:"ws-sci-10-z2-3",text:"発展問題②（バット・ひもの問題）(3) 問題3",pts:10},
-{id:"ws-sci-10-z2-4",text:"発展問題②（バット・ひもの問題）(4) 問題4",pts:10},
-{id:"ws-sci-10-z2-5",text:"発展問題②（バット・ひもの問題）(5) 問題5",pts:10},
-{id:"ws-sci-10-z2-6",text:"発展問題②（バット・ひもの問題）(6) 問題6",pts:10}
-]},{id:"ws-sci-10-z3",label:"Z3（最難問①）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-10-z3-1",text:"最難問①(1) 問題1",pts:10},
-{id:"ws-sci-10-z3-2",text:"最難問①(2) 問題2",pts:10},
-{id:"ws-sci-10-z3-3",text:"最難問①(3) 問題3",pts:10},
-{id:"ws-sci-10-z3-4",text:"最難問①(4) 問題4",pts:10},
-{id:"ws-sci-10-z3-5",text:"最難問①(5) 問題5",pts:10},
-{id:"ws-sci-10-z3-6",text:"最難問①(6) 問題6",pts:10}
-]},{id:"ws-sci-10-z4",label:"Z4（最難問②）",diff:3,cat:"Z",problems:[
-{id:"ws-sci-10-z4-1",text:"最難問②(1) 問題1",pts:10},
-{id:"ws-sci-10-z4-2",text:"最難問②(2) 問題2",pts:10},
-{id:"ws-sci-10-z4-3",text:"最難問②(3) 問題3",pts:10},
-{id:"ws-sci-10-z4-4",text:"最難問②(4) 問題4",pts:10},
-{id:"ws-sci-10-z4-5",text:"最難問②(5) 問題5",pts:10},
-{id:"ws-sci-10-z4-6",text:"最難問②(6) 問題6",pts:10}
+
+{id:"ws-sci-10",code:"WS-10",title:"てこ",sections:[
+{id:"ws-sci-10-x1",label:"X1 ウィークリーチェック（WS-09の復習）",diff:1,cat:"X",problems:[
+{id:"ws-sci-10-x1-1",text:"X1 気体の発生・燃焼の復習問題",pts:10}
+]},
+{id:"ws-sci-10-x2",label:"X2 てこの基礎",diff:1,cat:"X",problems:[
+{id:"ws-sci-10-x2-1",text:"X2 てこの原理・支点・力点・作用点の位置",pts:10}
+]},
+{id:"ws-sci-10-x3",label:"X3 てこの計算（基礎）",diff:2,cat:"X",problems:[
+{id:"ws-sci-10-x3-1",text:"X3 てこのつりあいの計算（基本）",pts:10}
+]},
+{id:"ws-sci-10-x4",label:"X4 複数のおもりのてこ",diff:2,cat:"X",problems:[
+{id:"ws-sci-10-x4-1",text:"X4 複数のおもりとてこのつりあい",pts:10}
+]},
+{id:"ws-sci-10-x5",label:"X5 てこの応用（重心）",diff:3,cat:"X",problems:[
+{id:"ws-sci-10-x5-1",text:"X5 重心・棒の重さを考えたてこ",pts:10}
+]},
+{id:"ws-sci-10-x6",label:"X6 てこの発展問題",diff:3,cat:"X",problems:[
+{id:"ws-sci-10-x6-1",text:"X6 複雑なてこ・滑車との複合",pts:10}
+]},
+{id:"ws-sci-10-y1",label:"Y1 滑車と仕事",diff:2,cat:"Y",problems:[
+{id:"ws-sci-10-y1-1",text:"Y1 動滑車・定滑車の計算",pts:10}
+]},
+{id:"ws-sci-10-y2",label:"Y2 輪軸・斜面",diff:2,cat:"Y",problems:[
+{id:"ws-sci-10-y2-1",text:"Y2 輪軸・斜面の計算",pts:10}
+]},
+{id:"ws-sci-10-y3",label:"Y3 仕事の原理",diff:3,cat:"Y",problems:[
+{id:"ws-sci-10-y3-1",text:"Y3 仕事の原理・各道具の計算",pts:10}
+]},
+{id:"ws-sci-10-y4",label:"Y4 複合問題",diff:3,cat:"Y",problems:[
+{id:"ws-sci-10-y4-1",text:"Y4 てこ・滑車・斜面の複合計算",pts:10}
+]},
+{id:"ws-sci-10-z1",label:"Z1 力の総合",diff:2,cat:"Z",problems:[
+{id:"ws-sci-10-z1-1",text:"Z1 力・てこの総合問題",pts:10}
+]},
+{id:"ws-sci-10-z2",label:"Z2 応用・考察問題",diff:3,cat:"Z",problems:[
+{id:"ws-sci-10-z2-1",text:"Z2 力の応用・実験考察",pts:10}
+]},
+{id:"ws-sci-10-z3",label:"Z3 発展記述",diff:3,cat:"Z",problems:[
+{id:"ws-sci-10-z3-1",text:"Z3 てこ・力学の発展記述",pts:10}
+]},
+{id:"ws-sci-10-z4",label:"Z4 最難関問題",diff:3,cat:"Z",problems:[
+{id:"ws-sci-10-z4-1",text:"Z4 力学の最難関問題",pts:10}
 ]}
 ],initialAnswers:{}},
+
 {id:"ws-sci-11",code:"WS-11",title:"ろうそくと燃焼",sections:[
-{id:"ws-sci-11-x",label:"Xグループ（基礎〜標準）X1〜X3",diff:1,cat:"X",problems:[
-{id:"ws-sci-11-x1-1",text:"X1(1) 第一講の現象の説明として正しいものをア〜エから選ぶ",pts:10},
-{id:"ws-sci-11-x1-2",text:"X1(2) 第二講でそれ自身が燃えなくても明るく輝く例をすべて選ぶ（蛍光灯・豆電球・アルコールランプ）",pts:10},
-{id:"ws-sci-11-x1-3",text:"X1(3) 第二講・第五講・第六講のA〜Eに当てはまるものを選びなさい（水素気・イオウ・水素・炭素・0.03〜0.04等）",pts:10},
-{id:"ws-sci-11-x1-4",text:"X1(4) 第五講の気体と水素を集気びんに入れてガラス板を取り外した→①数分後②数日後はどうなるか",pts:10},
-{id:"ws-sci-11-x1-5",text:"X1(5) F・Gに当てはまるもの（固体→液体→気体・ろうの燃焼の流れ）",pts:10},
-{id:"ws-sci-11-x1-6",text:"X1(6) 火を消すと煙のようなものが立ち上がり→マッチを近づけたときに起こる現象をア〜ウから選ぶ",pts:10},
-{id:"ws-sci-11-x1-7",text:"X1(7) 乾留（試験管で加熱）で同じ物質が残るものをア〜エからすべて選ぶ",pts:10},
-{id:"ws-sci-11-x2-1",text:"X2(1) 地層が堆積した当時の環境が分かる化石を何というか",pts:10},
-{id:"ws-sci-11-x2-2",text:"X2(2)〜(7) 地層・岩石の総合問題",pts:10},
-{id:"ws-sci-11-x3-1",text:"X3(1)〜(8) 燃焼・地層の発展問題",pts:10},
+{id:"ws-sci-11-x1",label:"X1 ろうそくの燃焼（基礎）",diff:2,cat:"X",problems:[
+{id:"ws-sci-11-x1-1",text:"X1 ろうそくの燃焼・気体の性質",pts:10}
 ]},
-{id:"ws-sci-11-y",label:"Yグループ（標準〜応用）Y1〜Y3",diff:2,cat:"Y",problems:[
-{id:"ws-sci-11-y1-1",text:"Y1(1)〜(5) ろうそくの燃焼実験の応用問題①（気体の性質・燃焼の条件）",pts:10},
-{id:"ws-sci-11-y1-2",text:"Y1(6)〜(10) ろうそくの燃焼実験の応用問題②",pts:10},
-{id:"ws-sci-11-y2-1",text:"Y2(1)〜(5) 地層の読み取り・ボーリング調査の応用問題①",pts:10},
-{id:"ws-sci-11-y2-2",text:"Y2(6)〜(10) 地層の読み取り・ボーリング調査の応用問題②",pts:10},
-{id:"ws-sci-11-y3-1",text:"Y3(1)〜(5) 燃焼計算・金属の酸化・気体の発生の総合問題①",pts:10},
-{id:"ws-sci-11-y3-2",text:"Y3(6)〜(10) 燃焼計算・金属の酸化・気体の発生の総合問題②",pts:10},
+{id:"ws-sci-11-x2",label:"X2 燃焼と気体",diff:2,cat:"X",problems:[
+{id:"ws-sci-11-x2-1",text:"X2 酸素・二酸化炭素・窒素の性質と燃焼",pts:10}
 ]},
-{id:"ws-sci-11-z",label:"Zグループ（発展・難問）Z1〜Z4",diff:3,cat:"Z",problems:[
-{id:"ws-sci-11-z1-1",text:"Z1(1)〜(5) ろうそくと燃焼の難問①（炎の構造・不完全燃焼）",pts:10},
-{id:"ws-sci-11-z2-1",text:"Z2(1)〜(5) 地層の難問②（断層・しゅう曲・不整合）",pts:10},
-{id:"ws-sci-11-z3-1",text:"Z3(1)〜(5) 燃焼計算の難問③（混合気体・複合計算）",pts:10},
-{id:"ws-sci-11-z4-1",text:"Z4(1)〜(5) 最難問④（燃焼・地層・岩石の総合難問）",pts:10},
+{id:"ws-sci-11-x3",label:"X3 燃焼の実験",diff:3,cat:"X",problems:[
+{id:"ws-sci-11-x3-1",text:"X3 燃焼の実験考察・集気びん",pts:10}
 ]},
+{id:"ws-sci-11-y1",label:"Y1 気体の発生と性質",diff:2,cat:"Y",problems:[
+{id:"ws-sci-11-y1-1",text:"Y1 気体の発生方法・収集法・性質",pts:10}
+]},
+{id:"ws-sci-11-y2",label:"Y2 燃焼計算",diff:3,cat:"Y",problems:[
+{id:"ws-sci-11-y2-1",text:"Y2 燃焼の化学計算",pts:10}
+]},
+{id:"ws-sci-11-y3",label:"Y3 応用・発展",diff:3,cat:"Y",problems:[
+{id:"ws-sci-11-y3-1",text:"Y3 燃焼の応用・発展計算",pts:10}
+]},
+{id:"ws-sci-11-z1",label:"Z1 燃焼の総合",diff:2,cat:"Z",problems:[
+{id:"ws-sci-11-z1-1",text:"Z1 燃焼・気体の総合問題",pts:10}
+]},
+{id:"ws-sci-11-z2",label:"Z2 化学の記述問題",diff:3,cat:"Z",problems:[
+{id:"ws-sci-11-z2-1",text:"Z2 化学変化の記述・考察問題",pts:10}
+]},
+{id:"ws-sci-11-z3",label:"Z3 発展記述",diff:3,cat:"Z",problems:[
+{id:"ws-sci-11-z3-1",text:"Z3 燃焼・化学の発展記述",pts:10}
+]},
+{id:"ws-sci-11-z4",label:"Z4 最難関問題",diff:3,cat:"Z",problems:[
+{id:"ws-sci-11-z4-1",text:"Z4 燃焼・化学の最難関問題",pts:10}
+]}
 ],initialAnswers:{}}
-],
+,
+{id:"ws-sci-12",code:"WS-12",title:"濃度",sections:[
+{id:"ws-sci-12-x1",label:"X1 ウィークリーチェック（WS-11の復習：ろうそくと燃焼）",diff:1,cat:"X",
+problems:[
+{id:"ws-sci-12-x1-1",text:"X1(1) 燃えて二酸化炭素が発生するものを選ぶ（複数）",pts:10},
+{id:"ws-sci-12-x1-2",text:"X1(2) ろうそくの各部分の名前・光る物質の名前",pts:10},
+{id:"ws-sci-12-x1-3",text:"X1(3) ろうそくに含まれる物質2つ（集気びん実験）",pts:10},
+{id:"ws-sci-12-x1-4",text:"X1(4) 燃焼条件「燃える物がある」と関係深い事例番号",pts:10},
+{id:"ws-sci-12-x1-5",text:"X1(5)① わりばしの蒸し焼き・焼けない理由（記号選択）",pts:10},
+{id:"ws-sci-12-x1-6",text:"X1(5)② Aの部分に残った黒い固体の名前",pts:10},
+{id:"ws-sci-12-x1-7",text:"X1(6)① ガスバーナー点火手順（正しい順番5つ）",pts:10},
+{id:"ws-sci-12-x1-8",text:"X1(6)② 元栓が閉まっているのはアかイか",pts:10}
+]},
+{id:"ws-sci-12-x2",label:"X2 水溶液の濃さ（基礎計算）",diff:2,cat:"X",
+problems:[
+{id:"ws-sci-12-x2-1",text:"X2(1) 80℃の水100gに固体X 20g溶解→濃さ何%",pts:10},
+{id:"ws-sci-12-x2-2",text:"X2(2) 60℃の水200gに固体Xを溶かし40℃→結晶量",pts:10},
+{id:"ws-sci-12-x2-3",text:"X2(3) 40℃の水150gに固体X 50g→溶け残り何g",pts:10},
+{id:"ws-sci-12-x2-4",text:"X2(4) 40℃の固体X飽和水溶液100g→濃さ何%",pts:10},
+{id:"ws-sci-12-x2-5",text:"X2(5) 60℃の固体Xの飽和水溶液300g作成→20℃で結晶何g",pts:10}
+]},
+{id:"ws-sci-12-x3",label:"X3 固体の溶解度（表・計算）",diff:2,cat:"X",
+problems:[
+{id:"ws-sci-12-x3-1",text:"X3(1) 固体Aを40℃の水100gに溶かし20℃に冷却→結晶最多はどれ",pts:10},
+{id:"ws-sci-12-x3-2",text:"X3(2) 80℃の水150gにA〜D各30g溶解し冷却→最高温度で結晶が出るもの",pts:10},
+{id:"ws-sci-12-x3-3",text:"X3(3) (2)のときの温度は何℃",pts:10},
+{id:"ws-sci-12-x3-4",text:"X3(4) 20℃の水100gにA〜D各50g加えて加熱→最低温度で溶けるもの",pts:10},
+{id:"ws-sci-12-x3-5",text:"X3(5) 飽和水溶液とろ過のする紙・器具の使い方が正しい図（記号選択）",pts:10}
+]},
+{id:"ws-sci-12-x4",label:"X4 混合溶液の濃度計算",diff:2,cat:"X",
+problems:[
+{id:"ws-sci-12-x4-1",text:"X4(1) 80℃の水100gに固体Aを溶かし20℃に冷却→最も多い結晶",pts:10},
+{id:"ws-sci-12-x4-2",text:"X4(2) 冷却→最高温度で最初に結晶が出るもの",pts:10},
+{id:"ws-sci-12-x4-3",text:"X4(3) そのときの温度は何℃",pts:10},
+{id:"ws-sci-12-x4-4",text:"X4(4) 20℃の水100gにA〜D各50g加えて加熱→最低温度で溶けるもの",pts:10},
+{id:"ws-sci-12-x4-5",text:"X4(5) ろ過の正しい図（記号選択）",pts:10}
+]},
+{id:"ws-sci-12-x5",label:"X5 水溶液の質量計算（発展）",diff:3,cat:"X",
+problems:[
+{id:"ws-sci-12-x5-1",text:"X5(1) ホウ酸と食塩の混合粉末20g→50gの水→80℃→20℃→白い結晶→食塩は何g",pts:10},
+{id:"ws-sci-12-x5-2",text:"X5(2)〜(5) 混合水溶液・濃さ・飽和計算（発展）",pts:40}
+]},
+{id:"ws-sci-12-y1",label:"Y1 ホウ酸・食塩の混合溶解（応用）",diff:2,cat:"Y",
+problems:[
+{id:"ws-sci-12-y1-1",text:"Y1(1) 20℃の水50gに食塩27g→溶け残りを完全に溶かすには水何g必要",pts:10},
+{id:"ws-sci-12-y1-2",text:"Y1(2) 水50gにホウ酸10g加熱→突沸→20℃に→残り7.7gの白い結晶→蒸発水何g",pts:10},
+{id:"ws-sci-12-y1-3",text:"Y1(3) ホウ酸と食塩の混合粉末20g→50gの水→80℃→20℃→結晶4.5g→食塩何g",pts:10},
+{id:"ws-sci-12-y1-4",text:"Y1(4) 20℃の水100gにホウ酸を溶かすだけ溶かした→濃さ何%",pts:10},
+{id:"ws-sci-12-y1-5",text:"Y1(5) 20℃のホウ酸の飽和水溶液100gにホウ酸何g溶けているか",pts:10}
+]},
+{id:"ws-sci-12-y2",label:"Y2 水溶液・実験考察（応用）",diff:2,cat:"Y",
+problems:[
+{id:"ws-sci-12-y2-1",text:"Y2 実験1・2から水溶液Aの溶解度調査（実験1・2の考察）(1)〜(4)",pts:40}
+]},
+{id:"ws-sci-12-y3",label:"Y3 水溶液発展問題",diff:3,cat:"Y",
+problems:[
+{id:"ws-sci-12-y3-1",text:"Y3 水溶液の発展問題・複合計算",pts:40}
+]},
+{id:"ws-sci-12-z1",label:"Z1 海水・食塩の性質（長文読解・計算）",diff:2,cat:"Z",
+problems:[
+{id:"ws-sci-12-z1-1",text:"Z1(1) 海水500gを煮詰め→18g→海水中の塩分の濃さ何%",pts:10},
+{id:"ws-sci-12-z1-2",text:"Z1(2) 海水3.4%に含まれる食塩の重さ（1kg中）",pts:10},
+{id:"ws-sci-12-z1-3",text:"Z1(3) 食塩や海水の現象から同じ現象を選ぶ①②（記号選択）",pts:20},
+{id:"ws-sci-12-z1-4",text:"Z1(4) 食塩の結晶・グラフから80℃のお湯に溶かした飽和液200g→30℃冷却→結晶何g",pts:10},
+{id:"ws-sci-12-z1-5",text:"Z1(5) 塩水とふつうの水の見分け方（方法・結果を記入）",pts:10}
+]},
+{id:"ws-sci-12-z2",label:"Z2 濃度発展問題",diff:3,cat:"Z",
+problems:[
+{id:"ws-sci-12-z2-1",text:"Z2 濃度の発展問題・記述・計算",pts:40}
+]},
+{id:"ws-sci-12-z3",label:"Z3 最難関問題",diff:3,cat:"Z",
+problems:[
+{id:"ws-sci-12-z3-1",text:"Z3 濃度・溶解度の最難関問題",pts:40}
+]}
+],initialAnswers:{}}],
 social: [
 {id:"ws-soc-01",code:"WS-01",title:"日本の国土と人口／中部地方",sections:[
 {id:"ws-soc-01-chishiki",label:"1. 知識の総完成（空欄補充）",diff:1,cat:"知識の総完成",problems:[
@@ -7328,7 +7252,57 @@ social: [
 {id:"ws-soc-11-b3-2",text:"B3(6)〜(10) 昭和〜現代の歴史・長文読解・記述問題②",pts:5},
 ]},
 ],initialAnswers:{}}
-],
+,
+{id:"ws-soc-12",code:"WS-12",title:"歴史の総完成・外交史①中国・朝鮮との外交",sections:[
+{id:"ws-soc-12-s1",label:"1. 知識の総完成（時代と年代の表・空欄埋め）",diff:1,cat:"知識の総完成",
+problems:[
+{id:"ws-soc-12-s1-p1",text:"時代区分と重要年代の表・空欄埋め（江戸〜現代）",pts:20}
+]},
+{id:"ws-soc-12-s2",label:"2. 入試実戦演習Aタイプ（A1〜A3）",diff:2,cat:"入試実戦Aタイプ",
+problems:[
+{id:"ws-soc-12-a1-1",text:"A1 (1)中国の統一王朝・モンゴル帝国（記号選択）",pts:4},
+{id:"ws-soc-12-a1-2",text:"A1 (2)日宋貿易・日明貿易の説明（記号選択）",pts:2},
+{id:"ws-soc-12-a1-3",text:"A1 (3)勘合貿易・国書（記号選択）",pts:2},
+{id:"ws-soc-12-a1-4",text:"A1 (4)江戸幕府の外交政策（記号選択）",pts:2},
+{id:"ws-soc-12-a1-5",text:"A1 (5)ペリー来航以降の出来事（記号選択）",pts:2},
+{id:"ws-soc-12-a1-6",text:"A1 (6)モンゴル帝国最大領域地図（記号選択）",pts:4},
+{id:"ws-soc-12-a1-7",text:"A1 (7)文永の役・軍事拠点の城（記号選択）",pts:2},
+{id:"ws-soc-12-a1-8",text:"A1 (8)朝鮮の職人技術・伝統工芸品（記号選択）",pts:2},
+{id:"ws-soc-12-a1-9",text:"A1 (9)空欄⑨に入るもの（記号選択）",pts:2},
+{id:"ws-soc-12-a1-10",text:"A1 (10)使節団が訪日した目的（簡単に説明）",pts:4},
+{id:"ws-soc-12-a1-11",text:"A1 (11)不平等条約で認められた権利・漢字で",pts:2},
+{id:"ws-soc-12-a1-12",text:"A1 (12)混乱の原因となった出来事・地図選択",pts:2},
+{id:"ws-soc-12-a1-13",text:"A1 (13)戦争が始まるきっかけの事件・地図選択",pts:2},
+{id:"ws-soc-12-a1-14",text:"A1 (14)それはなぜか理由を説明",pts:4},
+{id:"ws-soc-12-a1-15",text:"A1 (15)A北緯・B年の算用数字",pts:2},
+{id:"ws-soc-12-a1-16",text:"A1 (16)韓国の輸出相手国・記号選択",pts:2},
+{id:"ws-soc-12-a2-1",text:"A2 (1)〜(5) 日本と中国・朝鮮の時代別出来事（各記号選択）",pts:10},
+{id:"ws-soc-12-a2-6",text:"A2 (6) 御家人生活が苦しくなった理由（語句使用・記述）",pts:4},
+{id:"ws-soc-12-a2-7",text:"A2 (7) 応仁の乱後100年間に当てはまらない出来事2つ",pts:2},
+{id:"ws-soc-12-a2-8",text:"A2 (8) 刀狩・兵農分離→何という政策（漢字4字）",pts:2},
+{id:"ws-soc-12-a2-9",text:"A2 (9) 江戸時代の改革・時期組み合わせ2つ（記号選択）",pts:4},
+{id:"ws-soc-12-a3-1",text:"A3 (1)〜(5) 近現代の日朝・日中関係（記号選択・記述）",pts:10}
+]},
+{id:"ws-soc-12-s3",label:"3. 入試実戦演習Bタイプ 基礎編（B1・B2）",diff:2,cat:"入試実戦Bタイプ基礎",
+problems:[
+{id:"ws-soc-12-b1-1",text:"B1① 江戸時代の日朝関係（対馬・通信使・将軍）語句使用記述",pts:8},
+{id:"ws-soc-12-b1-2",text:"B1② 20世紀初め日朝関係（日露戦争・植民地・韓国）語句使用記述",pts:8},
+{id:"ws-soc-12-b2-1",text:"B2① 日本に文化がもたらされた方法A4〜6世紀・B7〜9世紀",pts:8},
+{id:"ws-soc-12-b2-2",text:"B2② 12〜13世紀中国の貨幣が流通した理由（中国との交流面）",pts:8},
+{id:"ws-soc-12-b2-3",text:"B2③ 元軍と御家人の戦い方の違い（絵から説明）",pts:8},
+{id:"ws-soc-12-b2-4",text:"B2④ 勘合（足利義満・明との貿易）使用目的の説明",pts:8},
+{id:"ws-soc-12-b2-5",text:"B2⑤ 日本町の形成と消滅の説明",pts:8}
+]},
+{id:"ws-soc-12-s4",label:"4. 入試実戦演習Bタイプ 発展編（B3・B4）",diff:3,cat:"入試実戦Bタイプ発展",
+problems:[
+{id:"ws-soc-12-b3-1",text:"B3 日中・日朝の外交史に関する発展問題①",pts:15},
+{id:"ws-soc-12-b4-1",text:"B4 日中・日朝の外交史に関する発展問題②",pts:15}
+]},
+{id:"ws-soc-12-s5",label:"5. ウィークリーチェック（WS-11の復習）",diff:1,cat:"ウィークリーチェック",
+problems:[
+{id:"ws-soc-12-wc-1",text:"ウィークリーチェック 昭和〜現代の知識問題",pts:20}
+]}
+],initialAnswers:{}}],
 },
 WS_PDFS: {
 "ws-math-01":"算WS01.pdf","ws-math-02":"算WS02.pdf","ws-math-03":"算WS03.pdf",
@@ -7344,6 +7318,7 @@ WS_PDFS: {
 "ws-soc-04":"社WS04東北.pdf","ws-soc-05":"社WS05関東.pdf","ws-soc-06":"社WS06近畿.pdf",
 "ws-soc-07":"社WS07中国四国.pdf","ws-soc-08":"社WS08古墳_室町.pdf","ws-soc-09":"社WS09室町_江戸.pdf",
 "ws-math-11":"算WS_11.pdf","ws-jp-11":"国WS_11.pdf","ws-sci-11":"理WS11.pdf","ws-soc-11":"社WS11昭和_現代.pdf",
+"ws-math-12":"算WS12.pdf","ws-jp-12":"国WS12.pdf","ws-sci-12":"理WS12.pdf","ws-soc-12":"社WS12外交史.pdf",
 }
 };
 
