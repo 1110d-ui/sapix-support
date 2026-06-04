@@ -34,7 +34,7 @@ window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
 if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sapix-support/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260524-034';
+const CURRENT_VERSION = '20260604-036';
 async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
 function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
 setTimeout(checkForUpdate,3000);
@@ -1876,6 +1876,91 @@ problems:[
 problems:[
 {id:"math-61-12-ds-1",text:"DS確認問題 変化のグラフ総合",pts:100}
 ]}
+],initialAnswers:{}},
+{id:"math-61-13",code:"61-13",title:"場合の数",isSpring:false,
+sections:[
+{id:"math-61-13-k1",label:"導入と基本①（組み合わせ・選び方）",diff:1,cat:"導入と基本",
+problems:[
+{id:"math-61-13-k1-1",text:"[1] 6人から2人ほうき・4人ぞうきんの組分け",pts:25},
+{id:"math-61-13-k1-2",text:"[2] 7人から3人の代表の選び方",pts:25},
+{id:"math-61-13-k1-3",text:"[3] 円周上8点から3点を選び三角形の個数",pts:25},
+{id:"math-61-13-k1-4",text:"[4] 5個の玉を3人に1個以上で分ける方法",pts:25}
+]},
+{id:"math-61-13-k2",label:"導入と基本②",diff:1,cat:"導入と基本",
+problems:[
+{id:"math-61-13-k2-1",text:"導入と基本② 場合の数の基本問題",pts:50}
+]},
+{id:"math-61-13-k3",label:"導入と基本③（ぬり分け・選挙の票数）",diff:1,cat:"導入と基本",
+problems:[
+{id:"math-61-13-k3-1",text:"[1] 旗A・B・Cを5色から3色でぬり分け(1)(2)",pts:40},
+{id:"math-61-13-k3-2",text:"[2] 図形を3色でぬり分け",pts:20},
+{id:"math-61-13-k3-3",text:"[3] 40人から1名・Aが当選に必要な票数",pts:20},
+{id:"math-61-13-k3-4",text:"[4] 45人から2名・Aが当選を確実にする票数",pts:20}
+]},
+{id:"math-61-13-ap",label:"アプローチ編①〜⑧",diff:2,cat:"アプローチ",
+problems:[
+{id:"math-61-13-ap-1",text:"①場合の数の基本",pts:25},
+{id:"math-61-13-ap-2",text:"②3人で分ける・和分解(1)",pts:25},
+{id:"math-61-13-ap-3",text:"③和分解(2)・つめ合わせ",pts:25},
+{id:"math-61-13-ap-4",text:"④道順・最短経路",pts:25},
+{id:"math-61-13-ap-5",text:"⑤組み合わせの応用",pts:25},
+{id:"math-61-13-ap-6",text:"⑥場合分け",pts:25},
+{id:"math-61-13-ap-7",text:"⑦規則性との融合",pts:25},
+{id:"math-61-13-ap-8",text:"⑧3段つるかめ・図形への応用",pts:25}
+]},
+{id:"math-61-13-jissen",label:"実戦編 61A〜61E",diff:3,cat:"実戦",
+problems:[
+{id:"math-61-13-61A",text:"61A 場合の数（★）",pts:100},
+{id:"math-61-13-61B",text:"61B 場合の数（★）",pts:100},
+{id:"math-61-13-61C",text:"61C 場合の数（★★）",pts:100},
+{id:"math-61-13-61D",text:"61D 場合の数（★★）",pts:100},
+{id:"math-61-13-61E",text:"61E 場合の数（★★★）",pts:100}
+]},
+{id:"math-61-13-ds",label:"デイリーサポート確認問題",diff:2,cat:"確認問題",
+problems:[
+{id:"math-61-13-ds-1",text:"DS確認問題 場合の数総合",pts:100}
+]}
+],initialAnswers:{}},
+{id:"math-61-14",code:"61-14",title:"規則性に関する問題",isSpring:false,
+sections:[
+{id:"math-61-14-k1",label:"導入と基本①",diff:1,cat:"導入と基本",
+problems:[
+{id:"math-61-14-k1-1",text:"導入と基本① 規則性の基本問題",pts:100}
+]},
+{id:"math-61-14-k2",label:"導入と基本②（方陣算）",diff:1,cat:"導入と基本",
+problems:[
+{id:"math-61-14-k2-1",text:"[1] 一辺9個の正方形のまわりのご石の数",pts:25},
+{id:"math-61-14-k2-2",text:"[2] 一辺10人の方陣のまわりの人数",pts:25},
+{id:"math-61-14-k2-3",text:"[3] 中実方陣・周囲52人→全体の人数",pts:25},
+{id:"math-61-14-k2-4",text:"[4] 外側一辺10個・3列の中空方陣のおはじき数",pts:25}
+]},
+{id:"math-61-14-k3",label:"導入と基本③",diff:1,cat:"導入と基本",
+problems:[
+{id:"math-61-14-k3-1",text:"導入と基本③ 規則性の応用問題",pts:100}
+]},
+{id:"math-61-14-ap",label:"アプローチ編①〜⑧",diff:2,cat:"アプローチ",
+problems:[
+{id:"math-61-14-ap-1",text:"①規則性の基本",pts:25},
+{id:"math-61-14-ap-2",text:"②テープを作る・丸太を切る",pts:25},
+{id:"math-61-14-ap-3",text:"③植木算・周期算",pts:25},
+{id:"math-61-14-ap-4",text:"④数列・群数列",pts:25},
+{id:"math-61-14-ap-5",text:"⑤図形と規則性",pts:25},
+{id:"math-61-14-ap-6",text:"⑥方陣算の応用",pts:25},
+{id:"math-61-14-ap-7",text:"⑦周期算の応用",pts:25},
+{id:"math-61-14-ap-8",text:"⑧規則性の融合問題",pts:25}
+]},
+{id:"math-61-14-jissen",label:"実戦編 61A〜61E",diff:3,cat:"実戦",
+problems:[
+{id:"math-61-14-61A",text:"61A 規則性（★）",pts:100},
+{id:"math-61-14-61B",text:"61B 規則性（★）",pts:100},
+{id:"math-61-14-61C",text:"61C 規則性（★★）",pts:100},
+{id:"math-61-14-61D",text:"61D 規則性（★★）",pts:100},
+{id:"math-61-14-61E",text:"61E 規則性（★★★）",pts:100}
+]},
+{id:"math-61-14-ds",label:"デイリーサポート確認問題",diff:2,cat:"確認問題",
+problems:[
+{id:"math-61-14-ds-1",text:"DS確認問題 規則性総合",pts:100}
+]}
 ],initialAnswers:{}}],
 japanese: [
 
@@ -2508,6 +2593,22 @@ problems:[
 {id:"jp-62A-12-c1",text:"生活に関する言葉 問1 「奉公」他・読み書き",pts:5},
 {id:"jp-62A-12-c2",text:"生活に関する言葉 問2 「書生」他・著者選択",pts:5},
 {id:"jp-62A-12-c3",text:"生活に関する言葉 問3 慣用句・語句の意味",pts:5}
+]}
+],initialAnswers:{}},
+{id:"japanese-62A-13",code:"62A-13",title:"他者と自分の関係（論説文）・脱文挿入問題の攻略（指示語・接続語に注目しよう！）",isSpring:false,
+sections:[
+{id:"jp-62A-13-hon1",label:"本文1（論説文・森博嗣『自由をつくる 自在に生きる』）",diff:2,cat:"読解問題",
+problems:[
+{id:"jp-62A-13-q1-1",text:"問(1) 空欄補充・記号選択",pts:5},
+{id:"jp-62A-13-q1-2",text:"問(2) 傍線部の意味・記号選択",pts:5},
+{id:"jp-62A-13-q1-3",text:"問(3) 傍線部「鳥瞰がましい」の意味・記号選択",pts:5},
+{id:"jp-62A-13-q1-4",text:"問(4) 傍線「客観的」の対義語を漢字で",pts:5}
+]},
+{id:"jp-62A-13-hon2",label:"本文2（論説文・榎本博明『「過剰反応」社会の悪夢』）",diff:2,cat:"読解問題",
+problems:[
+{id:"jp-62A-13-q2-1",text:"問(1) 傍線「増長」の意味・記号選択",pts:5},
+{id:"jp-62A-13-q2-2",text:"問(2) 空欄補充・記号選択",pts:5},
+{id:"jp-62A-13-q2-3",text:"問(3) 傍線「お膳立てをしてくれない」の意味説明（記述）",pts:10}
 ]}
 ],initialAnswers:{}}],
 science: [
@@ -3911,6 +4012,40 @@ problems:[
 {id:"sci-612-q11-7",text:"(7) ⑧と⑫の液を混ぜて蒸発させたとき残る固体の種類",pts:20},
 {id:"sci-612-q11-8",text:"(8) 塩酸BとCを比べた濃さの比（ア〜エから選択）",pts:20}
 ]}
+],initialAnswers:{}},
+{id:"sci-613",code:"630-13",title:"星の動き",isSpring:false,
+sections:[
+{id:"sci-613-q9",label:"確認問題 問9（星の動き・天の川・冬の大三角）",diff:2,cat:"確認問題",
+problems:[
+{id:"sci-613-q9-1a",text:"(1)① 観察した方角（ア〜エ・記号選択）",pts:10},
+{id:"sci-613-q9-1b",text:"(1)② 観察した日（ア〜エ・記号選択）",pts:10},
+{id:"sci-613-q9-1c",text:"(1)③ 星が動いていく向き（記号選択）",pts:10},
+{id:"sci-613-q9-2a",text:"(2)① 星A・星Cを含む星座の名前",pts:10},
+{id:"sci-613-q9-2b",text:"(2)② 星Bの色（ア〜エ・記号選択）",pts:5},
+{id:"sci-613-q9-3a",text:"(3)① 天の川の様子（ア〜エ・記号選択）",pts:10},
+{id:"sci-613-q9-3b",text:"(3)② 天の川が帯のように見える理由（記号選択）",pts:10},
+{id:"sci-613-q9-4a",text:"(4)① 冬の大三角をつくる星3つ（A〜F）",pts:10},
+{id:"sci-613-q9-4b",text:"(4)② 最も明るい星（A〜F・記号選択）",pts:5},
+{id:"sci-613-q9-4c",text:"(4)③ 表面温度が高い順に並べる（B・C・D・F）",pts:10},
+{id:"sci-613-q9-5",text:"(5) 6時間後の星座の様子（ア〜エ・記号選択）",pts:10}
+]}
+],initialAnswers:{}},
+{id:"sci-614",code:"630-14",title:"電熱線",isSpring:false,
+sections:[
+{id:"sci-614-q7",label:"確認問題 問7（電熱線の長さ・断面積と電流）",diff:2,cat:"確認問題",
+problems:[
+{id:"sci-614-q7-1",text:"(1) 表1のア（長さ40cmの電流の大きさ）",pts:20},
+{id:"sci-614-q7-2",text:"(2) 30cmのニクロム線4本を一直線につなぐ→電流計の値",pts:20},
+{id:"sci-614-q7-3",text:"(3) 表2のイ（断面積3平方mmの電流の大きさ）",pts:20},
+{id:"sci-614-q7-4",text:"(4) 図2・図3のニクロム線のつなぎ方→電流計の値（各20点）",pts:40}
+]},
+{id:"sci-614-q8",label:"確認問題 問8（電熱線と水温上昇）",diff:2,cat:"確認問題",
+problems:[
+{id:"sci-614-q8-1",text:"(1) 13分後の水そうAの上昇温度",pts:25},
+{id:"sci-614-q8-2",text:"(2) 水量4倍の水そうBの10分後の上昇温度",pts:25},
+{id:"sci-614-q8-3",text:"(3) 水そうA(20℃250mL)とB(40℃500mL)が同じ温度になる時間",pts:25},
+{id:"sci-614-q8-4",text:"(4) 水そうC(2000mL)・電熱線2本・15分後の上昇温度",pts:25}
+]}
 ],initialAnswers:{}}],
 // ============================================================
 social: [
@@ -4804,6 +4939,19 @@ problems:[
 {id:"soc-640-12-q2-2",text:"[2](2) 通常国会・臨時国会・特別国会の区別",pts:4},
 {id:"soc-640-12-q2-3",text:"[2](3) 国会の仕事（法律・予算・条約）の説明",pts:4}
 ]}
+],initialAnswers:{}},
+{id:"social-640-13",code:"640-13",title:"三権分立②・内閣と裁判所",isSpring:false,
+sections:[
+{id:"soc-640-13-q",label:"確認問題 [1] 日本国憲法の条文（第66条・第67条）",diff:2,cat:"確認問題",
+problems:[
+{id:"soc-640-13-q1",text:"(1) 空欄[1]〜[3]に当てはまる語句を漢字で（各2点×3）",pts:6},
+{id:"soc-640-13-q2",text:"(2) 下線部A（内閣）の説明①〜④の○×（各3点×4）",pts:12},
+{id:"soc-640-13-q3",text:"(3) 下線部B「文民」とはどのような人々か・記号選択",pts:3},
+{id:"soc-640-13-q4",text:"(4) 下線部C 議院内閣制を漢字で",pts:3},
+{id:"soc-640-13-q5-1",text:"(5)① 内閣成立の流れ・空欄A〜E（ア〜カから選択）",pts:15},
+{id:"soc-640-13-q5-2",text:"(5)② 空欄a〜cに当てはまる数字",pts:9},
+{id:"soc-640-13-q6",text:"(6) 内閣の行政機構①〜④の省庁名を漢字で（各3点×4）",pts:12}
+]}
 ],initialAnswers:{}}],
 },
 UNIT_PDFS: {
@@ -4861,6 +5009,8 @@ UNIT_PDFS: {
 "social-640-10":"社610日本国憲法.pdf",
 "math-61-11":"算611拡大縮小.pdf","japanese-62A-11":"国611.pdf","sci-611":"理611地層.pdf","social-640-11":"社611日本国憲法２.pdf",
 "math-61-12":"算612変化のク_ラフ.pdf","japanese-62A-12":"国612.pdf","sci-612":"理612中和計算.pdf","social-640-12":"社612国会_pdf.pdf",
+"math-61-13":"算613場合の数.pdf","japanese-62A-13":"国613.pdf","sci-613":"理613星の動き.pdf","social-640-13":"社613内閣と裁判所.pdf",
+"math-61-14":"算614規則性.pdf","sci-614":"理614電熱線.pdf",
 },
 WS_UNITS: {
 math: [
@@ -6030,6 +6180,62 @@ problems:[
 {id:"ws-math-12-z2",text:"Z-12① [6] 信号機A（赤40秒青38秒）・B（赤28秒青44秒）(1)次の同時(2)午後1時以後最初の青",pts:50},
 {id:"ws-math-12-z3",text:"Z-12② [7] 3種ブザーA(10秒・5秒)B(3秒・2秒)C(4秒・1秒) (1)3つとも音なし合計秒(2)1つだけ合計秒(3)3つ同時回数と合計秒",pts:75}
 ]}
+],initialAnswers:{}},
+{id:"ws-math-13",code:"WS-13",title:"通過算・図形の移動",sections:[
+{id:"ws-math-13-r1a",label:"R1A（図形の移動・回転）",diff:1,cat:"R1A",
+problems:[
+{id:"ws-math-13-r1a-1a",text:"[1](1) 長方形2つの重なり・3秒後の面積",pts:20},
+{id:"ws-math-13-r1a-1b",text:"[1](2) 重なりが最大の時間帯",pts:20},
+{id:"ws-math-13-r1a-2",text:"[2] 正方形の回転・斜線部の面積（円周率3.14）",pts:30},
+{id:"ws-math-13-r1a-3",text:"[3] 正三角形を折れ線にそって転がす・曲線の長さ",pts:30}
+]},
+{id:"ws-math-13-r1bc",label:"R1B・R1C（図形の移動・標準）",diff:2,cat:"R1B/C",
+problems:[
+{id:"ws-math-13-r1b-1",text:"R1B 図形の移動・面積",pts:50},
+{id:"ws-math-13-r1c-1",text:"R1C 図形の移動・転がり（応用）",pts:50}
+]},
+{id:"ws-math-13-r2",label:"R2（売買・割合）",diff:2,cat:"R2",
+problems:[
+{id:"ws-math-13-r2-1",text:"R2 売買損益・割合の問題",pts:100}
+]},
+{id:"ws-math-13-x",label:"X（通過算）",diff:2,cat:"X",
+problems:[
+{id:"ws-math-13-x1",text:"x-13① [1] 長さ150m・電柱を10秒で通過→時速",pts:25},
+{id:"ws-math-13-x2",text:"x-13① [2] 長さ140m・分速1.2km・360mトンネル通過時間",pts:25},
+{id:"ws-math-13-x3",text:"x-13① [3] 長さ180m・分速1.5km・トンネルを1分24秒で通過→トンネル長",pts:25},
+{id:"ws-math-13-x4",text:"x-13① [4] 電柱15秒・400mトンネル31秒→列車の長さ",pts:25},
+{id:"ws-math-13-x5",text:"x-13②③ 通過算・追い越し・すれ違い（応用）",pts:100}
+]},
+{id:"ws-math-13-z",label:"Z（通過算・発展）",diff:3,cat:"Z",
+problems:[
+{id:"ws-math-13-z1",text:"Z-13 通過算の発展問題（列車のすれ違い・追い越し）",pts:100}
+]}
+],initialAnswers:{}},
+{id:"ws-math-14",code:"WS-14",title:"相似・拡大縮小・時計算",sections:[
+{id:"ws-math-14-r1",label:"R1（相似な図形）",diff:2,cat:"R1",
+problems:[
+{id:"ws-math-14-r1-1",text:"R1A 相似な図形の基本",pts:50},
+{id:"ws-math-14-r1b-1",text:"R1B[1] 直角三角形の相似・等しい角(1)(2)",pts:10},
+{id:"ws-math-14-r1b-2",text:"R1B[1](3) 三角形BCDと相似な三角形をすべて答える",pts:10},
+{id:"ws-math-14-r1b-3",text:"R1B[2] 相似な三角形A・Bのx・yの長さ",pts:20},
+{id:"ws-math-14-r1b-4",text:"R1B[3] 図1〜図3のx・yの長さ（各10点×6）",pts:60}
+]},
+{id:"ws-math-14-r2",label:"R2（売買・割合）",diff:2,cat:"R2",
+problems:[
+{id:"ws-math-14-r2-1",text:"R2 売買損益・割合の問題",pts:100}
+]},
+{id:"ws-math-14-x",label:"X（時計算）",diff:2,cat:"X",
+problems:[
+{id:"ws-math-14-x1",text:"x-14② [1] 7時32分の両針の小さい方の角度",pts:25},
+{id:"ws-math-14-x2",text:"x-14② [2] 2時すぎ・角が大きい方の1/8になる時刻",pts:25},
+{id:"ws-math-14-x3",text:"x-14② [3] 3〜4時・5時方向を中心に等しい角になる時刻",pts:25},
+{id:"ws-math-14-x4",text:"x-14② [4] 3〜4時・12時方向との角を短針が2等分する時刻",pts:25},
+{id:"ws-math-14-x5",text:"x-14①③ 時計算（基本・応用）",pts:100}
+]},
+{id:"ws-math-14-z",label:"Z（時計算・発展）",diff:3,cat:"Z",
+problems:[
+{id:"ws-math-14-z1",text:"Z-14 時計算の発展問題",pts:100}
+]}
 ],initialAnswers:{}}],
 japanese: [
 {id:"ws-jp-01",code:"WS-01",title:"物語文①「オルゴール店」（心情・場面読解）",sections:[
@@ -6374,6 +6580,54 @@ problems:[
 {id:"ws-jp-12-ws3",text:"三 空欄に入ることばをひらがなで×5",pts:10},
 {id:"ws-jp-12-ws4",text:"四 つなぎのことば（接続詞）記号選択×6",pts:12},
 {id:"ws-jp-12-ws5",text:"五 語群から一つ選ぶ×5",pts:10}
+]}
+],initialAnswers:{}},
+{id:"ws-jp-13",code:"WS-13",title:"物語文⑩・論説文（スキーマ）・総合読解",sections:[
+{id:"ws-jp-13-s1",label:"一 論説文（スキーマ・情報処理）",diff:2,cat:"読解問題",
+problems:[
+{id:"ws-jp-13-s1-p1",text:"問一 傍線部の説明・記号選択",pts:5},
+{id:"ws-jp-13-s1-p2",text:"問二 「スキーマ」の働きの説明（記述）",pts:8},
+{id:"ws-jp-13-s1-p3",text:"問三 既存のスキーマと新情報の関係・記号選択",pts:5},
+{id:"ws-jp-13-s1-p4",text:"問四 空欄補充・記号選択",pts:5},
+{id:"ws-jp-13-s1-p5",text:"問五 本文全体の主旨（記述）",pts:10}
+]},
+{id:"ws-jp-13-s2",label:"二 物語文（瑛太郎・演奏／父親の死の話）",diff:2,cat:"読解問題",
+problems:[
+{id:"ws-jp-13-s2-p1",text:"問一 傍線部の心情・記号選択",pts:5},
+{id:"ws-jp-13-s2-p2",text:"問二 場面の説明・記号選択",pts:5},
+{id:"ws-jp-13-s2-p3",text:"問三 傍線部の理由・記号選択",pts:5},
+{id:"ws-jp-13-s2-p4",text:"問四 傍線部の意味・記号選択",pts:5},
+{id:"ws-jp-13-s2-p5-1",text:"問五(1) 気持ちをたとえている表現を15字で抜き出し",pts:8},
+{id:"ws-jp-13-s2-p5-2",text:"問五(2) なぜ苦しいのか・理由の説明（記述）",pts:10}
+]},
+{id:"ws-jp-13-s3",label:"三 ウィークリーステップ（知識）",diff:1,cat:"知識問題",
+problems:[
+{id:"ws-jp-13-ws1",text:"三 漢字・語句・文法の総合知識問題",pts:50}
+]}
+],initialAnswers:{}},
+{id:"ws-jp-14",code:"WS-14",title:"物語文⑪『しずかな日々』・説明文・総合読解",sections:[
+{id:"ws-jp-14-s1",label:"一 物語文（梛月美智子『しずかな日々』）",diff:2,cat:"読解問題",
+problems:[
+{id:"ws-jp-14-s1-p1",text:"問一 傍線a〜dのカタカナを漢字に直す（読みをひらがなで）",pts:8},
+{id:"ws-jp-14-s1-p2",text:"問二 空欄1・2に当てはまる語・記号選択",pts:5},
+{id:"ws-jp-14-s1-p3",text:"問三 傍線A〜Dのことばの種類が異なるもの・記号選択",pts:5},
+{id:"ws-jp-14-s1-p4",text:"問四 傍線①の理由説明（記述）",pts:8},
+{id:"ws-jp-14-s1-p5",text:"問五 傍線②転校したくない理由の説明（記述）",pts:8},
+{id:"ws-jp-14-s1-p6",text:"問六 傍線③ぼくの様子・記号選択",pts:5},
+{id:"ws-jp-14-s1-p7",text:"問七 傍線④自分が傷つかないほうを選ぶ・記号選択",pts:5},
+{id:"ws-jp-14-s1-p8",text:"問八 傍線⑤教室から〜思えた・記号選択",pts:5},
+{id:"ws-jp-14-s1-p9",text:"問九 傍線⑥ぼくはしゃくりあげながら〜の心情・記号選択",pts:5}
+]},
+{id:"ws-jp-14-s2",label:"二 説明文（観察・物語・共感）",diff:2,cat:"読解問題",
+problems:[
+{id:"ws-jp-14-s2-p4",text:"問四 傍線③観る（観察）の説明・記号選択",pts:5},
+{id:"ws-jp-14-s2-p5",text:"問五 傍線④出初め式・共感の対象・40字以内抜き出し",pts:8},
+{id:"ws-jp-14-s2-p6",text:"問六 傍線⑤救急車の「いちもくさん」が浮かぶ理由（記述）",pts:8},
+{id:"ws-jp-14-s2-p7",text:"問七 傍線⑥この名前のおもしろさの説明（記述）",pts:8}
+]},
+{id:"ws-jp-14-s3",label:"三 ウィークリーステップ（知識）",diff:1,cat:"知識問題",
+problems:[
+{id:"ws-jp-14-ws1",text:"三 漢字・語句・文法の総合知識問題",pts:50}
 ]}
 ],initialAnswers:{}}],
 science: [
@@ -6835,6 +7089,95 @@ problems:[
 {id:"ws-sci-12-z3",label:"Z3 最難関問題",diff:3,cat:"Z",
 problems:[
 {id:"ws-sci-12-z3-1",text:"Z3 濃度・溶解度の最難関問題",pts:40}
+]}
+],initialAnswers:{}},
+{id:"ws-sci-13",code:"WS-13",title:"ふりこ",sections:[
+{id:"ws-sci-13-x1",label:"X1 ウィークリーチェック（WS-12の復習：湿度・溶解度）",diff:1,cat:"X",
+problems:[
+{id:"ws-sci-13-x1-1",text:"X1(1) 飽和水蒸気量の表から湿度・水蒸気量の計算（①〜⑤）",pts:50},
+{id:"ws-sci-13-x1-2",text:"X1(2) 固体A〜Cの溶解度の計算（①〜③）",pts:30},
+{id:"ws-sci-13-x1-3",text:"X1(3) ろ過a・bで残る固体の計算（①②）",pts:20}
+]},
+{id:"ws-sci-13-x2",label:"X2 ふりこの実験（周期・速さ）",diff:2,cat:"X",
+problems:[
+{id:"ws-sci-13-x2-1",text:"X2(1) 条件①〜③で周期がどうなるか（○×△）",pts:15},
+{id:"ws-sci-13-x2-2",text:"X2(2) おもりの速さが最速の位置（ア〜オ）",pts:10},
+{id:"ws-sci-13-x2-3",text:"X2(3) ウ・オで糸を切ったときの動き（記号選択）",pts:10},
+{id:"ws-sci-13-x2-4",text:"X2(4) 0.1秒ごとの位置の記録（記号選択）",pts:10},
+{id:"ws-sci-13-x2-5",text:"X2(5) (4)のふりこの周期",pts:5}
+]},
+{id:"ws-sci-13-x3",label:"X3 ふりこの周期と長さ",diff:2,cat:"X",
+problems:[
+{id:"ws-sci-13-x3-1",text:"X3(1) ふりこの周期の説明・空欄①〜⑤",pts:25},
+{id:"ws-sci-13-x3-2",text:"X3(2) ふりこの長さと周期の表・空欄ア・イ",pts:10},
+{id:"ws-sci-13-x3-3",text:"X3(3) 鉄と木のおもり6種の周期比較（A・B・C）",pts:10},
+{id:"ws-sci-13-x3-4",text:"X3(4) メトロノームのおもりを上げたときのテンポ（記号選択）",pts:5},
+{id:"ws-sci-13-x3-5",text:"X3(5) ふりこ時計が夏どうなるか（記号選択）",pts:5}
+]},
+{id:"ws-sci-13-x45",label:"X4・X5 ふりこの応用",diff:2,cat:"X",
+problems:[
+{id:"ws-sci-13-x4",text:"X4 ふりこの応用問題",pts:50},
+{id:"ws-sci-13-x5",text:"X5 ふりこの応用問題",pts:50}
+]},
+{id:"ws-sci-13-y",label:"Y1・Y2 ふりこの実験考察",diff:3,cat:"Y",
+problems:[
+{id:"ws-sci-13-y1",text:"Y1 ふりこの実験考察",pts:50},
+{id:"ws-sci-13-y2",text:"Y2 ふりこの実験考察",pts:50}
+]},
+{id:"ws-sci-13-z",label:"Z1〜Z3 ふりこの発展問題",diff:3,cat:"Z",
+problems:[
+{id:"ws-sci-13-z1",text:"Z1 ふりこの発展問題",pts:40},
+{id:"ws-sci-13-z2",text:"Z2 ふりこの発展問題",pts:40},
+{id:"ws-sci-13-z3",text:"Z3 ふりこの発展問題",pts:40}
+]}
+],initialAnswers:{}},
+{id:"ws-sci-14",code:"WS-14",title:"音",sections:[
+{id:"ws-sci-14-x1",label:"X1 ウィークリーチェック（WS-13の復習：ふりこ）",diff:1,cat:"X",
+problems:[
+{id:"ws-sci-14-x1-1",text:"X1(1) A〜Dのふりこ・周期と速さの並べ替え（①②）",pts:20},
+{id:"ws-sci-14-x1-2",text:"X1(2) ふりこの長さと周期の表・空欄①②",pts:20},
+{id:"ws-sci-14-x1-3",text:"X1(3) ふりこの周期の用語・測定方法（①〜③）",pts:30},
+{id:"ws-sci-14-x1-4",text:"X1(4) 長さ200cmのふりこの1往復時間",pts:10},
+{id:"ws-sci-14-x1-5",text:"X1(5) 発見した科学者の名前（ガリレオ・ガリレイ）",pts:10},
+{id:"ws-sci-14-x1-6",text:"X1(6) ふりこ時計が冬どうなるか・記号選択",pts:10}
+]},
+{id:"ws-sci-14-x2",label:"X2 音の基本（伝わり方）",diff:2,cat:"X",
+problems:[
+{id:"ws-sci-14-x2-1",text:"X2 音の伝わり方・性質の基本問題",pts:50}
+]},
+{id:"ws-sci-14-x3",label:"X3 モノコード・弦の音",diff:2,cat:"X",
+problems:[
+{id:"ws-sci-14-x3-1",text:"X3(1) 木きん・高い音が出るのは右か左か",pts:10},
+{id:"ws-sci-14-x3-2",text:"X3(2) 細い弦ほど高い音が出る理由・記号選択",pts:10},
+{id:"ws-sci-14-x3-3",text:"X3(3) 太さ0.1mmの弦でA・B・Cと同じ高さ→おもりの重さ",pts:10},
+{id:"ws-sci-14-x3-4",text:"X3(4) 空きびんに水を入れてふく・高い音とその振動体",pts:10},
+{id:"ws-sci-14-x3-5",text:"X3(5) ガラスのコップをたたく・高い音とその振動体",pts:10},
+{id:"ws-sci-14-x3-6",text:"X3(6) 弦のはじき方A・Bの音の大小・高低",pts:10}
+]},
+{id:"ws-sci-14-x4",label:"X4 音の速さ（計算）",diff:2,cat:"X",
+problems:[
+{id:"ws-sci-14-x4-1",text:"X4(1) 25℃のとき音の伝わる速さ",pts:10},
+{id:"ws-sci-14-x4-2",text:"X4(2) いなびかり6秒後にかみなり→距離",pts:10},
+{id:"ws-sci-14-x4-3",text:"X4(3) 船が音を出し3秒後に海底反射→深さ",pts:10},
+{id:"ws-sci-14-x4-4",text:"X4(4) 毎秒6mの船・5秒後に岸べき反射→音を出したときの距離",pts:10},
+{id:"ws-sci-14-x4-5",text:"X4(5) 毎秒20mの船・2700m地点・汽笛を聞く時間範囲",pts:10},
+{id:"ws-sci-14-x4-6",text:"X4(6) 海中と空気中の爆発音・5.8秒差→AB間の距離",pts:10}
+]},
+{id:"ws-sci-14-x5",label:"X5 音の応用",diff:2,cat:"X",
+problems:[
+{id:"ws-sci-14-x5-1",text:"X5 音の応用問題",pts:50}
+]},
+{id:"ws-sci-14-y",label:"Y1〜Y3 音の実験考察",diff:3,cat:"Y",
+problems:[
+{id:"ws-sci-14-y1",text:"Y1 音の実験考察",pts:40},
+{id:"ws-sci-14-y2",text:"Y2 音の実験考察",pts:40},
+{id:"ws-sci-14-y3",text:"Y3 音の実験考察",pts:40}
+]},
+{id:"ws-sci-14-z",label:"Z1〜Z3 音の発展問題",diff:3,cat:"Z",
+problems:[
+{id:"ws-sci-14-z1",text:"Z1 音の発展問題",pts:40},
+{id:"ws-sci-14-z2",text:"Z2 音の発展問題",pts:40},
+{id:"ws-sci-14-z3",text:"Z3 音の発展問題",pts:40}
 ]}
 ],initialAnswers:{}}],
 social: [
@@ -7302,6 +7645,66 @@ problems:[
 problems:[
 {id:"ws-soc-12-wc-1",text:"ウィークリーチェック 昭和〜現代の知識問題",pts:20}
 ]}
+],initialAnswers:{}},
+{id:"ws-soc-13",code:"WS-13",title:"歴史の総完成・外交史②欧米諸国との外交・歴史地名のまとめ",sections:[
+{id:"ws-soc-13-s1",label:"1. 知識の総完成（外交史・歴史地名）",diff:1,cat:"知識の総完成",
+problems:[
+{id:"ws-soc-13-s1-p1",text:"外交史②欧米との外交・歴史地名の空欄補充",pts:20}
+]},
+{id:"ws-soc-13-s2",label:"2. 入試実戦演習Aタイプ（A1〜A3）",diff:2,cat:"入試実戦Aタイプ",
+problems:[
+{id:"ws-soc-13-a1-1",text:"A1(4) 日本の貿易の変化・グラフ読み取り（語句組み合わせ）",pts:3},
+{id:"ws-soc-13-a1-2",text:"A1(5) 官営の製鉄所の名前を漢字で（八幡製鉄所）",pts:3},
+{id:"ws-soc-13-a1-3a",text:"A1(6)1 江戸時代の国際交流・誤りを選ぶ（記号選択）",pts:3},
+{id:"ws-soc-13-a1-3b",text:"A1(6)2 ゴッホ『タンギー爺さん』・空欄を漢字2字（浮世絵）",pts:3},
+{id:"ws-soc-13-a1-4",text:"A1(7) 金銀交換比率の説明（記号選択）",pts:3},
+{id:"ws-soc-13-a1-5",text:"A1(8) キリスト教禁止の理由・誤りを選ぶ（記号選択）",pts:3},
+{id:"ws-soc-13-a1-6",text:"A1(9) A〜Gを時代順に並べ3番目と5番目（記号）",pts:3},
+{id:"ws-soc-13-a2",text:"A2 外交史・欧米との関係（記号選択・記述）",pts:20},
+{id:"ws-soc-13-a3",text:"A3 外交史・近現代の国際関係（記号選択・記述）",pts:20}
+]},
+{id:"ws-soc-13-s3",label:"3. 入試実戦演習Bタイプ 基礎編（B1・B2）",diff:2,cat:"入試実戦Bタイプ基礎",
+problems:[
+{id:"ws-soc-13-b1",text:"B1 欧米との外交史・語句使用記述",pts:30},
+{id:"ws-soc-13-b2",text:"B2 開国・不平等条約・明治の外交（記述）",pts:30}
+]},
+{id:"ws-soc-13-s4",label:"4. 入試実戦演習Bタイプ 発展編（B3）",diff:3,cat:"入試実戦Bタイプ発展",
+problems:[
+{id:"ws-soc-13-b3",text:"B3 欧米との外交史に関する発展問題",pts:30}
+]},
+{id:"ws-soc-13-s5",label:"5. ウィークリーチェック（WS-12の復習）",diff:1,cat:"ウィークリーチェック",
+problems:[
+{id:"ws-soc-13-wc",text:"ウィークリーチェック 中国・朝鮮との外交の復習",pts:20}
+]}
+],initialAnswers:{}},
+{id:"ws-soc-14",code:"WS-14",title:"社会・産業史／近現代史①明治時代〜大正時代",sections:[
+{id:"ws-soc-14-s1",label:"1. 知識の総完成（社会・産業史／明治〜大正）",diff:1,cat:"知識の総完成",
+problems:[
+{id:"ws-soc-14-s1-p1",text:"社会・産業史／近現代史①の空欄補充",pts:20}
+]},
+{id:"ws-soc-14-s2",label:"2. 入試実戦演習Aタイプ（A1〜A3・食生活の歴史）",diff:2,cat:"入試実戦Aタイプ",
+problems:[
+{id:"ws-soc-14-a1-1",text:"A1(1) 縄文土器の食生活への用いられ方（2つ説明）",pts:4},
+{id:"ws-soc-14-a1-2",text:"A1(2) 稲作について誤りを含むもの・記号選択",pts:4},
+{id:"ws-soc-14-a1-3",text:"A1(3) 地方の特産物を納める税を漢字1字で（調）",pts:2},
+{id:"ws-soc-14-a1-4",text:"A1(4) 空欄[4]に当てはまる語句を漢字で（木簡）",pts:2},
+{id:"ws-soc-14-a1-5",text:"A1(5)〜 武士・室町・南蛮貿易・江戸の食文化（記号・記述）",pts:8},
+{id:"ws-soc-14-a2",text:"A2 産業史・近現代の社会（記号選択・記述）",pts:20},
+{id:"ws-soc-14-a3",text:"A3 明治〜大正の産業・社会（記号選択・記述）",pts:20}
+]},
+{id:"ws-soc-14-s3",label:"3. 入試実戦演習Bタイプ 基礎編（B1・B2）",diff:2,cat:"入試実戦Bタイプ基礎",
+problems:[
+{id:"ws-soc-14-b1",text:"B1 産業史・近現代史・語句使用記述",pts:30},
+{id:"ws-soc-14-b2",text:"B2 明治〜大正の産業・社会の変化（記述）",pts:30}
+]},
+{id:"ws-soc-14-s4",label:"4. 入試実戦演習Bタイプ 発展編（B3）",diff:3,cat:"入試実戦Bタイプ発展",
+problems:[
+{id:"ws-soc-14-b3",text:"B3 社会・産業史に関する発展問題",pts:30}
+]},
+{id:"ws-soc-14-s5",label:"5. ウィークリーチェック（WS-13の復習）",diff:1,cat:"ウィークリーチェック",
+problems:[
+{id:"ws-soc-14-wc",text:"ウィークリーチェック 外交史②欧米との外交の復習",pts:20}
+]}
 ],initialAnswers:{}}],
 },
 WS_PDFS: {
@@ -7319,6 +7722,8 @@ WS_PDFS: {
 "ws-soc-07":"社WS07中国四国.pdf","ws-soc-08":"社WS08古墳_室町.pdf","ws-soc-09":"社WS09室町_江戸.pdf",
 "ws-math-11":"算WS_11.pdf","ws-jp-11":"国WS_11.pdf","ws-sci-11":"理WS11.pdf","ws-soc-11":"社WS11昭和_現代.pdf",
 "ws-math-12":"算WS12.pdf","ws-jp-12":"国WS12.pdf","ws-sci-12":"理WS12.pdf","ws-soc-12":"社WS12外交史.pdf",
+"ws-math-13":"算WS13.pdf","ws-jp-13":"国WS13.pdf","ws-sci-13":"理WS13ふりこ.pdf","ws-soc-13":"社WS13外交史_欧米.pdf",
+"ws-math-14":"算WS14.pdf","ws-jp-14":"国WS14.pdf","ws-sci-14":"理WS14音.pdf","ws-soc-14":"社WS14社会産業史.pdf",
 }
 };
 
