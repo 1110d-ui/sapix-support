@@ -34,7 +34,7 @@ window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
 if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sapix-support/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260724-042';
+const CURRENT_VERSION = '20260724-044';
 async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
 function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
 setTimeout(checkForUpdate,3000);
@@ -9838,6 +9838,10 @@ const CATS = [
   {id:"male",   label:"男子校編", icon:"🎓"},
 ];
 const PIN = "aoyama";
+// 学校公式サイトで確認できた合格最低点（2026年度・共学は女子）。未確認校は空
+const DEFAULT_MIN = {
+  aoyama: {min:183, total:300, src:"2026年度 女子・学校公式"},
+};
 
 const [records, setRecords] = React.useState({});
 const [overrides, setOverrides] = React.useState({});
@@ -9845,6 +9849,10 @@ const [loaded, setLoaded] = React.useState(false);
 const [openCat, setOpenCat] = React.useState("coed");
 const [editing, setEditing] = React.useState(null); // {schoolId, schoolName, subjId}
 const [filterDone, setFilterDone] = React.useState("all");
+const [minScores, setMinScores] = React.useState({});   // 合格最低点 {schoolId:{min,total}}
+const [aoyamaYears, setAoyamaYears] = React.useState({}); // 青学年度別 {year:{math,japanese,science,social,min}}
+const [editMin, setEditMin] = React.useState(null);
+const [view, setView] = React.useState("list");           // "list" | "aoyama"
 
 React.useEffect(()=>{ (async()=>{
   try{
@@ -9854,6 +9862,14 @@ React.useEffect(()=>{ (async()=>{
   try{
     const o = await window.storage.get("yumeichu-overrides");
     if(o&&o.value) setOverrides(JSON.parse(o.value));
+  }catch(e){}
+  try{
+    const m = await window.storage.get("yumeichu-minscores");
+    if(m&&m.value) setMinScores(JSON.parse(m.value));
+  }catch(e){}
+  try{
+    const a = await window.storage.get("yumeichu-aoyama-years");
+    if(a&&a.value) setAoyamaYears(JSON.parse(a.value));
   }catch(e){}
   setLoaded(true);
 })(); },[]);
@@ -9865,6 +9881,14 @@ const save = async (next) => {
 const saveOv = async (next) => {
   setOverrides(next);
   try{ await window.storage.set("yumeichu-overrides", JSON.stringify(next)); }catch(e){}
+};
+const saveMin = async (next) => {
+  setMinScores(next);
+  try{ await window.storage.set("yumeichu-minscores", JSON.stringify(next)); }catch(e){}
+};
+const saveAoyama = async (next) => {
+  setAoyamaYears(next);
+  try{ await window.storage.set("yumeichu-aoyama-years", JSON.stringify(next)); }catch(e){}
 };
 
 const key = (sc,su)=>`${sc}__${su}`;
@@ -9916,6 +9940,128 @@ const removeRec=async()=>{
 };
 
 if(!loaded) return <div style={{padding:40,textAlign:"center",opacity:.5,fontSize:13}}>読み込み中...</div>;
+
+const inpStyle={width:"100%",background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.15)",
+  borderRadius:8,padding:"9px 11px",color:"white",fontSize:14,outline:"none",boxSizing:"border-box",colorScheme:"dark"};
+
+// ── 合格最低点の編集 ──
+if(editMin){
+  const commitMin=async()=>{
+    const next={...minScores};
+    const mn=parseFloat(editMin.min), tt=parseFloat(editMin.total);
+    if(isNaN(mn)&&isNaN(tt)) delete next[editMin.schoolId];
+    else next[editMin.schoolId]={min:isNaN(mn)?null:mn, total:isNaN(tt)?300:tt};
+    await saveMin(next); setEditMin(null);
+  };
+  return (
+    <div style={{padding:"14px 14px 90px"}}>
+      <button onClick={()=>setEditMin(null)} style={{background:"none",border:"none",color:"#93c5fd",fontSize:13,cursor:"pointer",padding:"6px 0",marginBottom:10}}>← もどる</button>
+      <div style={{fontSize:12,opacity:.6}}>{editMin.schoolName}</div>
+      <div style={{fontSize:18,fontWeight:800,marginBottom:14}}>2026年度 合格最低点</div>
+      <div style={{marginBottom:12}}>
+        <div style={{fontSize:11,opacity:.6,marginBottom:4}}>合格最低点（合計）</div>
+        <input type="number" inputMode="decimal" value={editMin.min}
+          onChange={e=>setEditMin({...editMin,min:e.target.value})} placeholder="例：190" style={inpStyle}/>
+      </div>
+      <div style={{marginBottom:16}}>
+        <div style={{fontSize:11,opacity:.6,marginBottom:4}}>満点（4科合計）</div>
+        <input type="number" inputMode="decimal" value={editMin.total}
+          onChange={e=>setEditMin({...editMin,total:e.target.value})} placeholder="例：300" style={inpStyle}/>
+      </div>
+      <div style={{fontSize:10,opacity:.45,lineHeight:1.7,marginBottom:16}}>
+        ※ 有名中入試問題集や学校公式サイトの数値を入力してください。年度・男女で異なる場合があります。
+      </div>
+      <button onClick={commitMin} style={{width:"100%",background:"linear-gradient(135deg,#059669,#0d9488)",border:"none",color:"white",borderRadius:10,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer"}}>保存する</button>
+    </div>
+  );
+}
+
+// ── 青山学院 過去10年分 ──
+if(view==="aoyama"){
+  const YEARS=[2026,2025,2024,2023,2022,2021,2020,2019,2018,2017];
+  const AO_SUBJ=[{id:"math",label:"算",color:"#3b82f6",max:100},{id:"japanese",label:"国",color:"#ec4899",max:100},
+                 {id:"science",label:"理",color:"#22c55e",max:50},{id:"social",label:"社",color:"#f59e0b",max:50}];
+  const upd=async(y,f,v)=>{
+    const next={...aoyamaYears};
+    next[y]={...(next[y]||{}),[f]:v};
+    await saveAoyama(next);
+  };
+  const OFFICIAL_MIN={2026:183, 2025:188}; // 学校公式・女子
+  const yMin=(y)=>{const d=aoyamaYears[y]||{};return d.min!==undefined&&d.min!==""?d.min:(OFFICIAL_MIN[y]!==undefined?String(OFFICIAL_MIN[y]):"");};
+  const yTotal=(y)=>{const d=aoyamaYears[y]||{};return AO_SUBJ.reduce((a,s)=>a+(parseFloat(d[s.id])||0),0);};
+  const yHasAny=(y)=>{const d=aoyamaYears[y]||{};return AO_SUBJ.some(s=>d[s.id]!==undefined&&d[s.id]!=="");};
+  const cell={background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.13)",borderRadius:6,
+    padding:"6px 3px",color:"white",fontSize:12,outline:"none",width:"100%",textAlign:"center",boxSizing:"border-box",colorScheme:"dark",fontFamily:"monospace"};
+  const doneY=YEARS.filter(y=>yHasAny(y)).length;
+  return (
+    <div style={{padding:"12px 11px 90px"}}>
+      <button onClick={()=>setView("list")} style={{background:"none",border:"none",color:"#93c5fd",fontSize:13,cursor:"pointer",padding:"6px 0",marginBottom:8}}>← 有名中一覧にもどる</button>
+      <div style={{fontSize:17,fontWeight:800,color:"#f472b6",marginBottom:2}}>★ 青山学院中等部 過去問記録</div>
+      <div style={{fontSize:11,opacity:.5,marginBottom:12}}>過去10年分の得点を年度ごとに記録（算100・国100・理50・社50＝300点）</div>
+
+      <div style={{padding:"10px",borderRadius:10,background:"rgba(236,72,153,.12)",border:"1px solid rgba(244,114,182,.3)",textAlign:"center",marginBottom:12}}>
+        <div style={{fontSize:10,opacity:.6}}>入力済み年度</div>
+        <div style={{fontSize:22,fontWeight:900,fontFamily:"monospace",color:"#f472b6"}}>{doneY}<span style={{fontSize:12,opacity:.6}}>/10年</span></div>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"46px repeat(4,1fr) 54px 46px",gap:4,marginBottom:6,fontSize:10,opacity:.55,textAlign:"center",alignItems:"center"}}>
+        <div>年度</div>
+        {AO_SUBJ.map(s=><div key={s.id} style={{color:s.color,fontWeight:700}}>{s.label}<span style={{opacity:.5,fontSize:8}}>/{s.max}</span></div>)}
+        <div>合計</div><div>最低点</div>
+      </div>
+
+      {YEARS.map(y=>{
+        const d=aoyamaYears[y]||{};
+        const tot=yTotal(y);
+        const mn=parseFloat(yMin(y));
+        const pass=!isNaN(mn)&&yHasAny(y)?tot>=mn:null;
+        return (
+          <div key={y} style={{display:"grid",gridTemplateColumns:"46px repeat(4,1fr) 54px 46px",gap:4,marginBottom:5,alignItems:"center"}}>
+            <div style={{fontSize:11,opacity:.75,textAlign:"center",fontWeight:700}}>{y}</div>
+            {AO_SUBJ.map(s=>(
+              <input key={s.id} type="number" inputMode="decimal" value={d[s.id]===undefined?"":d[s.id]}
+                onChange={e=>upd(y,s.id,e.target.value)} placeholder="—" style={cell}/>
+            ))}
+            <div style={{fontSize:13,fontWeight:800,fontFamily:"monospace",textAlign:"center",
+              color:pass===null?"rgba(255,255,255,.4)":pass?"#4ade80":"#f87171"}}>
+              {yHasAny(y)?tot:"—"}
+            </div>
+            <input type="number" inputMode="decimal" value={yMin(y)}
+              onChange={e=>upd(y,"min",e.target.value)} placeholder="—" style={{...cell,fontSize:11,opacity:.85}}/>
+          </div>
+        );
+      })}
+
+      <div style={{marginTop:14,padding:"11px",borderRadius:10,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)"}}>
+        <div style={{fontSize:11,fontWeight:700,marginBottom:6,opacity:.75}}>合格ラインとの比較</div>
+        {(()=>{
+          const done=YEARS.filter(y=>yHasAny(y)&&!isNaN(parseFloat(yMin(y))));
+          if(!done.length) return <div style={{fontSize:11,opacity:.4}}>得点と最低点を入力すると、達成状況が表示されます。</div>;
+          const cleared=done.filter(y=>yTotal(y)>=parseFloat(yMin(y))).length;
+          return (
+            <div>
+              <div style={{fontSize:20,fontWeight:900,fontFamily:"monospace",color:cleared>0?"#4ade80":"#f87171"}}>
+                {cleared}<span style={{fontSize:12,opacity:.6}}> / {done.length}年で合格ライン突破</span>
+              </div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:7}}>
+                {done.map(y=>{
+                  const ok=yTotal(y)>=parseFloat(yMin(y));
+                  const diff=yTotal(y)-parseFloat(yMin(y));
+                  return <span key={y} style={{fontSize:9,padding:"3px 6px",borderRadius:5,
+                    background:ok?"rgba(34,197,94,.15)":"rgba(239,68,68,.13)",color:ok?"#4ade80":"#fca5a5"}}>
+                    {y} {diff>=0?"+":""}{diff}</span>;
+                })}
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+      <div style={{fontSize:10,opacity:.35,marginTop:12,lineHeight:1.7}}>
+        ※ 2026年度(183)・2025年度(188)は学校公式サイトの女子の数値を初期表示しています。他の年度は有名中入試問題集などの数値を入力してください。
+      </div>
+    </div>
+  );
+}
 
 // ── 編集モーダル ──
 if(editing){
@@ -9985,13 +10131,44 @@ const renderSchool=(s,pinned)=>{
     <div key={s.id} style={{marginBottom:8,padding:"10px 11px",borderRadius:11,
       background:pinned?"rgba(236,72,153,.10)":"rgba(255,255,255,.035)",
       border:pinned?"1.5px solid rgba(244,114,182,.45)":"1px solid rgba(255,255,255,.07)"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
         <div style={{fontSize:13,fontWeight:700,lineHeight:1.3}}>
           {pinned&&<span style={{fontSize:11,color:"#f472b6",marginRight:5}}>★第一志望</span>}
           {s.name}
         </div>
         <span style={{fontSize:10,opacity:.5,flexShrink:0,marginLeft:8}}>{doneCount}/{availCount}</span>
       </div>
+      {(()=>{
+        const ms=minScores[s.id]||DEFAULT_MIN[s.id]||null;
+        const myTot=SUBJ.reduce((a,su)=>{const r=rec(s.id,su.id);return a+(r?recTotal(r):0);},0);
+        const allDone=SUBJ.filter(su=>isAvail(s,su.id)).every(su=>rec(s.id,su.id));
+        return (
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:7,flexWrap:"wrap"}}>
+            <button onClick={()=>setEditMin({schoolId:s.id,schoolName:s.name,
+                min:ms&&ms.min!=null?String(ms.min):"", total:ms&&ms.total?String(ms.total):"300"})}
+              style={{background:ms&&ms.min!=null?"rgba(251,191,36,.15)":"rgba(255,255,255,.05)",
+                border:ms&&ms.min!=null?"1px solid rgba(251,191,36,.35)":"1px dashed rgba(255,255,255,.18)",
+                borderRadius:6,padding:"3px 8px",fontSize:9.5,cursor:"pointer",
+                color:ms&&ms.min!=null?"#fbbf24":"rgba(255,255,255,.4)"}}>
+              {ms&&ms.min!=null?`合格最低点 ${ms.min}/${ms.total||300}${ms.src?" ※公式":""}`:"＋合格最低点"}
+            </button>
+            {ms&&ms.min!=null&&allDone&&doneCount>0&&(
+              <span style={{fontSize:9.5,padding:"3px 7px",borderRadius:5,fontWeight:700,
+                background:myTot>=ms.min?"rgba(34,197,94,.18)":"rgba(239,68,68,.15)",
+                color:myTot>=ms.min?"#4ade80":"#fca5a5"}}>
+                自分 {myTot}点（{myTot>=ms.min?"+":""}{myTot-ms.min}）
+              </span>
+            )}
+            {pinned&&(
+              <button onClick={()=>setView("aoyama")}
+                style={{background:"rgba(236,72,153,.2)",border:"1px solid rgba(244,114,182,.45)",
+                  borderRadius:6,padding:"3px 8px",fontSize:9.5,cursor:"pointer",color:"#f472b6",fontWeight:700}}>
+                過去10年分を記録 ›
+              </button>
+            )}
+          </div>
+        );
+      })()}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1.6fr 1fr 1fr",gap:6}}>
         {SUBJ.map(su=>{
           const avail=isAvail(s,su.id);
