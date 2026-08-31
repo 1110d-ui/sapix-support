@@ -34,7 +34,7 @@ window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
 if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sapix-support/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260724-047';
+const CURRENT_VERSION = '20260831-051';
 async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
 function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
 setTimeout(checkForUpdate,3000);
@@ -9388,6 +9388,101 @@ const SAPIX_SCHEDULE = [
 {date:"2026-08-22",title:"夏集中志望校錬成特訓⑤",type:"summer",memo:""},
 {date:"2026-08-25",title:"休講",type:"other",memo:""},
 {date:"2026-08-27",title:"夏期講習マンスリー実力テスト",type:"test",memo:"17:30〜20:30 実力テスト・出題範囲なし 新コース9/15〜"},
+// ── 2026年度 6年後期スケジュール（UMAP0089より） ──
+{date:"2026-09-01",title:"D21授業",type:"class",memo:""},
+{date:"2026-09-03",title:"D21授業",type:"class",memo:""},
+{date:"2026-09-05",title:"W21土曜特訓",type:"class",memo:""},
+{date:"2026-09-06",title:"SS特訓①",type:"spring",memo:"志望校別対策 9:00〜18:30"},
+{date:"2026-09-08",title:"D22授業",type:"class",memo:""},
+{date:"2026-09-10",title:"D22授業",type:"class",memo:""},
+{date:"2026-09-12",title:"W22土曜特訓",type:"class",memo:"新コース開始"},
+{date:"2026-09-13",title:"SS特訓②",type:"spring",memo:""},
+{date:"2026-09-15",title:"D23授業",type:"class",memo:"新コース開始"},
+{date:"2026-09-17",title:"D23授業",type:"class",memo:""},
+{date:"2026-09-19",title:"W23土曜特訓",type:"class",memo:""},
+{date:"2026-09-20",title:"SS特訓③",type:"spring",memo:""},
+{date:"2026-09-21",title:"学校別SO 筑駒①",type:"sapixopen",memo:"午前・申込制"},
+{date:"2026-09-22",title:"D24授業",type:"class",memo:""},
+{date:"2026-09-23",title:"学校別SO 13校",type:"sapixopen",memo:"午前・午後／麻布・栄光・開成・慶應普通部・駒東・武蔵・早稲田・早大学院・桜蔭・JG・フェリス・雙葉・慶應中等部"},
+{date:"2026-09-24",title:"D24授業",type:"class",memo:""},
+{date:"2026-09-26",title:"W24土曜特訓",type:"class",memo:""},
+{date:"2026-09-27",title:"後期合格力判定SO①",type:"sapixopen",memo:"第1回"},
+{date:"2026-09-27",title:"学校別SO 渋谷渋谷",type:"sapixopen",memo:"午前・申込制"},
+{date:"2026-09-29",title:"D25授業",type:"class",memo:""},
+{date:"2026-10-01",title:"D25授業",type:"class",memo:""},
+{date:"2026-10-03",title:"W25土曜特訓",type:"class",memo:""},
+{date:"2026-10-04",title:"SS特訓④",type:"spring",memo:""},
+{date:"2026-10-06",title:"D26授業",type:"class",memo:""},
+{date:"2026-10-08",title:"D26授業",type:"class",memo:""},
+{date:"2026-10-10",title:"W26土曜特訓",type:"class",memo:""},
+{date:"2026-10-11",title:"SS特訓⑤",type:"spring",memo:""},
+{date:"2026-10-12",title:"学校別SO 慶應湘南藤沢",type:"sapixopen",memo:"午前・申込制"},
+{date:"2026-10-13",title:"10月度マンスリー実力テスト",type:"test",memo:"17:30〜20:30 実力テスト・出題範囲なし"},
+{date:"2026-10-15",title:"D27授業",type:"class",memo:""},
+{date:"2026-10-17",title:"W27土曜特訓",type:"class",memo:""},
+{date:"2026-10-18",title:"後期合格力判定SO②",type:"sapixopen",memo:"第2回"},
+{date:"2026-10-18",title:"学校別SO 聖光学院",type:"sapixopen",memo:"午前・申込制"},
+{date:"2026-10-20",title:"D27授業",type:"class",memo:""},
+{date:"2026-10-22",title:"D28授業",type:"class",memo:""},
+{date:"2026-10-24",title:"W28土曜特訓",type:"class",memo:""},
+{date:"2026-10-25",title:"SS特訓⑥",type:"spring",memo:""},
+{date:"2026-10-27",title:"D28授業",type:"class",memo:""},
+{date:"2026-10-29",title:"D29授業",type:"class",memo:"新コース開始"},
+{date:"2026-10-31",title:"W29土曜特訓",type:"class",memo:"新コース開始"},
+{date:"2026-11-01",title:"SS特訓⑦",type:"spring",memo:""},
+{date:"2026-11-03",title:"学校別SO 灘・渋谷幕張",type:"sapixopen",memo:"午前〜午後・申込制"},
+{date:"2026-11-05",title:"D29授業",type:"class",memo:""},
+{date:"2026-11-07",title:"W30土曜特訓",type:"class",memo:""},
+{date:"2026-11-08",title:"後期合格力判定SO③",type:"sapixopen",memo:"第3回"},
+{date:"2026-11-08",title:"学校別SO 駒場東邦・豊島岡",type:"sapixopen",memo:"午前・申込制"},
+{date:"2026-11-10",title:"D30授業",type:"class",memo:""},
+{date:"2026-11-12",title:"D30授業",type:"class",memo:""},
+{date:"2026-11-14",title:"W31土曜特訓",type:"class",memo:""},
+{date:"2026-11-15",title:"SS特訓⑧",type:"spring",memo:""},
+{date:"2026-11-17",title:"D31授業",type:"class",memo:""},
+{date:"2026-11-19",title:"D31授業",type:"class",memo:""},
+{date:"2026-11-21",title:"面接模試",type:"test",memo:"受験料3,300円・詳細は別途"},
+{date:"2026-11-22",title:"SS特訓⑨",type:"spring",memo:""},
+{date:"2026-11-23",title:"学校別SO 13校",type:"sapixopen",memo:"午前・午後／麻布・栄光・開成・慶應普通部・武蔵・早稲田・早大学院・桜蔭・JG・フェリス・雙葉・慶應中等部・早実"},
+{date:"2026-11-24",title:"D32授業",type:"class",memo:""},
+{date:"2026-11-26",title:"D32授業",type:"class",memo:""},
+{date:"2026-11-28",title:"W32土曜特訓",type:"class",memo:""},
+{date:"2026-11-29",title:"SS特訓⑩",type:"spring",memo:""},
+{date:"2026-12-01",title:"12月度マンスリー実力テスト",type:"test",memo:"17:30〜20:30 実力テスト・出題範囲なし"},
+{date:"2026-12-03",title:"D33授業",type:"class",memo:""},
+{date:"2026-12-05",title:"W33土曜特訓",type:"class",memo:""},
+{date:"2026-12-06",title:"後期合格力判定SO④",type:"sapixopen",memo:"第4回"},
+{date:"2026-12-06",title:"学校別SO 筑駒②",type:"sapixopen",memo:"午前・申込制"},
+{date:"2026-12-08",title:"D33授業",type:"class",memo:""},
+{date:"2026-12-10",title:"D34授業",type:"class",memo:""},
+{date:"2026-12-12",title:"W34土曜特訓",type:"class",memo:"新コース開始"},
+{date:"2026-12-13",title:"SS特訓⑪",type:"spring",memo:""},
+{date:"2026-12-15",title:"D34授業",type:"class",memo:""},
+{date:"2026-12-17",title:"D35授業",type:"class",memo:"新コース開始"},
+{date:"2026-12-22",title:"D35授業",type:"class",memo:""},
+{date:"2026-12-25",title:"冬期講習1日目",type:"summer",memo:"14:00〜19:20 全6日間"},
+{date:"2026-12-26",title:"冬期講習2日目",type:"summer",memo:"14:00〜19:20"},
+{date:"2026-12-27",title:"冬期講習3日目",type:"summer",memo:"14:00〜19:20"},
+{date:"2026-12-28",title:"冬期講習4日目",type:"summer",memo:"14:00〜19:20"},
+{date:"2026-12-30",title:"正月特訓1日目",type:"spring",memo:"9:00〜18:00 全4日間・昼食持参"},
+{date:"2026-12-31",title:"正月特訓2日目",type:"spring",memo:"9:00〜18:00"},
+{date:"2027-01-02",title:"正月特訓3日目",type:"spring",memo:"9:00〜18:00"},
+{date:"2027-01-03",title:"正月特訓4日目",type:"spring",memo:"9:00〜18:00"},
+{date:"2027-01-04",title:"冬期講習5日目",type:"summer",memo:"14:00〜19:20"},
+{date:"2027-01-05",title:"冬期講習6日目",type:"summer",memo:"14:00〜19:20"},
+{date:"2027-01-10",title:"SS特訓⑫",type:"spring",memo:""},
+{date:"2027-01-12",title:"D36授業",type:"class",memo:""},
+{date:"2027-01-14",title:"D36授業",type:"class",memo:""},
+{date:"2027-01-16",title:"W35土曜特訓",type:"class",memo:""},
+{date:"2027-01-17",title:"SS特訓⑬",type:"spring",memo:""},
+{date:"2027-01-19",title:"D37授業",type:"class",memo:""},
+{date:"2027-01-21",title:"D37授業",type:"class",memo:""},
+{date:"2027-01-23",title:"W36土曜特訓",type:"class",memo:""},
+{date:"2027-01-24",title:"SS特訓⑭",type:"spring",memo:"SS特訓終了日"},
+{date:"2027-01-26",title:"D38授業",type:"class",memo:""},
+{date:"2027-01-28",title:"D38授業",type:"class",memo:"6年生の授業最終日"},
+{date:"2026-10-25",title:"入試対策保護者会（10月下旬〜11月上旬）",type:"other",memo:"詳細は別途お知らせ"},
+{date:"2026-11-05",title:"後期保護者個別面談（11月上旬〜）",type:"other",memo:"詳細は別途お知らせ"}
 ];
 
 // ============================================================
@@ -9655,176 +9750,225 @@ const SM = {
 };
 const SUBJ_KEYS = ["math","japanese","science","social"];
 
+// 全テストを日付降順（最新が先頭）
+const allTests = [...IMPORTED_TESTS, ...(testScores||[])]
+  .filter(t=>t&&t.date)
+  .sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+
+// 最新ほど重い加重（半減期方式）: 最新=1.0, 1つ前=0.65, 2つ前=0.42 ...
+const DECAY = 0.65;
+const weightOf = (idx) => Math.pow(DECAY, idx);
+
+// ── 加重平均の計算 ──
+// 各テストの偏差値・得点率を、最新ほど重く平均する
+const weightedSubj = (sid) => {
+  let wsum=0, hsum=0, rsum=0, rw=0, latest=null, prev=null;
+  allTests.forEach((t,idx)=>{
+    const h=parseFloat(t[sid+"Hensachi"]);
+    const sc=parseFloat(t[sid]);
+    const mx=parseFloat(t[sid+"Max"]);
+    const w=weightOf(idx);
+    if(!isNaN(h)){ hsum+=h*w; wsum+=w; if(latest===null)latest=h; else if(prev===null)prev=h; }
+    if(!isNaN(sc)&&!isNaN(mx)&&mx>0){ rsum+=(sc/mx*100)*w; rw+=w; }
+  });
+  return {
+    hensachi: wsum>0?hsum/wsum:null,
+    rate: rw>0?rsum/rw:null,
+    latest, prev,
+    trend: (latest!=null&&prev!=null)?latest-prev:null,
+  };
+};
+
+// ── 易問分析の加重集計（qDataベース） ──
+const weightedEasy = (sid) => {
+  let lossSum=0, lw=0, pctSum=0, pw=0, latestLoss=null;
+  allTests.forEach((t,idx)=>{
+    if(!t.qData||!t.qData[sid]) return;
+    const qs=t.qData[sid];
+    if(!qs.length) return;
+    const w=weightOf(idx);
+    const loss=qs.filter(q=>q[2]==="×"&&q[3]>=60).reduce((a,q)=>a+q[1],0);
+    const easy=qs.filter(q=>q[3]>=60);
+    const eg=easy.filter(q=>q[2]==="○").reduce((a,q)=>a+q[1],0);
+    const et=easy.reduce((a,q)=>a+q[1],0);
+    lossSum+=loss*w; lw+=w;
+    if(et>0){ pctSum+=(eg/et*100)*w; pw+=w; }
+    if(latestLoss===null) latestLoss=loss;
+  });
+  return {loss: lw>0?lossSum/lw:null, easyPct: pw>0?pctSum/pw:null, latestLoss};
+};
+
+// ── 分野別の加重評価（weakFieldsベース） ──
+const weightedFields = (sid) => {
+  const map = {};
+  allTests.forEach((t,idx)=>{
+    const wf = t.weakFields && t.weakFields[sid];
+    if(!Array.isArray(wf)) return;
+    const w = weightOf(idx);
+    wf.forEach(f=>{
+      if(!f||!f.field) return;
+      const key=f.field;
+      if(!map[key]) map[key]={field:key, mySum:0, avgSum:0, wsum:0, count:0, latestNote:null, latestDate:null, latestMy:null, latestAvg:null};
+      const m=map[key];
+      const my = f.myRate!=null?f.myRate:(f.rate!=null?f.rate:null);
+      const av = f.avgRate!=null?f.avgRate:null;
+      if(my!=null){ m.mySum+=my*w; m.wsum+=w; }
+      if(av!=null){ m.avgSum+=av*w; }
+      m.count++;
+      if(m.latestNote===null){ m.latestNote=f.note||null; m.latestDate=t.date; m.latestMy=my; m.latestAvg=av; }
+    });
+  });
+  return Object.values(map).map(m=>{
+    const my = m.wsum>0?m.mySum/m.wsum:null;
+    const av = m.wsum>0?m.avgSum/m.wsum:null;
+    let tag="ok";
+    if(my==null) tag="nodata";
+    else if(av!=null&&av>=60&&my<av) tag="weak_easy";
+    else if(av!=null&&av>=40&&my<av-8) tag="weak_mid";
+    else if(av!=null&&my>=av) tag="strong";
+    else if(my>=60) tag="strong";
+    else if(my<35) tag="weak";
+    return {...m, my, av, tag};
+  }).sort((a,b)=>{
+    const ORD={weak_easy:0,weak:1,weak_mid:2,ok:3,strong:4,nodata:5};
+    if(ORD[a.tag]!==ORD[b.tag]) return ORD[a.tag]-ORD[b.tag];
+    return (a.my||0)-(b.my||0);
+  });
+};
+
 const TAG_META = {
-  strong:    {label:"✅ 得意",   color:"#4ade80",bg:"rgba(74,222,128,.1)", border:"rgba(74,222,128,.3)"},
-  ok:        {label:"〇 普通",   color:"#60a5fa",bg:"rgba(96,165,250,.08)",border:"rgba(96,165,250,.2)"},
-  caution:   {label:"🟡 要注意", color:"#f59e0b",bg:"rgba(245,158,11,.08)",border:"rgba(245,158,11,.2)"},
-  weak:      {label:"🔴 苦手",   color:"#ef4444",bg:"rgba(239,68,68,.08)", border:"rgba(239,68,68,.25)"},
   weak_easy: {label:"🔴 要克服", color:"#ef4444",bg:"rgba(239,68,68,.1)",  border:"rgba(239,68,68,.35)"},
+  weak:      {label:"🔴 苦手",   color:"#ef4444",bg:"rgba(239,68,68,.08)", border:"rgba(239,68,68,.25)"},
   weak_mid:  {label:"🟡 要注意", color:"#f59e0b",bg:"rgba(245,158,11,.1)", border:"rgba(245,158,11,.3)"},
+  ok:        {label:"〇 普通",   color:"#60a5fa",bg:"rgba(96,165,250,.08)",border:"rgba(96,165,250,.2)"},
+  strong:    {label:"✅ 得意",   color:"#4ade80",bg:"rgba(74,222,128,.1)", border:"rgba(74,222,128,.3)"},
   nodata:    {label:"—",         color:"#475569",bg:"rgba(71,85,105,.07)", border:"rgba(71,85,105,.15)"},
 };
-const TAG_ORDER = {weak_easy:0,weak:1,weak_mid:2,caution:3,ok:4,strong:5,nodata:6};
 
-const allTests = [...IMPORTED_TESTS, ...(testScores||[])];
+const cur = SM[anaSubj];
+const ws = weightedSubj(anaSubj);
+const we = weightedEasy(anaSubj);
+const fields = weightedFields(anaSubj);
+const latestTest = allTests[0];
 
-const getTag = (compositeScore, testMyRate, testAvgRate) => {
-  if (compositeScore == null) return "nodata";
-  if (testAvgRate != null && testAvgRate >= 60 && compositeScore < testAvgRate) return "weak_easy";
-  if (testAvgRate != null && testAvgRate >= 40 && compositeScore < testAvgRate - 10) return "weak_mid";
-  if (compositeScore >= 75) return "strong";
-  if (compositeScore >= 55) return "ok";
-  if (compositeScore >= 35) return "caution";
-  return "weak";
-};
-
-const buildUnitSummary = (sid) => {
-  const units = UNITS[sid] || [];
-  return units.map(u => {
-    const st = calcStats(u.sections || [], (allAnswers || {})[u.id] || {});
-    const dsAnswered = st.answered;
-    const dsRate = dsAnswered >= 1 ? Math.round(st.correct / st.answered * 100) : null;
-
-    const testMatches = [];
-    allTests.forEach(t => {
-      const fields = (t.weakFields && t.weakFields[sid]) ? t.weakFields[sid] : [];
-      fields.forEach(f => {
-        const fieldKey = f.field.replace(/[（(].*/,"").trim();
-        const titleKey = u.title.replace(/[（(].*/,"").trim();
-        if (f.field.includes(titleKey) || u.title.includes(fieldKey) || titleKey.includes(fieldKey)) {
-          testMatches.push({
-            myRate: f.myRate != null ? f.myRate : null,
-            avgRate: f.avgRate != null ? f.avgRate : null,
-            testName: t.name || "",
-            date: t.date || "",
-          });
-        }
-      });
-    });
-
-    const latestTest = testMatches.sort((a,b) => b.date.localeCompare(a.date))[0] || null;
-    const testMyRate  = latestTest ? latestTest.myRate  : null;
-    const testAvgRate = latestTest ? latestTest.avgRate : null;
-
-    let compositeScore = null;
-    if (dsRate != null && testMyRate != null) compositeScore = Math.round((dsRate + testMyRate) / 2);
-    else if (dsRate != null) compositeScore = dsRate;
-    else if (testMyRate != null) compositeScore = testMyRate;
-
-    const tag = getTag(compositeScore, testMyRate, testAvgRate);
-    return {u, dsAnswered, dsRate, testMatches, testMyRate, testAvgRate, compositeScore, tag};
-  }).filter(r => r.dsAnswered > 0 || r.testMatches.length > 0);
-};
-
-const sm = SM[anaSubj];
-const rows = buildUnitSummary(anaSubj).sort((a,b) => TAG_ORDER[a.tag] - TAG_ORDER[b.tag]);
-
-const counts = {strong:0,ok:0,caution:0,weak:0,nodata:0};
-rows.forEach(r => {
-  if (r.tag==="weak_easy"||r.tag==="weak") counts.weak++;
-  else if (r.tag==="weak_mid"||r.tag==="caution") counts.caution++;
-  else if (r.tag==="ok") counts.ok++;
-  else if (r.tag==="strong") counts.strong++;
-  else counts.nodata++;
-});
-
-const total = rows.length;
+const fmt=(v,d)=>v==null?"—":v.toFixed(d==null?1:d);
 
 return (
-<div style={{padding:"16px",paddingBottom:100,animation:"fadeUp .4s ease both"}}>
-  {/* 科目タブ */}
-  <div style={{display:"flex",gap:5,marginBottom:14}}>
-    {SUBJ_KEYS.map(k => {
-      const s = SM[k];
+<div style={{padding:"14px 13px 90px",animation:"fadeUp .4s ease both"}}>
+  <div style={{fontSize:17,fontWeight:800,marginBottom:2}}>📊 テスト結果分析</div>
+  <div style={{fontSize:10.5,opacity:.5,marginBottom:12,lineHeight:1.6}}>
+    テスト成績のみを対象に、<b>最新の回ほど重く</b>評価しています（加重比 1 : 0.65 : 0.42 …）。
+    {latestTest&&<span>　最新＝{latestTest.name}</span>}
+  </div>
+
+  {/* 科目切替 */}
+  <div style={{display:"flex",gap:6,marginBottom:14}}>
+    {SUBJ_KEYS.map(k=>{
+      const m=SM[k], on=anaSubj===k;
       return (
-        <button key={k} onClick={()=>setAnaSubj(k)} style={{flex:1,padding:"8px 2px",borderRadius:10,
-          border:`1.5px solid ${anaSubj===k?s.c+"99":"rgba(255,255,255,.1)"}`,
-          background:anaSubj===k?`${s.c}20`:"transparent",
-          color:anaSubj===k?s.c:"rgba(255,255,255,.35)",
-          fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:noto}}>
-          <div style={{fontSize:14}}>{s.i}</div>
-          <div>{s.l}</div>
+        <button key={k} onClick={()=>setAnaSubj(k)}
+          style={{flex:1,background:on?`${m.c}30`:"rgba(255,255,255,.05)",
+            border:on?`1px solid ${m.c}88`:"1px solid rgba(255,255,255,.1)",
+            color:on?m.c:"rgba(255,255,255,.55)",borderRadius:9,padding:"8px 2px",
+            fontSize:12,fontWeight:on?800:500,cursor:"pointer",fontFamily:noto}}>
+          {m.i} {m.l}
         </button>
       );
     })}
   </div>
 
-  {/* サマリーバー */}
-  <div style={{marginBottom:14,borderRadius:12,background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.07)",padding:"12px 14px"}}>
-    <div style={{fontSize:10,opacity:.4,marginBottom:8,letterSpacing:1}}>単元別 習熟度サマリー（{sm.l}）</div>
-    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
-      {[["weak","🔴 苦手・要克服","#ef4444"],["caution","🟡 要注意","#f59e0b"],["ok","〇 普通","#60a5fa"],["strong","✅ 得意","#4ade80"],["nodata","— 未集計","#475569"]].map(([k,l,c])=>(
-        <div key={k} style={{display:"flex",alignItems:"center",gap:4}}>
-          <span style={{fontSize:12,fontWeight:700,color:c}}>{counts[k]}</span>
-          <span style={{fontSize:9,color:"rgba(255,255,255,.3)"}}>{l}</span>
+  {/* サマリー */}
+  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+    <div style={{padding:"11px",borderRadius:11,background:`${cur.c}14`,border:`1px solid ${cur.c}38`}}>
+      <div style={{fontSize:10,opacity:.6}}>加重平均 偏差値</div>
+      <div style={{fontSize:25,fontWeight:900,fontFamily:"monospace",color:cur.c}}>{fmt(ws.hensachi)}</div>
+      {ws.trend!=null&&(
+        <div style={{fontSize:10.5,fontWeight:700,color:ws.trend>=0?"#4ade80":"#f87171"}}>
+          直近 {ws.trend>=0?"▲+":"▼"}{ws.trend.toFixed(1)}
         </div>
-      ))}
+      )}
     </div>
-    {total > 0 && (
-      <div style={{display:"flex",height:6,borderRadius:3,overflow:"hidden"}}>
-        {[{k:"weak",c:"#ef4444",n:counts.weak},{k:"caution",c:"#f59e0b",n:counts.caution},{k:"ok",c:"#60a5fa",n:counts.ok},{k:"strong",c:"#4ade80",n:counts.strong},{k:"nodata",c:"#334155",n:counts.nodata}].filter(s=>s.n>0).map((s,i)=>(
-          <div key={i} style={{width:`${s.n/total*100}%`,background:s.c,opacity:.8}}/>
-        ))}
-      </div>
-    )}
-    <div style={{fontSize:9,opacity:.25,marginTop:6}}>✱ DS正誤入力済み＋テスト弱点記録のある単元のみ集計</div>
+    <div style={{padding:"11px",borderRadius:11,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)"}}>
+      <div style={{fontSize:10,opacity:.6}}>加重平均 得点率</div>
+      <div style={{fontSize:25,fontWeight:900,fontFamily:"monospace",
+        color:ws.rate>=60?"#4ade80":ws.rate>=45?"#fbbf24":"#f87171"}}>{fmt(ws.rate,0)}<span style={{fontSize:13}}>%</span></div>
+      <div style={{fontSize:10,opacity:.45}}>最新 {ws.latest!=null?ws.latest.toFixed(1):"—"}</div>
+    </div>
   </div>
 
-  {/* 単元一覧 */}
-  {rows.length === 0 ? (
-    <div style={{textAlign:"center",fontSize:12,opacity:.28,padding:"32px 16px",lineHeight:1.8}}>
-      デイリーサポートの正誤入力またはテスト結果の弱点分野を登録すると、ここに単元別の習熟度が表示されます
+  {/* 易問分析（加重） */}
+  {we.loss!=null&&(
+    <div style={{padding:"11px 12px",borderRadius:11,background:"rgba(59,130,246,.1)",border:"1px solid rgba(96,165,250,.28)",marginBottom:12}}>
+      <div style={{fontSize:11.5,fontWeight:700,color:"#93c5fd",marginBottom:6}}>💎 易問の取りこぼし（加重平均）</div>
+      <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
+        <div>
+          <div style={{fontSize:9.5,opacity:.55}}>1回あたり平均</div>
+          <div style={{fontSize:22,fontWeight:900,fontFamily:"monospace",color:"#f87171"}}>−{we.loss.toFixed(0)}<span style={{fontSize:11}}>点</span></div>
+        </div>
+        <div>
+          <div style={{fontSize:9.5,opacity:.55}}>易問正答率</div>
+          <div style={{fontSize:22,fontWeight:900,fontFamily:"monospace",
+            color:we.easyPct>=70?"#4ade80":we.easyPct>=55?"#fbbf24":"#f87171"}}>{we.easyPct.toFixed(0)}<span style={{fontSize:11}}>%</span></div>
+        </div>
+        {we.latestLoss!=null&&(
+          <div style={{marginLeft:"auto",textAlign:"right"}}>
+            <div style={{fontSize:9.5,opacity:.55}}>最新回</div>
+            <div style={{fontSize:15,fontWeight:800,fontFamily:"monospace",opacity:.85}}>−{we.latestLoss}点</div>
+          </div>
+        )}
+      </div>
+      <div style={{fontSize:9.5,opacity:.42,marginTop:6,lineHeight:1.6}}>
+        受験者の6割以上が正解した問題での失点。ここを減らすことが最短ルートです。
+      </div>
     </div>
-  ) : (
-    <div style={{display:"flex",flexDirection:"column",gap:7}}>
-      {rows.map((r, i) => {
-        const meta = TAG_META[r.tag] || TAG_META.nodata;
+  )}
+
+  {/* 分野別（加重） */}
+  <div style={{fontSize:12,fontWeight:700,marginBottom:7,opacity:.8}}>分野別の評価（最新重視の加重）</div>
+  {fields.length===0
+    ? <div style={{padding:"20px",textAlign:"center",fontSize:11.5,opacity:.4}}>この科目の分野別データがまだありません。</div>
+    : fields.map((f,i)=>{
+        const meta=TAG_META[f.tag];
         return (
-          <div key={i} style={{borderRadius:11,background:meta.bg,border:`1px solid ${meta.border}`,padding:"10px 13px"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-              <div style={{fontSize:12,fontWeight:700,color:"white"}}>{r.u.code}「{r.u.title}」</div>
-              <span style={{fontSize:10,fontWeight:700,color:meta.color,background:`${meta.color}22`,
-                padding:"2px 8px",borderRadius:10,flexShrink:0,marginLeft:8}}>{meta.label}</span>
+          <div key={i} style={{marginBottom:7,padding:"9px 11px",borderRadius:10,
+            background:meta.bg,border:`1px solid ${meta.border}`}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:f.latestNote?4:0}}>
+              <span style={{fontSize:12.5,fontWeight:700}}>{f.field}</span>
+              <span style={{fontSize:10.5,fontWeight:700,color:meta.color,flexShrink:0,marginLeft:8}}>{meta.label}</span>
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:4}}>
-              {r.dsRate != null && (
-                <RateBar label="DS正答率" rate={r.dsRate} sub={`(${r.dsAnswered}問)`}/>
-              )}
-              {r.testMyRate != null && (
-                <RateBar label="テスト" rate={r.testMyRate} sub={r.testAvgRate!=null?`平均${r.testAvgRate}%`:null}/>
-              )}
-              {r.compositeScore != null && r.dsRate != null && r.testMyRate != null && (
-                <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:9,color:"rgba(255,255,255,.38)",width:72,flexShrink:0}}>総合</span>
-                  <div style={{flex:1,height:5,borderRadius:3,background:"rgba(255,255,255,.07)",overflow:"hidden"}}>
-                    <div style={{height:"100%",borderRadius:3,
-                      background:r.compositeScore>=75?"#4ade80":r.compositeScore>=55?"#a78bfa":r.compositeScore>=35?"#f59e0b":"#ef4444",
-                      width:`${r.compositeScore}%`,transition:"width .4s"}}/>
-                  </div>
-                  <span style={{fontSize:10,fontWeight:700,
-                    color:r.compositeScore>=75?"#4ade80":r.compositeScore>=55?"#a78bfa":r.compositeScore>=35?"#fcd34d":"#f87171",
-                    width:30,textAlign:"right",flexShrink:0}}>{r.compositeScore}%</span>
-                </div>
-              )}
-            </div>
-            {r.testMatches.length > 0 && (
-              <div style={{fontSize:9,opacity:.28,marginTop:5}}>
-                📝 {r.testMatches.slice(0,2).map(m=>m.testName||"テスト").join("・")}に出題
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:f.latestNote?5:0}}>
+              <div style={{flex:1,height:5,borderRadius:3,background:"rgba(255,255,255,.08)",overflow:"hidden",position:"relative"}}>
+                <div style={{height:"100%",width:`${Math.min(100,f.my||0)}%`,background:meta.color,borderRadius:3}}/>
+                {f.av!=null&&<div style={{position:"absolute",left:`${Math.min(100,f.av)}%`,top:-2,width:2,height:9,background:"rgba(255,255,255,.65)"}}/>}
               </div>
-            )}
+              <span style={{fontSize:11,fontWeight:800,fontFamily:"monospace",color:meta.color,width:64,textAlign:"right"}}>
+                {f.my!=null?Math.round(f.my):"—"}%
+                {f.av!=null&&<span style={{fontSize:8.5,opacity:.5}}> /平均{Math.round(f.av)}</span>}
+              </span>
+            </div>
+            {f.latestNote&&<div style={{fontSize:9.5,opacity:.62,lineHeight:1.55}}>{f.latestNote}</div>}
           </div>
         );
       })}
-    </div>
-  )}
+
+  {/* 対象テスト一覧 */}
+  <div style={{marginTop:14,padding:"10px 11px",borderRadius:10,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)"}}>
+    <div style={{fontSize:10.5,fontWeight:700,opacity:.7,marginBottom:6}}>分析対象テストと重み</div>
+    {allTests.slice(0,8).map((t,i)=>(
+      <div key={t.id||i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+        fontSize:10,padding:"3px 0",opacity:i===0?1:0.4+0.6*weightOf(i)}}>
+        <span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginRight:8}}>
+          {i===0&&<span style={{color:"#4ade80",fontWeight:700,marginRight:4}}>最新</span>}
+          {t.date} {t.name}
+        </span>
+        <span style={{fontFamily:"monospace",flexShrink:0,opacity:.7}}>×{weightOf(i).toFixed(2)}</span>
+      </div>
+    ))}
+  </div>
 </div>
 );
 }
 
-
-// ============================================================
-// 有名中入試問題集 取り組み管理
-// ============================================================
 function YumeichuScreen({ storage }) {
 const SCHOOLS = window.__SAPIX_DATA__.YUMEICHU_SCHOOLS;
 const SUBJ = [
@@ -10421,6 +10565,9 @@ function HomeScreen({ onOpenDaily, onOpenWS, allAnswers, wsAllAnswers }) {
 const [tab, setTab] = useState("home");
 const [userEvents, setUserEvents] = useState([]);
 const [showAddEvent, setShowAddEvent] = useState(false);
+const [dayModal, setDayModal] = useState(null);   // "YYYY-MM-DD"
+const [hiddenSapix, setHiddenSapix] = useState([]);  // 非表示にしたSAPIX予定のキー
+const [quickEv, setQuickEv] = useState({title:"", slot:"morning", type:"kakomon", memo:""});
 const [newEvent, setNewEvent] = useState({ title:"", date:"", type:"class", memo:"" });
 const [calMonth, setCalMonth] = useState(() => { const d=new Date(); return {y:d.getFullYear(),m:d.getMonth()}; });
 const [showSapixOnly, setShowSapixOnly] = useState(false);
@@ -10802,6 +10949,48 @@ const IMPORTED_TESTS = [
       {field:"地理総合問題",score:"20/44",myRate:45,avgRate:46,avg:20.1,priority:"ok",note:"ほぼ平均並み。安定してきている。"},
     ],
   },
+},
+{
+  id:"imported-monthly-aug",
+  date:"2026-08-27",
+  name:"夏期講習マンスリー実力テスト",
+  type:"monthly",
+  total:"225", maxTotal:500,
+  hensachi:"42.7",
+  math:"53", mathMax:150, mathHensachi:"42.6",
+  japanese:"66", japaneseMax:150, japaneseHensachi:"38.5",
+  science:"58", scienceMax:100, scienceHensachi:"50.5",
+  social:"48", socialMax:100, socialHensachi:"44.3",
+  memo:"東京校 平常コース6年D／易問ロス70点は9回中で最少。夏の成果が出た回",
+  qData:{math:[["6-(1)①",3,"○",87.7],["1-(1)",6,"×",85.5],["2-(2)",6,"○",83.4],["3-(1)",6,"○",83.2],["2-(1)",6,"×",81.1],["2-(4)",6,"○",75.8],["4-(1)",5,"○",72.5],["1-(2)",6,"○",72.1],["2-(3)",6,"×",59.8],["3-(2)",6,"×",59.2],["3-(5)",6,"×",58.3],["2-(6)",6,"×",57.5],["2-(7)",6,"○",51.5],["7-(1)①",3,"○",51.0],["6-(1)②",3,"×",50.0],["4-(2)",6,"○",48.5],["3-(4)",6,"○",42.8],["3-(3)",6,"×",42.7],["6-(2)",6,"×",35.5],["2-(5)",6,"×",35.4],["7-(1)②",3,"×",35.4],["4-(3)",6,"×",33.9],["6-(3)",6,"×",24.1],["7-(2)",5,"×",23.2],["5-(1)",6,"×",22.2],["7-(3)①",3,"×",15.8],["5-(2)",6,"×",8.5],["7-(3)②",5,"×",2.5]],japanese:[["3-問一Ｄ",2,"○",96.9],["1-1",2,"○",96.7],["3-問一Ｃ",2,"○",94.0],["2-2(2)",2,"○",90.9],["1-3",2,"○",90.7],["4-問一Ｂ",3,"○",90.3],["3-問一Ａ",2,"○",89.8],["4-問三",5,"×",89.5],["3-問二",5,"○",86.9],["1-7",2,"×",85.0],["3-問五",5,"×",84.8],["2-2(3)",2,"○",83.4],["1-5",2,"○",83.2],["4-問一Ａ",3,"○",83.0],["1-8",2,"×",81.1],["4-問六",5,"○",80.3],["2-1(3)",2,"×",79.3],["4-問一Ｃ",3,"×",79.0],["2-1(2)",2,"×",77.5],["4-問五",5,"○",73.6],["3-問一Ｂ",2,"○",72.7],["4-問九",5,"○",71.9],["1-2",2,"○",68.4],["3-問四",5,"×",66.5],["4-問四",5,"×",63.1],["1-4",2,"×",56.2],["2-2(1)",2,"×",48.6],["1-10",2,"×",45.5],["4-問二",5,"○",44.8],["4-問七",5,"×",40.5],["3-問七",12,"×",37.0],["2-2(4)",2,"×",34.8],["3-問六",5,"×",34.1],["1-9",2,"○",33.3],["2-1(4)",2,"×",24.9],["1-6",2,"×",20.7],["2-1(1)",2,"×",19.2],["2-2(5)",2,"×",11.8],["2-1(5)",2,"×",2.0]],science:[["3-(1)①",3,"○",96.6],["1-(2)",3,"○",85.6],["4-(2)①",2,"○",85.6],["3-(1)②",3,"○",83.5],["4-(1)",2,"○",83.5],["2-(3)",3,"○",82.7],["3-(2)",3,"○",80.6],["4-(3)",2,"×",77.0],["2-(1)",3,"○",75.9],["1-(1)",3,"○",75.5],["3-(4)",3,"○",75.5],["1-(5)",3,"×",73.1],["1-(7)①",2,"×",70.8],["2-(4)",3,"○",68.5],["3-(1)③",3,"○",66.7],["1-(8)",3,"○",65.4],["2-(5)",3,"×",64.9],["2-(2)",3,"×",62.0],["1-(4)",3,"○",61.5],["2-(6)",3,"○",60.2],["4-(4)",3,"○",56.6],["1-(3)",3,"×",54.2],["4-(2)②",2,"○",52.6],["1-(6)",3,"×",50.0],["3-(3)",2,"○",47.4],["4-(6)①",2,"×",43.9],["2-(8)い",2,"×",40.3],["3-(5)①",3,"×",37.3],["4-(6)②",2,"×",36.4],["4-(7)②",2,"○",35.5],["3-(5)②",3,"×",33.7],["4-(5)①",2,"○",27.9],["4-(8)",2,"○",27.0],["2-(8)あ",2,"×",21.5],["3-(6)",2,"×",19.9],["1-(7)②",2,"○",18.4],["4-(5)②",2,"×",16.8],["4-(7)①",2,"×",16.0],["2-(7)",3,"×",9.4]],social:[["2-(1)",2,"○",96.1],["1-(11)3あ",2,"○",91.4],["2-(5)2",2,"○",90.1],["1-(3)1",2,"○",89.9],["2-(10)Ｙ",2,"×",78.3],["2-(12)",2,"○",76.7],["2-(5)1",2,"×",75.5],["2-(11)Ｂ",2,"○",75.1],["2-(2)3",2,"×",74.6],["1-(3)2",2,"○",73.4],["3-(1)",2,"○",73.3],["1-(8)Ｙ",2,"×",72.4],["2-(7)享保",2,"○",70.8],["2-(10)Ｘ",2,"×",70.1],["1-(11)4",2,"○",68.8],["2-(2)2",2,"○",68.1],["2-(6)2",2,"○",67.7],["2-(9)2",2,"×",61.7],["1-(11)2",2,"×",60.5],["2-(11)Ｃ",2,"○",60.0],["1-(8)Ｘ",2,"○",59.2],["1-(6)3石炭",2,"×",58.7],["2-(11)Ａ",2,"×",58.5],["1-(9)",2,"×",58.4],["2-(2)1",2,"×",58.4],["1-(6)1",2,"○",57.9],["1-(6)3鉄鉱",2,"×",56.7],["1-(11)1",2,"○",53.7],["1-(7)",2,"○",53.2],["1-(4)2",2,"×",52.5],["2-(4)",2,"×",52.2],["2-(3)",2,"○",51.9],["2-(7)天保",2,"×",51.6],["1-(6)2",2,"○",50.0],["2-(6)1",2,"×",49.2],["1-(5)",2,"×",47.2],["3-(5)1Ｂ",2,"○",45.7],["3-(3)",2,"×",45.6],["2-(9)1",2,"×",45.0],["1-(2)",2,"×",41.8],["2-(8)",2,"○",40.8],["3-(2)",2,"×",40.2],["1-(4)1",2,"×",37.0],["3-(5)2",2,"×",35.9],["1-(11)3い",2,"×",33.9],["3-(6)",2,"×",33.2],["3-(5)1Ｄ",2,"×",33.0],["1-(1)",2,"○",32.9],["1-(10)",2,"○",32.6],["3-(4)",2,"○",31.6]]},
+  weakFields:{
+    math:[
+      {field:"小問集合（文章題）",score:"18/42",myRate:43,avgRate:64,avg:26.7,priority:"high",note:"平均64%の小問群。基本技術の取りこぼしが最大の失点源。"},
+      {field:"計算問題",score:"6/12",myRate:50,avgRate:79,avg:9.5,priority:"high",note:"平均79%の計算で半分。毎朝の計算練習を継続すれば必ず戻る。"},
+      {field:"小問集合（図形）",score:"12/30",myRate:40,avgRate:57,avg:17.2,priority:"mid",note:"図形小問。5年範囲の平面図形の穴埋めが効く。"},
+      {field:"割合（食塩水）",score:"11/17",myRate:65,avgRate:51,avg:8.6,priority:"ok",note:"平均超え！夏の割合対策が効いている。"},
+      {field:"平面図形",score:"3/18",myRate:17,avgRate:43,avg:7.7,priority:"mid",note:"平均43%。図形は引き続き課題。"},
+      {field:"規則性",score:"3/19",myRate:16,avgRate:23,avg:4.4,priority:"ok",note:"受験者全体でも正答率が低い分野。"},
+      {field:"速さ",score:"0/12",myRate:0,avgRate:15,avg:1.8,priority:"ok",note:"全体でも難問。捨ててよい。"},
+    ],
+    japanese:[
+      {field:"物語文の読解",score:"31/58",myRate:53,avgRate:57,avg:33.3,priority:"mid",note:"ほぼ平均並み。読解対策が定着してきた。"},
+      {field:"論説文の読解",score:"21/52",myRate:40,avgRate:59,avg:30.5,priority:"high",note:"平均59%に対し40%。根拠に線を引く練習を継続。"},
+      {field:"漢字の読み書き",score:"10/20",myRate:50,avgRate:66,avg:13.2,priority:"high",note:"毎朝の反復が最も効く分野。半分は取り返せる。"},
+      {field:"慣用句",score:"4/20",myRate:20,avgRate:48,avg:9.5,priority:"high",note:"知識分野。朝ルーチンで確実に伸ばせる。"},
+    ],
+    science:[
+      {field:"気体発生",score:"12/25",myRate:48,avgRate:56,avg:13.9,priority:"mid",note:"計算分野。3回戦方式の対象。"},
+      {field:"天体",score:"15/25",myRate:60,avgRate:47,avg:11.7,priority:"ok",note:"平均超え！星・月の復習が効いた。"},
+      {field:"植物",score:"14/25",myRate:56,avgRate:63,avg:15.7,priority:"mid",note:"知識分野。白紙再現で固める。"},
+      {field:"てこ",score:"17/25",myRate:68,avgRate:62,avg:15.6,priority:"ok",note:"平均超え。力学の型が身についてきた。"},
+    ],
+    social:[
+      {field:"公民総合問題",score:"6/16",myRate:38,avgRate:43,avg:6.8,priority:"mid",note:"やや平均以下。憲法・三権分立の知識精度を上げる。"},
+      {field:"地理総合問題",score:"22/42",myRate:52,avgRate:56,avg:23.6,priority:"mid",note:"資料読み取りの練習を。青学でも頻出。"},
+      {field:"歴史総合問題",score:"20/42",myRate:48,avgRate:65,avg:27.4,priority:"high",note:"平均65%に対し48%。人物・年代の芋づる練習を。"},
+    ],
+  },
 }
 ];
 
@@ -10815,6 +11004,7 @@ useEffect(() => {
 try { const r=await Storage.get("user_events"); if(r) setUserEvents(JSON.parse(r.value)); } catch {}
 try { const r=await Storage.get("test_scores"); if(r) setTestScores(JSON.parse(r.value)); } catch {}
 try { const r=await Storage.get("mock_sessions"); if(r) setMockSessions(JSON.parse(r.value)); } catch {}
+try { const r=await Storage.get("hidden_sapix"); if(r) setHiddenSapix(JSON.parse(r.value)); } catch {}
 })();
 }, []);
 
@@ -10822,7 +11012,12 @@ const saveUserEvents = async (evs) => { setUserEvents(evs); try { await Storage.
 const saveScores = async (sc) => { const s=[...sc].sort((a,b)=>b.date.localeCompare(a.date)); setTestScores(s); try { await Storage.set("test_scores", JSON.stringify(s)); } catch {} };
 const saveMock = async (ms) => { setMockSessions(ms); try { await Storage.set("mock_sessions", JSON.stringify(ms)); } catch {} };
 
-const allEvents = [...SAPIX_SCHEDULE.map(e=>({...e,sapix:true})), ...userEvents.map(e=>({...e,sapix:false}))].sort((a,b)=>a.date.localeCompare(b.date));
+const sapixKey = (e) => `${e.date}__${e.title}`;
+const allEvents = [
+  ...SAPIX_SCHEDULE.map(e=>({...e,sapix:true,_key:sapixKey(e)}))
+    .filter(e=>!hiddenSapix.includes(e._key)),
+  ...userEvents.map(e=>({...e,sapix:false}))
+].sort((a,b)=>a.date.localeCompare(b.date));
 
 const addEvent = async () => {
 if (!newEvent.title||!newEvent.date) return;
@@ -10831,6 +11026,25 @@ setNewEvent({title:"",date:"",type:"class",memo:""});
 setShowAddEvent(false);
 };
 const deleteEvent = async (id) => saveUserEvents(userEvents.filter(e=>e.id!==id));
+const saveHiddenSapix = async (list) => {
+  setHiddenSapix(list);
+  try { await Storage.set("hidden_sapix", JSON.stringify(list)); } catch {}
+};
+const hideSapixEvent = async (key) => saveHiddenSapix([...hiddenSapix, key]);
+const restoreSapixEvent = async (key) => saveHiddenSapix(hiddenSapix.filter(k=>k!==key));
+const restoreAllSapix = async () => saveHiddenSapix([]);
+const addQuickEvent = async () => {
+  if(!dayModal||!quickEv.title.trim()) return;
+  await saveUserEvents([...userEvents, {
+    id: Date.now().toString(),
+    date: dayModal,
+    title: quickEv.title.trim(),
+    type: quickEv.type,
+    slot: quickEv.slot,
+    memo: quickEv.memo||"",
+  }]);
+  setQuickEv({title:"", slot:quickEv.slot, type:quickEv.type, memo:""});
+};
 const addTest = async () => {
 if (!newTest.date||!newTest.name) return;
 const entry = {
@@ -10860,8 +11074,23 @@ class:     {label:"通常授業",          color:"#3b82f6",bg:"#071830",glow:nul
 spring:    {label:"春期/GS特訓",       color:"#8b5cf6",bg:"#150b30",glow:null},
 summer:    {label:"夏期講習",           color:"#06b6d4",bg:"#062028",glow:null},
 other:     {label:"その他",             color:"#6b7280",bg:"#12141c",glow:null},
+kakomon:   {label:"過去問",             color:"#10b981",bg:"#06231a",glow:"rgba(16,185,129,.3)"},
+mytest:    {label:"テスト",             color:"#ef4444",bg:"#3a0808",glow:"rgba(239,68,68,.3)"},
 };
-const isTestType = (t) => t==="test"||t==="sapixopen";
+// 日付タップで登録する際の分類（手入力用）
+const QUICK_TYPES = [
+  {id:"kakomon", label:"過去問", color:"#10b981"},
+  {id:"mytest",  label:"テスト", color:"#ef4444"},
+  {id:"other",   label:"他",     color:"#6b7280"},
+];
+const TIME_SLOTS = [
+  {id:"morning", label:"朝", icon:"🌅"},
+  {id:"noon",    label:"昼", icon:"☀️"},
+  {id:"evening", label:"夕", icon:"🌆"},
+  {id:"night",   label:"夜", icon:"🌙"},
+];
+const SLOT_ORDER = {morning:0, noon:1, evening:2, night:3};
+const isTestType = (t) => t==="test"||t==="sapixopen"||t==="mytest";
 
 const subjProgress = SUBJECTS.map(s => {
 const units=UNITS[s.id]||[];
@@ -11120,6 +11349,36 @@ const days=Math.round((nextDate-todayMidnight)/86400000);
 {/* カレンダータブ */}
 {tab==="cal"&&(
 <div style={{padding:"16px",animation:"fadeUp .4s ease both"}}>
+  <div style={{fontSize:10.5,opacity:.45,marginBottom:9,textAlign:"center"}}>📅 日付をタップすると、その日の予定を登録・削除できます</div>
+  {hiddenSapix.length>0&&(
+    <div style={{marginBottom:11,padding:"9px 11px",borderRadius:9,
+      background:"rgba(245,158,11,.09)",border:"1px solid rgba(245,158,11,.28)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+        <span style={{fontSize:10.5,color:"#fbbf24",fontWeight:700}}>
+          非表示にしたSAPIX予定 {hiddenSapix.length}件
+        </span>
+        <button onClick={restoreAllSapix}
+          style={{background:"rgba(245,158,11,.2)",border:"1px solid rgba(245,158,11,.45)",
+            color:"#fbbf24",borderRadius:6,padding:"4px 9px",fontSize:10,cursor:"pointer",fontFamily:noto}}>
+          すべて元に戻す
+        </button>
+      </div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+        {hiddenSapix.slice(0,10).map(k=>{
+          const [d,ttl]=k.split("__");
+          return (
+            <button key={k} onClick={()=>restoreSapixEvent(k)}
+              style={{background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.13)",
+                color:"rgba(255,255,255,.6)",borderRadius:5,padding:"3px 7px",fontSize:9,
+                cursor:"pointer",fontFamily:noto}}>
+              ↩ {d.slice(5)} {ttl.length>10?ttl.slice(0,10)+"…":ttl}
+            </button>
+          );
+        })}
+        {hiddenSapix.length>10&&<span style={{fontSize:9,opacity:.4,alignSelf:"center"}}>他{hiddenSapix.length-10}件</span>}
+      </div>
+    </div>
+  )}
   <div style={{display:"flex",gap:6,marginBottom:12}}>
     <button onClick={()=>setShowSapixOnly(false)} style={{flex:1,padding:"7px",borderRadius:8,border:`1px solid ${!showSapixOnly?"#3b82f6":"rgba(255,255,255,.1)"}`,background:!showSapixOnly?"#3b82f622":"transparent",color:!showSapixOnly?"#60a5fa":"rgba(255,255,255,.35)",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:noto}}>すべて表示</button>
     <button onClick={()=>setShowSapixOnly(true)} style={{flex:1,padding:"7px",borderRadius:8,border:`1px solid ${showSapixOnly?"#8b5cf6":"rgba(255,255,255,.1)"}`,background:showSapixOnly?"#8b5cf622":"transparent",color:showSapixOnly?"#a78bfa":"rgba(255,255,255,.35)",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:noto}}>SAPIXのみ</button>
@@ -11148,8 +11407,10 @@ const days=Math.round((nextDate-todayMidnight)/86400000);
       const evs=eventsOnDay(d);
       const hasTest=evs.some(e=>isTestType(e.type));
       const tod=isToday(d);
+      const dstr=d?`${calMonth.y}-${String(calMonth.m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`:null;
       return (
-        <div key={i} style={{minHeight:48,borderRadius:7,
+        <div key={i} onClick={()=>{if(d){setDayModal(dstr);setQuickEv({title:"",slot:"morning",type:"kakomon",memo:""});}}}
+          style={{minHeight:48,borderRadius:7,cursor:d?"pointer":"default",
           background:hasTest?"rgba(239,68,68,.14)":tod?"#1a3358":"rgba(255,255,255,.02)",
           border:hasTest?"2px solid rgba(239,68,68,.65)":tod?"1.5px solid #3b82f6":"1px solid rgba(255,255,255,.04)",
           padding:"3px 2px",display:"flex",flexDirection:"column",alignItems:"center",gap:2,
@@ -11167,7 +11428,8 @@ const days=Math.round((nextDate-todayMidnight)/86400000);
   {/* この月のイベント一覧 */}
   {(()=>{
     const ms=`${calMonth.y}-${String(calMonth.m+1).padStart(2,"0")}`;
-    const evs=allEvents.filter(e=>e.date.startsWith(ms));
+    const evs=allEvents.filter(e=>e.date.startsWith(ms))
+      .sort((a,b)=>a.date!==b.date?a.date.localeCompare(b.date):((SLOT_ORDER[a.slot]??9)-(SLOT_ORDER[b.slot]??9)));
     if(!evs.length) return <div style={{textAlign:"center",fontSize:12,opacity:.28,padding:"16px"}}>この月の予定はありません</div>;
     return(
       <div>
@@ -11178,7 +11440,11 @@ const days=Math.round((nextDate-todayMidnight)/86400000);
               <div style={{width:3,minHeight:26,borderRadius:2,background:t.color,flexShrink:0,marginTop:2}}/>
               <div style={{flex:1}}>
                 <div style={{fontSize:12,fontWeight:isTest?700:500,color:isTest?t.color:"white"}}>{ev.title}</div>
-                <div style={{fontSize:9,opacity:.42,marginTop:1}}>{fmtDate(ev.date)}{ev.sapix?" · SAPIX":""}</div>
+                <div style={{fontSize:9,opacity:.42,marginTop:1}}>
+                  {fmtDate(ev.date)}
+                  {(()=>{const sl=TIME_SLOTS.find(s=>s.id===ev.slot);return sl?` · ${sl.icon}${sl.label}`:"";})()}
+                  {ev.sapix?" · SAPIX":""}
+                </div>
                 {ev.memo&&<div style={{fontSize:9,opacity:.38,marginTop:2,lineHeight:1.4}}>{ev.memo}</div>}
               </div>
               {!ev.sapix&&<button onClick={()=>deleteEvent(ev.id)} style={{background:"rgba(239,68,68,.15)",border:"1px solid rgba(239,68,68,.3)",color:"#ef4444",borderRadius:6,width:26,height:26,fontSize:12,cursor:"pointer",flexShrink:0}}>×</button>}
@@ -11207,6 +11473,114 @@ const days=Math.round((nextDate-todayMidnight)/86400000);
       </div>
     </div>
   )}
+
+  {/* ── 日付タップ：その日の予定を登録 ── */}
+  {dayModal&&(()=>{
+    const dObj=new Date(dayModal+"T00:00:00");
+    const wd="日月火水木金土"[dObj.getDay()];
+    const dayEvents=allEvents.filter(e=>e.date===dayModal)
+      .sort((a,b)=>(SLOT_ORDER[a.slot]??9)-(SLOT_ORDER[b.slot]??9));
+    const inp={width:"100%",background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.15)",
+      borderRadius:8,padding:"10px 11px",color:"white",fontSize:14,outline:"none",
+      boxSizing:"border-box",colorScheme:"dark",fontFamily:noto};
+    return (
+      <div onClick={()=>setDayModal(null)}
+        style={{position:"fixed",inset:0,zIndex:200,background:"rgba(0,0,0,.72)",
+          backdropFilter:"blur(3px)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+        <div onClick={e=>e.stopPropagation()}
+          style={{width:"100%",maxWidth:520,maxHeight:"88vh",overflowY:"auto",
+            background:"#0b1220",borderTop:"1px solid rgba(255,255,255,.12)",
+            borderRadius:"18px 18px 0 0",padding:"16px 15px 26px"}}>
+
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+            <div style={{fontSize:17,fontWeight:800}}>
+              {dObj.getMonth()+1}月{dObj.getDate()}日
+              <span style={{fontSize:12,marginLeft:6,
+                color:dObj.getDay()===0?"#f87171":dObj.getDay()===6?"#60a5fa":"rgba(255,255,255,.5)"}}>（{wd}）</span>
+            </div>
+            <button onClick={()=>setDayModal(null)}
+              style={{background:"rgba(255,255,255,.08)",border:"none",color:"white",
+                width:30,height:30,borderRadius:"50%",fontSize:16,cursor:"pointer"}}>×</button>
+          </div>
+
+          {/* 既存の予定 */}
+          {dayEvents.length>0&&(
+            <div style={{marginBottom:14}}>
+              <div style={{fontSize:10.5,opacity:.5,marginBottom:6}}>この日の予定</div>
+              {dayEvents.map((ev,k)=>{
+                const t=EVENT_TYPES[ev.type]||EVENT_TYPES.other;
+                const sl=TIME_SLOTS.find(s=>s.id===ev.slot);
+                return (
+                  <div key={k} style={{display:"flex",alignItems:"center",gap:8,marginBottom:5,
+                    padding:"8px 10px",borderRadius:9,background:`${t.color}14`,border:`1px solid ${t.color}3d`}}>
+                    {sl&&<span style={{fontSize:13,flexShrink:0}}>{sl.icon}</span>}
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12.5,fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ev.title}</div>
+                      <div style={{fontSize:9.5,opacity:.5}}>
+                        {sl?sl.label:""}　{t.label}{ev.sapix?"　·　SAPIX":""}{ev.memo?`　${ev.memo}`:""}
+                      </div>
+                    </div>
+                    <button onClick={()=>ev.sapix?hideSapixEvent(ev._key):deleteEvent(ev.id)}
+                      style={{background:"rgba(239,68,68,.15)",border:"none",color:"#f87171",
+                        borderRadius:6,padding:"5px 9px",fontSize:11,cursor:"pointer",flexShrink:0}}>削除</button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* 新規登録 */}
+          <div style={{fontSize:11,fontWeight:700,opacity:.7,marginBottom:7}}>＋ 予定を追加</div>
+
+          <input value={quickEv.title} onChange={e=>setQuickEv({...quickEv,title:e.target.value})}
+            placeholder="予定を入力（例：青学2024年度 算数）" style={{...inp,marginBottom:10}}/>
+
+          <div style={{fontSize:10.5,opacity:.55,marginBottom:5}}>時間帯</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:11}}>
+            {TIME_SLOTS.map(s=>{
+              const on=quickEv.slot===s.id;
+              return (
+                <button key={s.id} onClick={()=>setQuickEv({...quickEv,slot:s.id})}
+                  style={{background:on?"rgba(96,165,250,.25)":"rgba(255,255,255,.05)",
+                    border:on?"1px solid rgba(96,165,250,.6)":"1px solid rgba(255,255,255,.1)",
+                    color:on?"#93c5fd":"rgba(255,255,255,.55)",borderRadius:9,padding:"9px 2px",
+                    fontSize:12,fontWeight:on?800:500,cursor:"pointer",fontFamily:noto}}>
+                  <div style={{fontSize:15}}>{s.icon}</div>{s.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div style={{fontSize:10.5,opacity:.55,marginBottom:5}}>分類</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:11}}>
+            {QUICK_TYPES.map(q=>{
+              const on=quickEv.type===q.id;
+              return (
+                <button key={q.id} onClick={()=>setQuickEv({...quickEv,type:q.id})}
+                  style={{background:on?`${q.color}33`:"rgba(255,255,255,.05)",
+                    border:on?`1px solid ${q.color}99`:"1px solid rgba(255,255,255,.1)",
+                    color:on?q.color:"rgba(255,255,255,.55)",borderRadius:9,padding:"10px 2px",
+                    fontSize:13,fontWeight:on?800:500,cursor:"pointer",fontFamily:noto}}>
+                  {q.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <input value={quickEv.memo} onChange={e=>setQuickEv({...quickEv,memo:e.target.value})}
+            placeholder="メモ（任意）" style={{...inp,fontSize:13,marginBottom:12}}/>
+
+          <button onClick={addQuickEvent} disabled={!quickEv.title.trim()}
+            style={{width:"100%",padding:"13px",borderRadius:10,border:"none",
+              background:quickEv.title.trim()?"linear-gradient(135deg,#059669,#0d9488)":"rgba(255,255,255,.08)",
+              color:quickEv.title.trim()?"white":"rgba(255,255,255,.3)",
+              fontSize:15,fontWeight:700,cursor:quickEv.title.trim()?"pointer":"default",fontFamily:noto}}>
+            この日に追加する
+          </button>
+        </div>
+      </div>
+    );
+  })()}
 </div>
 )}
 
