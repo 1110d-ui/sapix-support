@@ -34,7 +34,7 @@ window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
 if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sapix-support/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260831-051';
+const CURRENT_VERSION = '20260915-052';
 async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
 function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
 setTimeout(checkForUpdate,3000);
@@ -9987,6 +9987,24 @@ const PIN = "aoyama";
 const DEFAULT_MIN = {
   aoyama: {min:183, total:300, src:"2026年度 女子・学校公式"},
 };
+
+// 青学 年度別の大問テンプレート（配点非公表のため問題数で均等推定）
+const AOYAMA_TEMPLATES = {
+  2026: {
+    math:     {max:100,     sections:[{n:1,label:"四則計算",items:1},{n:2,label:"逆算",items:1},{n:3,label:"単位の計算",items:1},{n:4,label:"売買損益・つるかめ算",items:1},{n:5,label:"差集め算",items:1},{n:6,label:"条件の整理",items:1},{n:7,label:"集まり・相当算",items:1},{n:8,label:"速さと比",items:1},{n:9,label:"比",items:1},{n:10,label:"比",items:1},{n:11,label:"角度",items:1},{n:12,label:"速さ・周期 (1)(2)",items:2},{n:13,label:"場合分け (1)(2)",items:2}]},
+    japanese: {max:100, sections:[{n:1,label:"漢字 (1)〜(5)",items:5},{n:2,label:"詩 (1)〜(5)",items:5},{n:3,label:"論説文 (1)〜(8)",items:8},{n:4,label:"物語文① (1)〜(9)",items:9},{n:5,label:"物語文② (1)〜(5)",items:5}]},
+    science:  {max:50,  sections:[{n:1,label:"総合小問 (1)〜(5)",items:5},{n:2,label:"生物（微生物） (1)〜(5)",items:5},{n:3,label:"地学 (1)(2)",items:5},{n:4,label:"化学（金属） (1)〜(5)",items:8},{n:5,label:"物理（電気） (1)〜(4)",items:6}]},
+    social:   {max:50,   sections:[{n:1,label:"大問1",items:5},{n:2,label:"食生活・米の問題",items:5},{n:3,label:"江戸の火消制度",items:3},{n:4,label:"日本の伝統美術品",items:3},{n:5,label:"世界の出来事年表",items:2},{n:6,label:"関税・選挙・平和記念式典",items:3}]},
+  },
+};
+const LOSS_REASONS = [
+  {id:"calc",  label:"計算ミス", color:"#f59e0b"},
+  {id:"read",  label:"読み違い", color:"#a78bfa"},
+  {id:"know",  label:"知識不足", color:"#ef4444"},
+  {id:"time",  label:"時間切れ", color:"#60a5fa"},
+  {id:"blank", label:"空白",     color:"#6b7280"},
+];
+
 // 年度別記録に対応する学校（過去問を繰り返し解く志望校）
 const YEARLY_SCHOOLS = {
   aoyama: {name:"青山学院中等部", years:10, color:"#f472b6",
@@ -10194,19 +10212,28 @@ if(editing){
   );
 }
 
-// ── 年度別×科目の得点入力（大問別・満点設定） ──
+// ── 年度別×科目の得点入力（大問別・満点・空白・失点理由・時間） ──
 if(editYear){
   const CFG=YEARLY_SCHOOLS[editYear.schoolId];
   const su=CFG.subj.find(x=>x.id===editYear.subjId);
   const color=SUBJ.find(x=>x.id===editYear.subjId).color;
-  const tot=editYear.scores.reduce((a,b)=>a+(parseFloat(b)||0),0);
+  const rows=editYear.rows;  // [{label,score,max,blank,reason}]
+  const tot=rows.reduce((a,r)=>a+(parseFloat(r.score)||0),0);
   const mx=parseFloat(editYear.max)||0;
   const pct=mx?Math.round(tot/mx*100):0;
+  const totalBlank=rows.reduce((a,r)=>a+(parseInt(r.blank)||0),0);
+  const setRow=(i,f,v)=>{const n=rows.map((r,j)=>j===i?{...r,[f]:v}:r);setEditYear({...editYear,rows:n});};
   const commitYear=async()=>{
     const next={...yearlyData};
     const sd={...(next[editYear.schoolId]||{})};
     const yd={...(sd[editYear.year]||{})};
-    yd[editYear.subjId]={max:parseFloat(editYear.max)||0, scores:editYear.scores.map(v=>v===""?"":String(v))};
+    yd[editYear.subjId]={
+      max:parseFloat(editYear.max)||0,
+      time:editYear.time===""?"":String(editYear.time),
+      rows:rows.map(r=>({label:r.label||"",score:r.score===""?"":String(r.score),
+        max:r.max===""?"":String(r.max),blank:r.blank===""?"":String(r.blank),reason:r.reason||""})),
+      scores:rows.map(r=>r.score===""?"":String(r.score)), // 後方互換
+    };
     sd[editYear.year]=yd; next[editYear.schoolId]=sd;
     await saveYearly(next); setEditYear(null);
   };
@@ -10218,38 +10245,75 @@ if(editYear){
     sd[editYear.year]=yd; next[editYear.schoolId]=sd;
     await saveYearly(next); setEditYear(null);
   };
+  const smallInp={background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.15)",borderRadius:7,
+    padding:"7px 6px",color:"white",fontSize:13,outline:"none",boxSizing:"border-box",colorScheme:"dark",
+    width:"100%",textAlign:"center",fontFamily:"monospace"};
   return (
-    <div style={{padding:"14px 14px 90px"}}>
-      <button onClick={()=>setEditYear(null)} style={{background:"none",border:"none",color:"#93c5fd",fontSize:13,cursor:"pointer",padding:"6px 0",marginBottom:10}}>← 年度一覧にもどる</button>
+    <div style={{padding:"14px 12px 90px"}}>
+      <button onClick={()=>setEditYear(null)} style={{background:"none",border:"none",color:"#93c5fd",fontSize:13,cursor:"pointer",padding:"6px 0",marginBottom:8}}>← 年度一覧にもどる</button>
       <div style={{fontSize:12,opacity:.6}}>{CFG.name}</div>
-      <div style={{fontSize:19,fontWeight:800,color:color,marginBottom:14}}>{editYear.year}年度　{su.label==="算"?"算数":su.label==="国"?"国語":su.label==="理"?"理科":"社会"}</div>
+      <div style={{fontSize:19,fontWeight:800,color:color,marginBottom:12}}>{editYear.year}年度　{su.label==="算"?"算数":su.label==="国"?"国語":su.label==="理"?"理科":"社会"}</div>
 
-      <div style={{marginBottom:14}}>
-        <div style={{fontSize:11,opacity:.6,marginBottom:4}}>この科目の満点</div>
-        <input type="number" inputMode="numeric" value={editYear.max}
-          onChange={e=>setEditYear({...editYear,max:e.target.value})} style={inpStyle}/>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+        <div>
+          <div style={{fontSize:10.5,opacity:.6,marginBottom:4}}>この科目の満点</div>
+          <input type="number" inputMode="numeric" value={editYear.max} onChange={e=>setEditYear({...editYear,max:e.target.value})} style={inpStyle}/>
+        </div>
+        <div>
+          <div style={{fontSize:10.5,opacity:.6,marginBottom:4}}>かかった時間（分）</div>
+          <input type="number" inputMode="numeric" value={editYear.time} placeholder={su.id==="math"||su.id==="japanese"?"50":"25"}
+            onChange={e=>setEditYear({...editYear,time:e.target.value})} style={inpStyle}/>
+        </div>
       </div>
 
-      <div style={{fontSize:12,fontWeight:700,marginBottom:6}}>大問ごとの得点</div>
-      {editYear.scores.map((s,i)=>(
-        <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
-          <span style={{fontSize:12,opacity:.7,width:52,flexShrink:0}}>大問{i+1}</span>
-          <input type="number" inputMode="decimal" value={s} placeholder="—"
-            onChange={e=>{const n=[...editYear.scores];n[i]=e.target.value;setEditYear({...editYear,scores:n});}}
-            style={{...inpStyle,flex:1}}/>
-          <button onClick={()=>{const n=editYear.scores.filter((_,j)=>j!==i);setEditYear({...editYear,scores:n.length?n:[""]});}}
-            style={{background:"rgba(239,68,68,.15)",border:"none",color:"#f87171",borderRadius:7,padding:"7px 10px",fontSize:12,cursor:"pointer",flexShrink:0}}>削除</button>
-        </div>
-      ))}
-      <button onClick={()=>setEditYear({...editYear,scores:[...editYear.scores,""]})}
-        style={{width:"100%",background:"rgba(59,130,246,.15)",border:"1px dashed rgba(96,165,250,.45)",color:"#93c5fd",borderRadius:8,padding:"9px",fontSize:13,cursor:"pointer",marginBottom:14}}>＋ 大問を追加</button>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 46px 46px 40px",gap:5,marginBottom:4,fontSize:9.5,opacity:.5,textAlign:"center"}}>
+        <div style={{textAlign:"left"}}>大問</div><div>得点</div><div>満点</div><div>空白</div>
+      </div>
+      {rows.map((r,i)=>{
+        const rs=LOSS_REASONS.find(x=>x.id===r.reason);
+        return (
+          <div key={i} style={{marginBottom:7,padding:"7px 8px",borderRadius:9,background:"rgba(255,255,255,.035)",border:"1px solid rgba(255,255,255,.08)"}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 46px 46px 40px",gap:5,alignItems:"center",marginBottom:5}}>
+              <input value={r.label} onChange={e=>setRow(i,"label",e.target.value)} placeholder={`大問${i+1}`}
+                style={{...smallInp,textAlign:"left",fontFamily:"inherit",fontSize:11.5,padding:"7px 8px"}}/>
+              <input type="number" inputMode="decimal" value={r.score} onChange={e=>setRow(i,"score",e.target.value)} placeholder="—" style={smallInp}/>
+              <input type="number" inputMode="decimal" value={r.max} onChange={e=>setRow(i,"max",e.target.value)} placeholder="—" style={{...smallInp,opacity:.7}}/>
+              <input type="number" inputMode="numeric" value={r.blank} onChange={e=>setRow(i,"blank",e.target.value)} placeholder="0" style={{...smallInp,opacity:.7}}/>
+            </div>
+            <div style={{display:"flex",gap:4,alignItems:"center"}}>
+              <span style={{fontSize:9,opacity:.45,flexShrink:0,width:52}}>失点理由</span>
+              <div style={{display:"flex",gap:3,flex:1,flexWrap:"wrap"}}>
+                {LOSS_REASONS.map(L=>{
+                  const on=r.reason===L.id;
+                  return (
+                    <button key={L.id} onClick={()=>setRow(i,"reason",on?"":L.id)}
+                      style={{background:on?`${L.color}33`:"rgba(255,255,255,.04)",
+                        border:on?`1px solid ${L.color}99`:"1px solid rgba(255,255,255,.1)",
+                        color:on?L.color:"rgba(255,255,255,.4)",borderRadius:5,padding:"3px 7px",
+                        fontSize:9.5,fontWeight:on?700:400,cursor:"pointer",fontFamily:"inherit"}}>
+                      {L.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <button onClick={()=>{const n=rows.filter((_,j)=>j!==i);setEditYear({...editYear,rows:n.length?n:[{label:"",score:"",max:"",blank:"",reason:""}]});}}
+                style={{background:"rgba(239,68,68,.12)",border:"none",color:"#f87171",borderRadius:5,padding:"3px 7px",fontSize:9.5,cursor:"pointer",flexShrink:0}}>削除</button>
+            </div>
+          </div>
+        );
+      })}
+      <button onClick={()=>setEditYear({...editYear,rows:[...rows,{label:"",score:"",max:"",blank:"",reason:""}]})}
+        style={{width:"100%",background:"rgba(59,130,246,.15)",border:"1px dashed rgba(96,165,250,.45)",color:"#93c5fd",borderRadius:8,padding:"9px",fontSize:13,cursor:"pointer",marginBottom:12}}>＋ 大問を追加</button>
 
-      <div style={{padding:"12px",borderRadius:10,background:`${color}15`,border:`1px solid ${color}35`,textAlign:"center",marginBottom:14}}>
+      <div style={{padding:"12px",borderRadius:10,background:`${color}15`,border:`1px solid ${color}35`,textAlign:"center",marginBottom:12}}>
         <div style={{fontSize:11,opacity:.6}}>合計</div>
         <div style={{fontSize:26,fontWeight:900,fontFamily:"monospace",color:color}}>
           {tot}<span style={{fontSize:14,opacity:.6}}> / {mx||"—"}</span>
         </div>
-        {mx>0&&<div style={{fontSize:13,fontWeight:700,color:pct>=70?"#4ade80":pct>=50?"#fbbf24":"#f87171"}}>得点率 {pct}%</div>}
+        <div style={{display:"flex",justifyContent:"center",gap:14,marginTop:4}}>
+          {mx>0&&<span style={{fontSize:12,fontWeight:700,color:pct>=70?"#4ade80":pct>=50?"#fbbf24":"#f87171"}}>得点率 {pct}%</span>}
+          <span style={{fontSize:12,fontWeight:700,color:totalBlank>0?"#fbbf24":"#4ade80"}}>空白 {totalBlank}問</span>
+        </div>
       </div>
 
       <button onClick={commitYear} style={{width:"100%",background:"linear-gradient(135deg,#059669,#0d9488)",border:"none",color:"white",borderRadius:10,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer",marginBottom:8}}>保存する</button>
@@ -10276,10 +10340,14 @@ if(view!=="list"&&YEARLY_SCHOOLS[view]){
   const getSub=(y,sid)=>{
     const d=(data[y]||{})[sid];
     if(d===undefined||d==="") return null;
-    if(typeof d==="object") return d;
+    if(typeof d==="object"){
+      if(!d.scores&&Array.isArray(d.rows)) return {...d,scores:d.rows.map(r=>r.score)};
+      return d;
+    }
     return {max:(CFG.subj.find(s=>s.id===sid)||{}).max, scores:[String(d)]}; // 旧データ移行
   };
-  const subTotal=(y,sid)=>{const d=getSub(y,sid);return d?d.scores.reduce((a,b)=>a+(parseFloat(b)||0),0):0;};
+  const subTotal=(y,sid)=>{const d=getSub(y,sid);return d?(d.scores||[]).reduce((a,b)=>a+(parseFloat(b)||0),0):0;};
+  const subBlank=(y,sid)=>{const d=getSub(y,sid);return d&&Array.isArray(d.rows)?d.rows.reduce((a,r)=>a+(parseInt(r.blank)||0),0):0;};
   const yMin=(y)=>{const d=data[y]||{};return d.min!==undefined&&d.min!==""?d.min:(CFG.officialMin[y]!==undefined?String(CFG.officialMin[y]):"");};
   const yTotal=(y)=>CFG.subj.reduce((a,s)=>a+subTotal(y,s.id),0);
   const yHasAny=(y)=>CFG.subj.some(s=>getSub(y,s.id)!==null);
@@ -10288,9 +10356,24 @@ if(view!=="list"&&YEARLY_SCHOOLS[view]){
   const openYearEdit=(y,sid)=>{
     const d=getSub(y,sid);
     const def=CFG.subj.find(s=>s.id===sid);
+    let rows;
+    if(d&&Array.isArray(d.rows)&&d.rows.length){
+      rows=d.rows.map(r=>({label:r.label||"",score:r.score??"",max:r.max??"",blank:r.blank??"",reason:r.reason||""}));
+    }else if(d&&Array.isArray(d.scores)&&d.scores.length){
+      rows=d.scores.map((s,i)=>({label:`大問${i+1}`,score:s,max:"",blank:"",reason:""}));
+    }else{
+      const tpl=(view==="aoyama"&&AOYAMA_TEMPLATES[y]&&AOYAMA_TEMPLATES[y][sid])||null;
+      if(tpl){
+        const per=tpl.max/tpl.sections.reduce((a,s)=>a+s.items,0);
+        rows=tpl.sections.map(s=>({label:`${s.n}. ${s.label}`,score:"",max:String(Math.round(per*s.items*10)/10),blank:"",reason:""}));
+      }else{
+        rows=[{label:"大問1",score:"",max:"",blank:"",reason:""},{label:"大問2",score:"",max:"",blank:"",reason:""}];
+      }
+    }
     setEditYear({schoolId:view, year:y, subjId:sid,
       max: d?String(d.max):String(def.max),
-      scores: d?[...d.scores]:["",""]});
+      time: d&&d.time!==undefined?String(d.time):"",
+      rows});
   };
   return (
     <div style={{padding:"12px 12px 90px"}}>
@@ -10304,6 +10387,134 @@ if(view!=="list"&&YEARLY_SCHOOLS[view]){
         <div style={{fontSize:10,opacity:.6}}>入力済み年度</div>
         <div style={{fontSize:22,fontWeight:900,fontFamily:"monospace",color:CFG.color}}>{doneY}<span style={{fontSize:12,opacity:.6}}>/{CFG.years}年</span></div>
       </div>
+
+      {/* ══ 過去問分析（入力済みが1年以上あれば表示） ══ */}
+      {doneY>0&&(()=>{
+        const doneYears=YEARS.filter(y=>yHasAny(y)).sort((a,b)=>a-b); // 古→新
+        const SUBJ_C={math:"#3b82f6",japanese:"#ec4899",science:"#22c55e",social:"#f59e0b"};
+        // 年度ごとの合計・最低点・空白
+        const yearStats=doneYears.map(y=>{
+          const tot=yTotal(y); const mn=parseFloat(yMin(y));
+          const blank=CFG.subj.reduce((a,s)=>a+subBlank(y,s.id),0);
+          const mx=CFG.subj.reduce((a,s)=>{const d=getSub(y,s.id);return a+(d?(parseFloat(d.max)||0):s.max);},0);
+          return {y,tot,mn:isNaN(mn)?null:mn,blank,mx,rate:mx?tot/mx*100:0};
+        });
+        // 失点理由の集計（科目別）
+        const reasonBySubj={};
+        CFG.subj.forEach(s=>{
+          const cnt={};
+          doneYears.forEach(y=>{const d=getSub(y,s.id);if(d&&Array.isArray(d.rows))d.rows.forEach(r=>{
+            const lost=(parseFloat(r.max)||0)-(parseFloat(r.score)||0);
+            if(r.reason&&lost>0){cnt[r.reason]=(cnt[r.reason]||0)+lost;}
+          });});
+          reasonBySubj[s.id]=cnt;
+        });
+        // 合格ライン予測（直近の得点率推移から線形外挿）
+        const lastMin=(()=>{for(let i=yearStats.length-1;i>=0;i--)if(yearStats[i].mn!=null)return yearStats[i].mn;return CFG.officialMin[2026]||null;})();
+        const latest=yearStats[yearStats.length-1];
+        const gap=lastMin!=null?latest.tot-lastMin:null;
+        // 全期間の傾き
+        let trend=null;
+        if(yearStats.length>=2){
+          const a=yearStats[0],b=yearStats[yearStats.length-1];
+          trend=(b.tot-a.tot)/(yearStats.length-1);
+        }
+        const H=(v,c)=><span style={{fontFamily:"monospace",fontWeight:800,color:c}}>{v}</span>;
+        return (
+          <div style={{marginBottom:14}}>
+            {/* 合格ラインまでの距離 */}
+            <div style={{padding:"12px 13px",borderRadius:12,marginBottom:10,
+              background:gap==null?"rgba(255,255,255,.04)":gap>=0?"rgba(34,197,94,.12)":"rgba(239,68,68,.10)",
+              border:`1px solid ${gap==null?"rgba(255,255,255,.1)":gap>=0?"rgba(74,222,128,.4)":"rgba(248,113,113,.35)"}`}}>
+              <div style={{fontSize:10.5,opacity:.6,marginBottom:2}}>最新（{latest.y}年度）合格ラインまで</div>
+              <div style={{fontSize:30,fontWeight:900,fontFamily:"monospace",color:gap==null?"rgba(255,255,255,.5)":gap>=0?"#4ade80":"#f87171"}}>
+                {gap==null?"—":(gap>=0?"+":"")+gap}<span style={{fontSize:13,marginLeft:4}}>点</span>
+              </div>
+              <div style={{fontSize:11,opacity:.65,marginTop:2}}>
+                {latest.tot}点 / 最低点{lastMin!=null?lastMin:"未設定"}　得点率{Math.round(latest.rate)}%　空白{latest.blank}問
+              </div>
+              {trend!=null&&yearStats.length>=2&&(
+                <div style={{fontSize:10,opacity:.55,marginTop:5}}>
+                  1年度あたり {trend>=0?"+":""}{trend.toFixed(1)}点ペース
+                  {gap!=null&&gap<0&&trend>0&&<span>　→ あと約{Math.ceil(-gap/trend)}回分で到達見込み</span>}
+                </div>
+              )}
+            </div>
+
+            {/* 年度別 推移（合計・空白） */}
+            <div style={{padding:"10px 11px",borderRadius:10,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",marginBottom:10}}>
+              <div style={{fontSize:11,fontWeight:700,opacity:.75,marginBottom:6}}>📈 年度別の推移</div>
+              {yearStats.map(s=>{
+                const ok=s.mn!=null&&s.tot>=s.mn;
+                return (
+                  <div key={s.y} style={{display:"flex",alignItems:"center",gap:8,marginBottom:5,fontSize:11}}>
+                    <span style={{width:34,opacity:.7,fontWeight:700}}>{s.y}</span>
+                    <div style={{flex:1,height:7,borderRadius:4,background:"rgba(255,255,255,.08)",position:"relative",overflow:"hidden"}}>
+                      <div style={{width:`${Math.min(100,s.rate)}%`,height:"100%",background:ok?"#4ade80":s.mn==null?"#60a5fa":"#f87171",borderRadius:4}}/>
+                      {s.mn!=null&&s.mx>0&&<div style={{position:"absolute",left:`${Math.min(100,s.mn/s.mx*100)}%`,top:-2,width:2,height:11,background:"rgba(255,255,255,.8)"}}/>}
+                    </div>
+                    <span style={{width:58,textAlign:"right",fontFamily:"monospace",fontWeight:700,color:ok?"#4ade80":s.mn==null?"rgba(255,255,255,.7)":"#f87171"}}>{s.tot}<span style={{fontSize:9,opacity:.6}}>/{s.mx}</span></span>
+                    <span style={{width:40,textAlign:"right",fontSize:9.5,color:s.blank>0?"#fbbf24":"rgba(255,255,255,.35)"}}>空{s.blank}</span>
+                  </div>
+                );
+              })}
+              <div style={{fontSize:9,opacity:.4,marginTop:3}}>白線＝合格最低点の位置</div>
+            </div>
+
+            {/* 科目×年度 ヒートマップ */}
+            <div style={{padding:"10px 11px",borderRadius:10,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",marginBottom:10}}>
+              <div style={{fontSize:11,fontWeight:700,opacity:.75,marginBottom:6}}>🔥 科目×年度 得点率ヒートマップ</div>
+              <div style={{display:"grid",gridTemplateColumns:`34px repeat(${CFG.subj.length},1fr)`,gap:3,fontSize:10}}>
+                <div/>
+                {CFG.subj.map(s=><div key={s.id} style={{textAlign:"center",fontWeight:700,color:SUBJ_C[s.id]}}>{s.label}</div>)}
+                {doneYears.map(y=>(
+                  <React.Fragment key={y}>
+                    <div style={{opacity:.7,fontWeight:700,alignSelf:"center"}}>{y}</div>
+                    {CFG.subj.map(s=>{
+                      const d=getSub(y,s.id);
+                      if(!d) return <div key={s.id} style={{height:26,borderRadius:5,background:"rgba(255,255,255,.03)"}}/>;
+                      const st=subTotal(y,s.id); const smx=parseFloat(d.max)||s.max; const r=smx?st/smx:0;
+                      const bg=r>=0.7?"rgba(74,222,128,.55)":r>=0.55?"rgba(163,230,53,.45)":r>=0.4?"rgba(251,191,36,.45)":"rgba(248,113,113,.5)";
+                      return <div key={s.id} style={{height:26,borderRadius:5,background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"monospace",fontWeight:800,fontSize:10.5}}>{Math.round(r*100)}%</div>;
+                    })}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div style={{fontSize:9,opacity:.4,marginTop:4}}>緑≥70% ／ 黄緑≥55% ／ 黄≥40% ／ 赤&lt;40%</div>
+            </div>
+
+            {/* 失点の型 */}
+            {(()=>{
+              const any=Object.values(reasonBySubj).some(c=>Object.keys(c).length);
+              if(!any) return null;
+              return (
+                <div style={{padding:"10px 11px",borderRadius:10,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",marginBottom:10}}>
+                  <div style={{fontSize:11,fontWeight:700,opacity:.75,marginBottom:6}}>🧭 失点の型（科目別・失点の内訳）</div>
+                  {CFG.subj.map(s=>{
+                    const cnt=reasonBySubj[s.id]; const total=Object.values(cnt).reduce((a,b)=>a+b,0);
+                    if(!total) return null;
+                    const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+                    return (
+                      <div key={s.id} style={{marginBottom:7}}>
+                        <div style={{display:"flex",justifyContent:"space-between",fontSize:10.5,marginBottom:3}}>
+                          <span style={{fontWeight:700,color:SUBJ_C[s.id]}}>{s.label}</span>
+                          <span style={{opacity:.55}}>失点 {Math.round(total)}点</span>
+                        </div>
+                        <div style={{display:"flex",height:9,borderRadius:5,overflow:"hidden",background:"rgba(255,255,255,.06)"}}>
+                          {top.map(([rid,v])=>{const L=LOSS_REASONS.find(x=>x.id===rid);return <div key={rid} style={{width:`${v/total*100}%`,background:L?L.color:"#888"}}/>;})}
+                        </div>
+                        <div style={{display:"flex",flexWrap:"wrap",gap:5,marginTop:3}}>
+                          {top.map(([rid,v])=>{const L=LOSS_REASONS.find(x=>x.id===rid);return <span key={rid} style={{fontSize:9,color:L?L.color:"#ccc"}}>● {L?L.label:rid} {Math.round(v/total*100)}%</span>;})}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+        );
+      })()}
 
       {YEARS.map(y=>{
         const tot=yTotal(y);
@@ -10330,7 +10541,7 @@ if(view!=="list"&&YEARLY_SCHOOLS[view]){
                 const st=subTotal(y,s.id);
                 const smx=d?(parseFloat(d.max)||0):s.max;
                 const sp=d&&smx?Math.round(st/smx*100):null;
-                const incomplete=d&&d.scores.some(v=>v==="");
+                const incomplete=d&&(d.scores||[]).some(v=>v==="");
                 return (
                   <button key={s.id} onClick={()=>openYearEdit(y,s.id)}
                     style={{background:d?`${c}1f`:"rgba(255,255,255,.05)",
@@ -10341,9 +10552,10 @@ if(view!=="list"&&YEARLY_SCHOOLS[view]){
                       <div style={{fontSize:11,fontWeight:800,fontFamily:"monospace",
                         color:sp>=70?"#4ade80":sp>=50?"#fbbf24":"#f87171"}}>{st}<span style={{fontSize:8,opacity:.6}}>/{smx}</span></div>
                       <div style={{fontSize:7.5,opacity:.55,marginTop:1,fontFamily:"monospace",lineHeight:1.3,wordBreak:"break-all"}}>
-                        {d.scores.map((v,i)=>v===""?"—":v).join("・")}
+                        {(d.scores||[]).map((v,i)=>v===""?"—":v).join("・")}
                       </div>
                       {incomplete&&<div style={{fontSize:7,color:"#fbbf24"}}>△未入力あり</div>}
+                      {subBlank(y,s.id)>0&&<div style={{fontSize:7,color:"#fbbf24"}}>空白{subBlank(y,s.id)}</div>}
                     </>):<div style={{fontSize:9,opacity:.35,marginTop:1}}>未</div>}
                   </button>
                 );
@@ -10563,10 +10775,15 @@ return (
 
 function HomeScreen({ onOpenDaily, onOpenWS, allAnswers, wsAllAnswers }) {
 const [tab, setTab] = useState("home");
+React.useEffect(()=>{ if(tab!=="home") return; (async()=>{
+  try { const r=await window.storage.get("yumeichu-yearly"); if(r&&r.value){const all=JSON.parse(r.value); setAoyamaYearly(all.aoyama||{});} } catch {}
+})(); },[tab]);
 const [userEvents, setUserEvents] = useState([]);
 const [showAddEvent, setShowAddEvent] = useState(false);
 const [dayModal, setDayModal] = useState(null);   // "YYYY-MM-DD"
 const [hiddenSapix, setHiddenSapix] = useState([]);  // 非表示にしたSAPIX予定のキー
+const [aoyamaYearly, setAoyamaYearly] = useState({});   // 青学 年度別過去問（ダッシュボード用）
+const [routineLog, setRoutineLog] = useState({});       // 週間ルーチン {"YYYY-MM-DD":{r1,r2,r3}}
 const [quickEv, setQuickEv] = useState({title:"", slot:"morning", type:"kakomon", memo:""});
 const [newEvent, setNewEvent] = useState({ title:"", date:"", type:"class", memo:"" });
 const [calMonth, setCalMonth] = useState(() => { const d=new Date(); return {y:d.getFullYear(),m:d.getMonth()}; });
@@ -11005,6 +11222,8 @@ try { const r=await Storage.get("user_events"); if(r) setUserEvents(JSON.parse(r
 try { const r=await Storage.get("test_scores"); if(r) setTestScores(JSON.parse(r.value)); } catch {}
 try { const r=await Storage.get("mock_sessions"); if(r) setMockSessions(JSON.parse(r.value)); } catch {}
 try { const r=await Storage.get("hidden_sapix"); if(r) setHiddenSapix(JSON.parse(r.value)); } catch {}
+try { const r=await window.storage.get("yumeichu-yearly"); if(r&&r.value){const all=JSON.parse(r.value); setAoyamaYearly(all.aoyama||{});} } catch {}
+try { const r=await Storage.get("routine_log"); if(r) setRoutineLog(JSON.parse(r.value)); } catch {}
 })();
 }, []);
 
@@ -11033,6 +11252,12 @@ const saveHiddenSapix = async (list) => {
 const hideSapixEvent = async (key) => saveHiddenSapix([...hiddenSapix, key]);
 const restoreSapixEvent = async (key) => saveHiddenSapix(hiddenSapix.filter(k=>k!==key));
 const restoreAllSapix = async () => saveHiddenSapix([]);
+const toggleRoutine = async (dateStr, key) => {
+  const cur = routineLog[dateStr] || {};
+  const next = {...routineLog, [dateStr]: {...cur, [key]: !cur[key]}};
+  setRoutineLog(next);
+  try { await Storage.set("routine_log", JSON.stringify(next)); } catch {}
+};
 const addQuickEvent = async () => {
   if(!dayModal||!quickEv.title.trim()) return;
   await saveUserEvents([...userEvents, {
@@ -11143,7 +11368,7 @@ setMockSession(null); setMockAnswers({});
 
 const SUBJ_MAP={math:{label:"算数",color:"#3b82f6",icon:"∑"},japanese:{label:"国語",color:"#ef4444",icon:"文"},science:{label:"理科",color:"#22c55e",icon:"⚗"},social:{label:"社会",color:"#f59e0b",icon:"🌏"}};
 const inp={width:"100%",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",borderRadius:9,padding:"10px 12px",color:"white",fontFamily:noto,fontSize:13,outline:"none",marginBottom:8,boxSizing:"border-box",colorScheme:"dark"};
-const TABS=[{id:"home",icon:"🏠",label:"ホーム"},{id:"cal",icon:"📅",label:"カレンダー"},{id:"test",icon:"📝",label:"テスト成績"},{id:"analysis",icon:"📊",label:"分析"},{id:"daily",icon:"📋",label:"進捗"},{id:"yumeichu",icon:"📕",label:"有名中"}];
+const TABS=[{id:"home",icon:"🏠",label:"ホーム"},{id:"cal",icon:"📅",label:"カレンダー"},{id:"test",icon:"📝",label:"テスト成績"},{id:"analysis",icon:"📊",label:"分析"},{id:"yumeichu",icon:"📕",label:"有名中"}];
 
 return (
 <div style={{minHeight:"100vh",background:"#060c18",fontFamily:noto,color:"white",paddingBottom:80}}>
@@ -11168,7 +11393,112 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 {/* ホームタブ */}
 {tab==="home"&&(
 <div style={{padding:"16px",animation:"fadeUp .4s ease both"}}>
-  {/* 次のテスト警告バナー */}
+  {/* ══ 青山学院 合格ダッシュボード ══ */}
+{(()=>{
+  const TARGET_MIN=183; const TARGET_MAX=300;
+  const EXAM=new Date("2027-02-02T00:00:00");
+  const now=new Date(); const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const daysLeft=Math.max(0,Math.round((EXAM-today)/86400000));
+  // 青学過去問の最新データ
+  const yrs=Object.keys(aoyamaYearly).map(Number).filter(y=>{
+    const d=aoyamaYearly[y]||{}; return ["math","japanese","science","social"].some(s=>d[s]&&typeof d[s]==="object");
+  }).sort((a,b)=>b-a);
+  const subT=(d)=>{ if(!d||typeof d!=="object")return 0; const sc=d.scores||(d.rows?d.rows.map(r=>r.score):[]); return sc.reduce((a,b)=>a+(parseFloat(b)||0),0); };
+  const subB=(d)=>{ if(!d||!Array.isArray(d.rows))return 0; return d.rows.reduce((a,r)=>a+(parseInt(r.blank)||0),0); };
+  let latest=null;
+  if(yrs.length){
+    const y=yrs[0]; const d=aoyamaYearly[y];
+    const tot=["math","japanese","science","social"].reduce((a,s)=>a+subT(d[s]),0);
+    const blank=["math","japanese","science","social"].reduce((a,s)=>a+subB(d[s]),0);
+    const mn=d.min!==undefined&&d.min!==""?parseFloat(d.min):(y===2026?183:y===2025?188:TARGET_MIN);
+    const done=["math","japanese","science","social"].filter(s=>d[s]&&typeof d[s]==="object").length;
+    latest={y,tot,blank,mn,done};
+  }
+  const gap=latest?latest.tot-latest.mn:null;
+  // 今週のルーチン（月〜日）
+  const dow=(today.getDay()+6)%7; // 月=0
+  const monday=new Date(today); monday.setDate(today.getDate()-dow);
+  const week=[...Array(7)].map((_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d;});
+  const ds=(d)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const R=[{k:"r1",l:"朝ルーチン",i:"🌅"},{k:"r2",l:"SS/授業復習",i:"📘"},{k:"r3",l:"過去問",i:"📕"}];
+  const rate=(k)=>week.filter(d=>d<=today).length?Math.round(week.filter(d=>d<=today&&(routineLog[ds(d)]||{})[k]).length/week.filter(d=>d<=today).length*100):0;
+  // 重点分野（最新テストの weakFields から high を3つ）
+  const latestTest=[...IMPORTED_TESTS,...(testScores||[])].filter(t=>t&&t.date).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
+  const picks=[];
+  if(latestTest&&latestTest.weakFields){
+    const SL={math:"算",japanese:"国",science:"理",social:"社"};
+    Object.entries(latestTest.weakFields).forEach(([s,arr])=>(arr||[]).forEach(f=>{if(f.priority==="high")picks.push({s:SL[s]||s,f:f.field,my:f.myRate,av:f.avgRate});}));
+  }
+  return (
+    <div style={{margin:"0 0 14px",padding:"14px 14px 12px",borderRadius:16,
+      background:"linear-gradient(160deg,rgba(236,72,153,.16),rgba(59,130,246,.10))",
+      border:"1.5px solid rgba(244,114,182,.4)",boxShadow:"0 4px 22px rgba(236,72,153,.15)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:8}}>
+        <div style={{fontSize:14,fontWeight:900,color:"#f9a8d4"}}>★ 青山学院中等部 合格ダッシュボード</div>
+        <div style={{fontSize:10,opacity:.6}}>2/2まで <b style={{fontSize:14,color:"white",fontFamily:"monospace"}}>{daysLeft}</b>日</div>
+      </div>
+
+      {/* 合格ラインまでの距離 */}
+      <div style={{display:"grid",gridTemplateColumns:"1.2fr 1fr",gap:8,marginBottom:10}}>
+        <div style={{padding:"10px 11px",borderRadius:11,background:"rgba(6,12,24,.55)",border:"1px solid rgba(255,255,255,.08)"}}>
+          <div style={{fontSize:9.5,opacity:.55}}>合格ライン（{latest?latest.y:2026}年度 女子{latest?latest.mn:TARGET_MIN}点）まで</div>
+          {latest?(
+            <>
+              <div style={{fontSize:30,fontWeight:900,fontFamily:"monospace",lineHeight:1.05,
+                color:gap>=0?"#4ade80":"#f87171"}}>{gap>=0?"+":""}{gap}<span style={{fontSize:12,marginLeft:3}}>点</span></div>
+              <div style={{fontSize:10,opacity:.6,marginTop:2}}>{latest.tot}/{TARGET_MAX}　{latest.done<4&&<span style={{color:"#fbbf24"}}>※{latest.done}科目のみ</span>}</div>
+            </>
+          ):(
+            <div style={{fontSize:11,opacity:.5,padding:"6px 0"}}>過去問を解いたら<br/>有名中→青学に入力</div>
+          )}
+        </div>
+        <div style={{padding:"10px 11px",borderRadius:11,background:"rgba(6,12,24,.55)",border:"1px solid rgba(255,255,255,.08)"}}>
+          <div style={{fontSize:9.5,opacity:.55}}>最新過去問の空白</div>
+          <div style={{fontSize:30,fontWeight:900,fontFamily:"monospace",lineHeight:1.05,color:latest&&latest.blank===0?"#4ade80":"#fbbf24"}}>{latest?latest.blank:"—"}<span style={{fontSize:12,marginLeft:3}}>問</span></div>
+          <div style={{fontSize:10,opacity:.6,marginTop:2}}>目標 0問</div>
+        </div>
+      </div>
+
+      {/* 今週の3つの約束 */}
+      <div style={{padding:"9px 10px",borderRadius:11,background:"rgba(6,12,24,.55)",border:"1px solid rgba(255,255,255,.08)",marginBottom:10}}>
+        <div style={{fontSize:10.5,fontWeight:700,opacity:.75,marginBottom:6}}>今週の3つの約束（タップで○）</div>
+        <div style={{display:"grid",gridTemplateColumns:"64px repeat(7,1fr) 38px",gap:3,alignItems:"center",fontSize:9}}>
+          <div/>
+          {week.map((d,i)=><div key={i} style={{textAlign:"center",opacity:d.getTime()===today.getTime()?1:.5,fontWeight:d.getTime()===today.getTime()?800:400,color:i===5?"#60a5fa":i===6?"#f87171":"white"}}>{"月火水木金土日"[i]}</div>)}
+          <div style={{textAlign:"center",opacity:.5}}>率</div>
+          {R.map(r=>(
+            <React.Fragment key={r.k}>
+              <div style={{fontSize:10,whiteSpace:"nowrap"}}>{r.i} {r.l}</div>
+              {week.map((d,i)=>{
+                const on=!!(routineLog[ds(d)]||{})[r.k]; const future=d>today;
+                return <button key={i} onClick={()=>!future&&toggleRoutine(ds(d),r.k)} disabled={future}
+                  style={{height:24,borderRadius:6,border:"1px solid rgba(255,255,255,.1)",cursor:future?"default":"pointer",
+                    background:on?"rgba(74,222,128,.35)":future?"rgba(255,255,255,.02)":"rgba(255,255,255,.06)",
+                    color:on?"#4ade80":"rgba(255,255,255,.25)",fontSize:12,fontWeight:800,padding:0}}>{on?"○":future?"":"·"}</button>;
+              })}
+              <div style={{textAlign:"center",fontFamily:"monospace",fontWeight:800,fontSize:10,color:rate(r.k)>=80?"#4ade80":rate(r.k)>=50?"#fbbf24":"#f87171"}}>{rate(r.k)}%</div>
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      {/* 今週の拾える点 */}
+      {picks.length>0&&(
+        <div style={{padding:"9px 10px",borderRadius:11,background:"rgba(6,12,24,.55)",border:"1px solid rgba(255,255,255,.08)"}}>
+          <div style={{fontSize:10.5,fontWeight:700,opacity:.75,marginBottom:5}}>今すぐ拾える点（{latestTest.name}より）</div>
+          {picks.slice(0,3).map((p,i)=>(
+            <div key={i} style={{display:"flex",justifyContent:"space-between",fontSize:10.5,padding:"3px 0",borderBottom:i<Math.min(2,picks.length-1)?"1px solid rgba(255,255,255,.05)":"none"}}>
+              <span><span style={{opacity:.5,marginRight:5}}>{p.s}</span>{p.f}</span>
+              <span style={{fontFamily:"monospace",color:"#f87171"}}>{p.my}%<span style={{opacity:.45}}> /平均{p.av}%</span></span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+})()}
+
+{/* 次のテスト警告バナー */}
   {(()=>{
     const next=allEvents.find(e=>e.date>=todayStr&&isTestType(e.type));
     if (!next) return null;
@@ -11272,77 +11602,8 @@ const days=Math.round((nextDate-todayMidnight)/86400000);
     );
   })()}
 
-  <button onClick={onOpenDaily} style={{width:"100%",background:"linear-gradient(135deg,#1e3a5f,#162d4f)",border:"1.5px solid #3b82f655",borderRadius:14,padding:"14px 18px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",color:"white",fontFamily:noto}}>
-    <span style={{fontSize:22}}>📋</span>
-    <div style={{flex:1,textAlign:"left"}}><div style={{fontSize:14,fontWeight:700,fontFamily:serif}}>デイリーサポート</div><div style={{fontSize:11,color:"#3b82f6",marginTop:1}}>進捗管理アプリを開く</div></div>
-    <span style={{color:"#3b82f6",fontSize:18}}>›</span>
-  </button>
+  
 
-{/* 進捗 */}
-  <div style={{fontSize:10,opacity:.3,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>デイリーサポート進捗</div>
-  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:20}}>
-    {subjProgress.map(s=>(
-      <div key={s.id} style={{borderRadius:14,background:"rgba(255,255,255,.045)",borderTop:"1px solid rgba(255,255,255,.08)",borderRight:"1px solid rgba(255,255,255,.08)",borderBottom:"1px solid rgba(255,255,255,.08)",borderLeft:`4px solid ${s.accent}`,padding:"12px 13px",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:0,right:0,bottom:0,width:"45%",background:`linear-gradient(to left,${s.accent}12,transparent)`,pointerEvents:"none"}}/>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-          <div>
-            <div style={{fontSize:12,fontWeight:700,color:"white"}}>{s.icon} {s.label}</div>
-            <div style={{fontSize:9,color:s.accent,opacity:.7,marginTop:2}}>{(UNITS[s.id]||[]).length}単元</div>
-          </div>
-          <div style={{textAlign:"right"}}>
-            <div style={{fontSize:26,fontWeight:900,fontFamily:"monospace",color:scoreColor(s.pct),lineHeight:1}}>{s.pct==null?"—":s.pct+"%"}</div>
-            <div style={{fontSize:8,opacity:.4,marginTop:2}}>{s.ans}/{s.tot}問</div>
-          </div>
-        </div>
-        <div style={{height:3,borderRadius:2,background:"rgba(255,255,255,.08)",overflow:"hidden"}}>
-          <div style={{height:"100%",borderRadius:2,background:`linear-gradient(to right,${s.accent}aa,${s.accent})`,width:`${s.pct||0}%`,transition:"width .5s ease"}}/>
-        </div>
-      </div>
-    ))}
-  </div>
-
-  {/* 土曜特訓（WeeklySapiX）入り口 */}
-<button onClick={onOpenWS} style={{width:"100%",background:"linear-gradient(135deg,#1a3a1f,#0f2d15)",border:"1.5px solid #22c55e55",borderRadius:14,padding:"14px 18px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",color:"white",fontFamily:noto,marginTop:8}}>
-  <span style={{fontSize:24}}>🏫</span>
-  <div style={{flex:1,textAlign:"left"}}>
-    <div style={{fontSize:14,fontWeight:700,fontFamily:serif}}>土曜特訓（WS）</div>
-    <div style={{fontSize:11,color:"#22c55e",marginTop:1}}>
-      ウィークリーサピックスの正誤管理　›
-    </div>
-  </div>
-  {(()=>{
-    const total=Object.values(wsAllAnswers||{}).reduce((a,u)=>a+Object.keys(u||{}).length,0);
-    return total>0?<span style={{fontSize:11,color:"#22c55e",background:"#22c55e22",padding:"3px 8px",borderRadius:10}}>{total}問記録済み</span>:null;
-  })()}
-</button>
-
-{/* 土曜特訓進捗 */}
-  <div style={{fontSize:10,opacity:.3,letterSpacing:2,textTransform:"uppercase",marginBottom:10,marginTop:4}}>土曜特訓（WS）進捗</div>
-  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:20}}>
-    {SUBJECTS.map(s=>{
-      const units=WS_UNITS[s.id]||[];
-      const agg=units.reduce((a,u)=>{const st=calcStats(u.sections||[],( wsAllAnswers[u.id]||{}));return{c:a.c+st.correct,ans:a.ans+st.answered,tot:a.tot+st.total};},{c:0,ans:0,tot:0});
-      const pct=agg.ans===0?null:Math.round(agg.c/agg.ans*100);
-      return(
-        <div key={s.id} style={{borderRadius:14,background:"rgba(255,255,255,.045)",borderTop:"1px solid rgba(255,255,255,.08)",borderRight:"1px solid rgba(255,255,255,.08)",borderBottom:"1px solid rgba(255,255,255,.08)",borderLeft:`4px solid ${s.accent}`,padding:"12px 13px",position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",top:0,right:0,bottom:0,width:"45%",background:`linear-gradient(to left,${s.accent}12,transparent)`,pointerEvents:"none"}}/>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-            <div>
-              <div style={{fontSize:12,fontWeight:700,color:"white"}}>{s.icon} {s.label}</div>
-              <div style={{fontSize:9,color:s.accent,opacity:.7,marginTop:2}}>{units.length}単元</div>
-            </div>
-            <div style={{textAlign:"right"}}>
-              <div style={{fontSize:26,fontWeight:900,fontFamily:"monospace",color:scoreColor(pct),lineHeight:1}}>{pct==null?"—":pct+"%"}</div>
-              <div style={{fontSize:8,opacity:.4,marginTop:2}}>{agg.ans}/{agg.tot}問</div>
-            </div>
-          </div>
-          <div style={{height:3,borderRadius:2,background:"rgba(255,255,255,.08)",overflow:"hidden"}}>
-            <div style={{height:"100%",borderRadius:2,background:`linear-gradient(to right,${s.accent}aa,${s.accent})`,width:`${pct||0}%`,transition:"width .5s ease"}}/>
-          </div>
-        </div>
-      );
-    })}
-  </div>
 </div>
 )}
 
@@ -12098,32 +12359,6 @@ return(
   calcStats={calcStats}
   noto={noto}
 />
-)}
-
-{/* 進捗タブ */}
-{tab==="daily"&&(
-<div style={{padding:"16px",animation:"fadeUp .4s ease both"}}>
-  <div style={{fontSize:10,opacity:.3,letterSpacing:2,textTransform:"uppercase",marginBottom:13}}>科目別・単元別 正答率</div>
-  {subjProgress.map(s=>{const units=UNITS[s.id]||[];return(
-    <div key={s.id} style={{marginBottom:15,background:`${s.color}18`,border:`1px solid ${s.accent}33`,borderRadius:15,overflow:"hidden"}}>
-      <div style={{padding:"12px 15px",background:`linear-gradient(135deg,${s.color}aa,${s.color}66)`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:20}}>{s.icon}</span><span style={{fontSize:15,fontWeight:700,fontFamily:serif}}>{s.label}</span></div>
-        <div style={{fontSize:24,fontWeight:900,fontFamily:"monospace",color:scoreColor(s.pct)}}>{s.pct==null?"—%":s.pct+"%"}</div>
-      </div>
-      <div style={{padding:"10px 13px",display:"flex",flexDirection:"column",gap:6}}>
-        {units.map(u=>{const st=calcStats(u.sections||[],allAnswers[u.id]||{});const pct=st.answered===0?null:Math.round(st.correct/st.answered*100);const bc=scoreColor(pct);return(
-          <div key={u.id}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}><span style={{fontSize:10,opacity:.58,maxWidth:"72%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{u.code}「{u.title}」</span><span style={{fontSize:10,fontWeight:700,fontFamily:"monospace",color:bc}}>{pct==null?"未着手":pct+"%"}</span></div>
-            <div style={{height:4,borderRadius:2,background:"rgba(0,0,0,.3)",overflow:"hidden"}}><div style={{height:"100%",borderRadius:2,background:bc,width:`${pct||0}%`,transition:"width .5s"}}/></div>
-          </div>
-        );})}
-      </div>
-      <div style={{padding:"9px 15px",borderTop:"1px solid rgba(255,255,255,.05)"}}>
-        <button onClick={onOpenDaily} style={{width:"100%",padding:"8px",borderRadius:9,border:`1px solid ${s.accent}44`,background:`${s.color}44`,color:s.accent,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:noto}}>アプリで詳細を確認　›</button>
-      </div>
-    </div>
-  );})}
-</div>
 )}
 
 {/* 有名中タブ */}
