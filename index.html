@@ -34,7 +34,7 @@ window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
 if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sapix-support/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260915-052';
+const CURRENT_VERSION = '20260916-056';
 async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
 function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
 setTimeout(checkForUpdate,3000);
@@ -9739,8 +9739,38 @@ function RateBar({ label, rate, sub }) {
 // ============================================================
 // AnalysisTab: 科目別 得意・苦手単元一覧
 // ============================================================
+// ══ 青学換算：SAPIXテストを青学型（基礎重視・300点満点）に読み替える ══
+const AOYAMA_CONV = {
+  max: {math:100, japanese:100, science:50, social:50},
+  total: 300,
+  line: 183,                 // 2026年度 女子 合格最低点
+  easyThreshold: 60,         // 正答率60%以上＝青学レベルの基礎問題とみなす
+  label: {math:"算数", japanese:"国語", science:"理科", social:"社会"},
+  color: {math:"#3b82f6", japanese:"#ec4899", science:"#22c55e", social:"#f59e0b"},
+  // 科目別の目安（青学の合格ライン61%から逆算）
+  goal: {math:65, japanese:65, science:33, social:33},
+};
+function convertToAoyama(test){
+  if(!test||!test.qData) return null;
+  const out={subjects:{}, total:0, ok:true};
+  for(const s of ["math","japanese","science","social"]){
+    const qs=(test.qData[s]||[]).filter(q=>q[3]>=AOYAMA_CONV.easyThreshold);
+    if(!qs.length){ out.subjects[s]={conv:null,rate:null,got:0,full:0}; out.ok=false; continue; }
+    const got=qs.filter(q=>q[2]==="○").reduce((a,q)=>a+q[1],0);
+    const full=qs.reduce((a,q)=>a+q[1],0);
+    const rate=full?got/full:0;
+    const conv=Math.round(rate*AOYAMA_CONV.max[s]);
+    out.subjects[s]={conv, rate:Math.round(rate*100), got, full};
+    out.total+=conv;
+  }
+  out.gap=out.total-AOYAMA_CONV.line;
+  return out;
+}
+
+
 function AnalysisTab({ UNITS, IMPORTED_TESTS, testScores, allAnswers, calcStats, noto }) {
 const [anaSubj, setAnaSubj] = React.useState("math");
+const [simAdj, setSimAdj] = React.useState({});
 
 const SM = {
   math:     {l:"算数",c:"#3b82f6",i:"∑"},
@@ -9860,6 +9890,159 @@ return (
     テスト成績のみを対象に、<b>最新の回ほど重く</b>評価しています（加重比 1 : 0.65 : 0.42 …）。
     {latestTest&&<span>　最新＝{latestTest.name}</span>}
   </div>
+
+  {/* ══ D: 青学換算（全テスト） ══ */}
+  {(()=>{
+    const conv=allTests.map(t=>({t, c:convertToAoyama(t)})).filter(x=>x.c);
+    if(!conv.length) return null;
+    const latest=conv[0];
+    const best=conv.reduce((a,b)=>b.c.total>a.c.total?b:a);
+    const C=AOYAMA_CONV;
+    return (
+      <div style={{marginBottom:14,borderRadius:13,overflow:"hidden",
+        background:"linear-gradient(160deg,rgba(236,72,153,.14),rgba(59,130,246,.09))",
+        border:"1.5px solid rgba(244,114,182,.35)"}}>
+        <div style={{padding:"11px 12px 9px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:8}}>
+            <span style={{fontSize:12.5,fontWeight:800,color:"#f9a8d4"}}>★ 青学換算スコア</span>
+            <span style={{fontSize:9,opacity:.5}}>合格ライン {C.line}/{C.total}</span>
+          </div>
+          <div style={{fontSize:9.5,opacity:.55,marginBottom:9,lineHeight:1.5}}>
+            各テストから<b>正答率{C.easyThreshold}%以上の問題だけ</b>を抜き出し、青学の配点（算100・国100・理50・社50）に換算。
+            青学は基礎9割の入試なので、SAPIX偏差値よりこちらが実力に近い指標です。
+          </div>
+          {/* 最新 */}
+          <div style={{display:"grid",gridTemplateColumns:"1.15fr 1fr",gap:8,marginBottom:9}}>
+            <div style={{padding:"10px 11px",borderRadius:11,background:"rgba(6,12,24,.5)",border:"1px solid rgba(255,255,255,.08)"}}>
+              <div style={{fontSize:9.5,opacity:.55}}>最新（{latest.t.name.length>12?latest.t.name.slice(0,12)+"…":latest.t.name}）</div>
+              <div style={{fontSize:29,fontWeight:900,fontFamily:"monospace",lineHeight:1.05,
+                color:latest.c.gap>=0?"#4ade80":"#f87171"}}>{latest.c.total}<span style={{fontSize:12,opacity:.55}}>/{C.total}</span></div>
+              <div style={{fontSize:11,fontWeight:700,marginTop:1,color:latest.c.gap>=0?"#4ade80":"#f87171"}}>
+                ライン{latest.c.gap>=0?"+":""}{latest.c.gap}点
+              </div>
+            </div>
+            <div style={{padding:"10px 11px",borderRadius:11,background:"rgba(6,12,24,.5)",border:"1px solid rgba(255,255,255,.08)"}}>
+              <div style={{fontSize:9.5,opacity:.55}}>自己ベスト</div>
+              <div style={{fontSize:29,fontWeight:900,fontFamily:"monospace",lineHeight:1.05,color:"#93c5fd"}}>{best.c.total}</div>
+              <div style={{fontSize:9,opacity:.5,marginTop:2}}>{best.t.name.length>11?best.t.name.slice(0,11)+"…":best.t.name}</div>
+            </div>
+          </div>
+          {/* 科目別（最新） */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5,marginBottom:9}}>
+            {["math","japanese","science","social"].map(s=>{
+              const v=latest.c.subjects[s]; if(!v||v.conv==null) return <div key={s}/>;
+              const g=C.goal[s]; const ok=v.conv>=g;
+              return (
+                <div key={s} style={{padding:"7px 4px",borderRadius:9,textAlign:"center",
+                  background:`${C.color[s]}16`,border:`1px solid ${C.color[s]}3d`}}>
+                  <div style={{fontSize:9.5,fontWeight:700,color:C.color[s]}}>{C.label[s]}</div>
+                  <div style={{fontSize:15,fontWeight:900,fontFamily:"monospace",color:ok?"#4ade80":"#fbbf24"}}>
+                    {v.conv}<span style={{fontSize:8,opacity:.5}}>/{C.max[s]}</span>
+                  </div>
+                  <div style={{fontSize:8,opacity:.45}}>目標{g}</div>
+                </div>
+              );
+            })}
+          </div>
+          {/* 推移 */}
+          <div style={{padding:"9px 10px",borderRadius:10,background:"rgba(6,12,24,.45)"}}>
+            <div style={{fontSize:10,fontWeight:700,opacity:.7,marginBottom:6}}>青学換算の推移（古→新）</div>
+            {[...conv].reverse().map((x,i)=>{
+              const ok=x.c.gap>=0;
+              return (
+                <div key={i} style={{display:"flex",alignItems:"center",gap:7,marginBottom:4,fontSize:9.5}}>
+                  <span style={{width:52,opacity:.55,flexShrink:0}}>{x.t.date.slice(5)}</span>
+                  <div style={{flex:1,height:6,borderRadius:3,background:"rgba(255,255,255,.08)",position:"relative",overflow:"hidden"}}>
+                    <div style={{width:`${Math.min(100,x.c.total/C.total*100)}%`,height:"100%",borderRadius:3,background:ok?"#4ade80":"#f87171"}}/>
+                    <div style={{position:"absolute",left:`${C.line/C.total*100}%`,top:-2,width:2,height:10,background:"rgba(255,255,255,.75)"}}/>
+                  </div>
+                  <span style={{width:58,textAlign:"right",fontFamily:"monospace",fontWeight:800,flexShrink:0,
+                    color:ok?"#4ade80":"#f87171"}}>{x.c.total}<span style={{fontSize:8,opacity:.5}}>({x.c.gap>=0?"+":""}{x.c.gap})</span></span>
+                </div>
+              );
+            })}
+            <div style={{fontSize:8.5,opacity:.4,marginTop:3}}>白線＝合格ライン{C.line}点</div>
+          </div>
+        </div>
+      </div>
+    );
+  })()}
+
+  {/* ══ C: 合格ライン逆算シミュレーター ══ */}
+  {(()=>{
+    const conv=allTests.map(t=>({t, c:convertToAoyama(t)})).filter(x=>x.c);
+    if(!conv.length) return null;
+    const C=AOYAMA_CONV;
+    const base=conv[0].c;
+    const keys=["math","japanese","science","social"];
+    const cur=keys.map(s=>simAdj[s]!=null?simAdj[s]:(base.subjects[s]?base.subjects[s].conv||0:0));
+    const total=cur.reduce((a,b)=>a+b,0);
+    const gap=total-C.line;
+    // 現実的な提案：目標との差が大きい科目から順に、目標まで上げた場合
+    const plan=keys.map((s,i)=>({s, now:base.subjects[s]?base.subjects[s].conv||0:0, goal:C.goal[s]}))
+      .map(x=>({...x, diff:x.goal-x.now})).filter(x=>x.diff>0).sort((a,b)=>b.diff-a.diff);
+    const planTotal=keys.reduce((a,s)=>{const x=plan.find(p=>p.s===s);return a+(x?x.goal:(base.subjects[s]?base.subjects[s].conv||0:0));},0);
+    return (
+      <div style={{marginBottom:14,padding:"11px 12px",borderRadius:12,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)"}}>
+        <div style={{fontSize:12.5,fontWeight:800,marginBottom:3}}>🎯 合格ライン逆算シミュレーター</div>
+        <div style={{fontSize:9.5,opacity:.55,marginBottom:9,lineHeight:1.5}}>
+          スライダーで各科目の得点を動かすと、合計が{C.line}点に届くかを試せます。「どこを何点上げれば合格か」を確かめてください。
+        </div>
+        <div style={{padding:"11px",borderRadius:11,textAlign:"center",marginBottom:10,
+          background:gap>=0?"rgba(34,197,94,.14)":"rgba(239,68,68,.1)",
+          border:`1px solid ${gap>=0?"rgba(74,222,128,.4)":"rgba(248,113,113,.3)"}`}}>
+          <div style={{fontSize:9.5,opacity:.6}}>シミュレーション合計</div>
+          <div style={{fontSize:32,fontWeight:900,fontFamily:"monospace",lineHeight:1.05,color:gap>=0?"#4ade80":"#f87171"}}>
+            {total}<span style={{fontSize:13,opacity:.55}}>/{C.total}</span>
+          </div>
+          <div style={{fontSize:12,fontWeight:700,color:gap>=0?"#4ade80":"#f87171"}}>
+            {gap>=0?`合格ライン突破 +${gap}点`:`あと ${-gap}点`}
+          </div>
+        </div>
+        {keys.map((s,i)=>{
+          const v=cur[i]; const now=base.subjects[s]?base.subjects[s].conv||0:0;
+          const g=C.goal[s];
+          return (
+            <div key={s} style={{marginBottom:9}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:10.5,marginBottom:3}}>
+                <span style={{fontWeight:700,color:C.color[s]}}>{C.label[s]}</span>
+                <span style={{fontFamily:"monospace"}}>
+                  <b style={{fontSize:13,color:v>=g?"#4ade80":"#fbbf24"}}>{v}</b>
+                  <span style={{opacity:.45}}>/{C.max[s]}　現在{now}・目標{g}</span>
+                </span>
+              </div>
+              <input type="range" min="0" max={C.max[s]} value={v}
+                onChange={e=>setSimAdj({...simAdj,[s]:parseInt(e.target.value)})}
+                style={{width:"100%",accentColor:C.color[s]}}/>
+            </div>
+          );
+        })}
+        <div style={{display:"flex",gap:6,marginTop:4}}>
+          <button onClick={()=>setSimAdj({})}
+            style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",color:"rgba(255,255,255,.65)",
+              borderRadius:8,padding:"8px",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>最新の実績に戻す</button>
+          <button onClick={()=>{const n={};keys.forEach(s=>n[s]=C.goal[s]);setSimAdj(n);}}
+            style={{flex:1,background:"rgba(74,222,128,.15)",border:"1px solid rgba(74,222,128,.4)",color:"#4ade80",
+              borderRadius:8,padding:"8px",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>目標値を入れる</button>
+        </div>
+        {plan.length>0&&(
+          <div style={{marginTop:10,padding:"9px 10px",borderRadius:9,background:"rgba(59,130,246,.09)",border:"1px solid rgba(96,165,250,.25)"}}>
+            <div style={{fontSize:10.5,fontWeight:700,color:"#93c5fd",marginBottom:5}}>📌 合格への最短ルート</div>
+            {plan.slice(0,3).map((x,i)=>(
+              <div key={i} style={{fontSize:10.5,padding:"2px 0",display:"flex",justifyContent:"space-between"}}>
+                <span><span style={{color:C.color[x.s],fontWeight:700,marginRight:5}}>{C.label[x.s]}</span>{x.now}→{x.goal}点</span>
+                <span style={{fontFamily:"monospace",color:"#4ade80"}}>+{x.diff}</span>
+              </div>
+            ))}
+            <div style={{fontSize:9.5,opacity:.6,marginTop:5,lineHeight:1.5}}>
+              すべて目標到達で <b style={{color:planTotal>=C.line?"#4ade80":"#fbbf24"}}>{planTotal}点</b>
+              （ライン{planTotal-C.line>=0?"+":""}{planTotal-C.line}）
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  })()}
 
   {/* 科目切替 */}
   <div style={{display:"flex",gap:6,marginBottom:14}}>
@@ -9991,10 +10174,28 @@ const DEFAULT_MIN = {
 // 青学 年度別の大問テンプレート（配点非公表のため問題数で均等推定）
 const AOYAMA_TEMPLATES = {
   2026: {
-    math:     {max:100,     sections:[{n:1,label:"四則計算",items:1},{n:2,label:"逆算",items:1},{n:3,label:"単位の計算",items:1},{n:4,label:"売買損益・つるかめ算",items:1},{n:5,label:"差集め算",items:1},{n:6,label:"条件の整理",items:1},{n:7,label:"集まり・相当算",items:1},{n:8,label:"速さと比",items:1},{n:9,label:"比",items:1},{n:10,label:"比",items:1},{n:11,label:"角度",items:1},{n:12,label:"速さ・周期 (1)(2)",items:2},{n:13,label:"場合分け (1)(2)",items:2}]},
-    japanese: {max:100, sections:[{n:1,label:"漢字 (1)〜(5)",items:5},{n:2,label:"詩 (1)〜(5)",items:5},{n:3,label:"論説文 (1)〜(8)",items:8},{n:4,label:"物語文① (1)〜(9)",items:9},{n:5,label:"物語文② (1)〜(5)",items:5}]},
-    science:  {max:50,  sections:[{n:1,label:"総合小問 (1)〜(5)",items:5},{n:2,label:"生物（微生物） (1)〜(5)",items:5},{n:3,label:"地学 (1)(2)",items:5},{n:4,label:"化学（金属） (1)〜(5)",items:8},{n:5,label:"物理（電気） (1)〜(4)",items:6}]},
-    social:   {max:50,   sections:[{n:1,label:"大問1",items:5},{n:2,label:"食生活・米の問題",items:5},{n:3,label:"江戸の火消制度",items:3},{n:4,label:"日本の伝統美術品",items:3},{n:5,label:"世界の出来事年表",items:2},{n:6,label:"関税・選挙・平和記念式典",items:3}]},
+    math: {max:100, sections:[{n:1,label:"四則計算",items:1},{n:2,label:"逆算",items:1},{n:3,label:"単位の計算",items:1},{n:4,label:"売買損益・つるかめ算",items:1},{n:5,label:"差集め算",items:1},{n:6,label:"条件の整理",items:1},{n:7,label:"集まり・相当算",items:1},{n:8,label:"速さと比",items:1},{n:9,label:"比",items:1},{n:10,label:"比",items:1},{n:11,label:"角度",items:1},{n:12,label:"速さ・周期 (1)(2)",items:2},{n:13,label:"場合分け (1)(2)",items:2}]},
+    japanese: {max:100, sections:[{n:1,label:"漢字",items:5},{n:2,label:"詩",items:5},{n:3,label:"論説文",items:8},{n:4,label:"物語文①",items:9},{n:5,label:"物語文②",items:5}]},
+    science: {max:50, sections:[{n:1,label:"総合小問",items:5},{n:2,label:"生物（微生物）",items:5},{n:3,label:"地学",items:5},{n:4,label:"化学（金属）",items:8},{n:5,label:"物理（電気）",items:6}]},
+    social: {max:50, sections:[{n:1,label:"大問1",items:5},{n:2,label:"食生活・米",items:5},{n:3,label:"江戸の火消制度",items:3},{n:4,label:"日本の伝統美術",items:3},{n:5,label:"世界の出来事年表",items:2},{n:6,label:"関税・選挙・平和",items:3}]},
+  },
+  2025: {
+    math: {max:100, sections:[{n:1,label:"四則計算",items:1},{n:2,label:"逆算",items:1},{n:3,label:"単位の計算",items:1},{n:4,label:"相当算",items:1},{n:5,label:"条件の整理",items:1},{n:6,label:"倍数算",items:1},{n:7,label:"平面図形・構成・面積",items:1},{n:8,label:"旅人算",items:1},{n:9,label:"平面図形・角度",items:1},{n:10,label:"場合の数",items:1},{n:11,label:"平均とのべ・条件整理",items:1},{n:12,label:"グラフ・旅人算 (1)(2)",items:2},{n:13,label:"水の深さと体積 (1)(2)",items:2}]},
+    japanese: {max:100, sections:[{n:1,label:"漢字",items:5},{n:2,label:"詩",items:5},{n:3,label:"論説文",items:5},{n:4,label:"物語文①",items:9},{n:5,label:"物語文②",items:8}]},
+    science: {max:50, sections:[{n:1,label:"小問集合",items:5},{n:2,label:"人の血液",items:5},{n:3,label:"月の見え方",items:5},{n:4,label:"化学（二酸化炭素）",items:4},{n:5,label:"物理（ふりこ・運動）",items:5}]},
+    social: {max:50, sections:[{n:1,label:"地理総合（大隅・都市鉱山）",items:9},{n:2,label:"人口・少子高齢化",items:3},{n:3,label:"国宝",items:5},{n:4,label:"ラジオ・テレビ放送史",items:4},{n:5,label:"ブロッコリー・最高裁判決",items:2}]},
+  },
+  2024: {
+    math: {max:100, sections:[{n:1,label:"四則計算",items:1},{n:2,label:"逆算",items:1},{n:3,label:"割合と比",items:1},{n:4,label:"割合と比・消去算",items:1},{n:5,label:"つるかめ算",items:1},{n:6,label:"ニュートン算",items:1},{n:7,label:"平均とのべ",items:1},{n:8,label:"速さと比",items:1},{n:9,label:"平均とのべ・条件整理",items:1},{n:10,label:"水の深さと体積",items:1},{n:11,label:"平面図形・角度",items:1},{n:12,label:"平面図形・面積",items:1},{n:13,label:"条件の整理 (1)〜(3)",items:3},{n:14,label:"水そう (1)(2)",items:2}]},
+    japanese: {max:100, sections:[{n:1,label:"漢字",items:5},{n:2,label:"詩",items:5},{n:3,label:"論説文",items:8},{n:4,label:"物語文①",items:8},{n:5,label:"物語文②",items:6}]},
+    science: {max:50, sections:[{n:1,label:"小問集合",items:5},{n:2,label:"昆虫の分類と生態",items:5},{n:3,label:"地層",items:5},{n:4,label:"溶解度（ホウ酸）",items:5},{n:5,label:"手回し発電機",items:4}]},
+    social: {max:50, sections:[{n:1,label:"琵琶湖・地形図",items:5},{n:2,label:"淡路・オーバーツーリズム",items:4},{n:3,label:"大問3",items:3},{n:4,label:"大問4",items:2},{n:5,label:"大問5",items:3},{n:6,label:"大問6",items:2},{n:7,label:"インド・時事",items:4}]},
+  },
+  2023: {
+    math: {max:100, sections:[{n:1,label:"四則計算",items:1,pts:6},{n:2,label:"逆算",items:1,pts:6},{n:3,label:"整数の性質",items:1,pts:6},{n:4,label:"単位の計算",items:1,pts:6},{n:5,label:"比の性質・相当算",items:1,pts:6},{n:6,label:"つるかめ算",items:1,pts:6},{n:7,label:"濃度",items:1,pts:6},{n:8,label:"条件の整理（選挙）",items:1,pts:6},{n:9,label:"流水算・速さと比",items:1,pts:6},{n:10,label:"図形と規則 (1)(2)",items:2,pts:12},{n:11,label:"平面図形・面積",items:1,pts:6},{n:12,label:"平面図形",items:1,pts:7},{n:13,label:"平面図形・角度",items:1,pts:7},{n:14,label:"比 (1)(2)",items:2,pts:14}]},
+    japanese: {max:100, sections:[{n:1,label:"漢字",items:5,pts:10},{n:2,label:"詩",items:7,pts:18},{n:3,label:"論説文",items:8,pts:25},{n:4,label:"物語文①",items:6,pts:26},{n:5,label:"物語文②",items:7,pts:21}]},
+    science: {max:50, sections:[{n:1,label:"小問集合",items:5},{n:2,label:"生物季節観測",items:4},{n:3,label:"湿度",items:4},{n:4,label:"力のつり合い（浮力）",items:5},{n:5,label:"大問5",items:4}]},
+    social: {max:50, sections:[{n:1,label:"大問1",items:5},{n:2,label:"大問2",items:5},{n:3,label:"大問3",items:5},{n:4,label:"大問4",items:4},{n:5,label:"大問5",items:4}]},
   },
 };
 const LOSS_REASONS = [
@@ -10004,6 +10205,85 @@ const LOSS_REASONS = [
   {id:"time",  label:"時間切れ", color:"#60a5fa"},
   {id:"blank", label:"空白",     color:"#6b7280"},
 ];
+
+
+// 青学 2023年度 椿さんの実績（答案から登録・未入力時のみ投入）
+const AOYAMA_SEED = {
+  2023: { math: {max:100,time:"",rows:[{label:"1. 四則計算",score:"6",max:"6",blank:"0",reason:""},{label:"2. 逆算",score:"6",max:"6",blank:"0",reason:""},{label:"3. 整数の性質",score:"6",max:"6",blank:"0",reason:""},{label:"4. 単位の計算",score:"0",max:"6",blank:"0",reason:"calc"},{label:"5. 比の性質・相当算",score:"6",max:"6",blank:"0",reason:""},{label:"6. つるかめ算",score:"0",max:"6",blank:"0",reason:"know"},{label:"7. 濃度",score:"0",max:"6",blank:"0",reason:"calc"},{label:"8. 条件の整理（選挙）",score:"0",max:"6",blank:"0",reason:"read"},{label:"9. 流水算・速さと比",score:"0",max:"6",blank:"0",reason:"know"},{label:"10. 図形と規則 (1)(2)",score:"6",max:"12",blank:"0",reason:"know"},{label:"11. 平面図形・面積",score:"6",max:"6",blank:"0",reason:""},{label:"12. 平面図形",score:"3",max:"7",blank:"0",reason:""},{label:"13. 平面図形・角度",score:"3",max:"7",blank:"0",reason:""},{label:"14. 比 (1)(2)",score:"0",max:"14",blank:"0",reason:"know"}],scores:["6","6","6","0","6","0","0","0","0","6","6","3","3","0"]}, japanese: {max:100,time:"",rows:[{label:"一 漢字",score:"6",max:"10",blank:"0",reason:"know"},{label:"二 詩",score:"2",max:"18",blank:"0",reason:"read"},{label:"三 論説文",score:"9",max:"25",blank:"0",reason:"read"},{label:"四 物語文①",score:"4",max:"26",blank:"0",reason:"read"},{label:"五 物語文②",score:"12",max:"21",blank:"0",reason:"read"}],scores:["6","2","9","4","12"]} },
+};
+// 青学 頻出単元（2023〜2026の4年分から集計）
+const AOYAMA_TRENDS = {
+  math: [
+    {unit:"四則計算・逆算",   years:[2023,2024,2025,2026], note:"毎年大問1・2で必出。落とせない12点"},
+    {unit:"平面図形（角度）", years:[2023,2024,2025,2026], note:"4年連続。折り曲げ・合同を使う角度"},
+    {unit:"平面図形（面積）", years:[2023,2024,2025],      note:"3年連続。構成・移動を含む"},
+    {unit:"条件の整理",       years:[2023,2024,2025,2026], note:"4年連続。表にまとめる力"},
+    {unit:"速さと比・旅人算", years:[2023,2024,2025,2026], note:"4年連続。流水算・グラフ含む"},
+    {unit:"割合と比・相当算", years:[2023,2024,2025,2026], note:"4年連続。倍数算・消去算含む"},
+    {unit:"平均とのべ",       years:[2024,2025],           note:"2年連続。条件整理と融合"},
+    {unit:"つるかめ算",       years:[2023,2024,2026],      note:"3回出題。売買損益と融合も"},
+    {unit:"単位の計算",       years:[2023,2025,2026],      note:"3回出題。ha・面積の換算"},
+    {unit:"水の深さと体積",   years:[2024,2025],           note:"2年連続。大問13〜14の難問枠"},
+    {unit:"場合の数",         years:[2025,2026],           note:"2年連続"},
+    {unit:"濃度",             years:[2023],                note:"やりとり型の難問"},
+  ],
+  japanese: [
+    {unit:"漢字（書き取り5問）", years:[2023,2024,2025,2026], note:"毎年大問一。10点。全問正解が前提"},
+    {unit:"詩",                years:[2023,2024,2025,2026], note:"毎年大問二。塾で扱われにくい。要対策"},
+    {unit:"論説文",            years:[2023,2024,2025,2026], note:"毎年大問三。選択・抜き出し中心"},
+    {unit:"物語文×2題",        years:[2023,2024,2025,2026], note:"毎年大問四・五。読む量が多い"},
+  ],
+  science: [
+    {unit:"小問集合（総合）",   years:[2023,2024,2025,2026], note:"毎年大問1。時事・科学常識（ノーベル賞等）"},
+    {unit:"生物",              years:[2023,2024,2025,2026], note:"季節観測・昆虫・血液・微生物と幅広い"},
+    {unit:"地学",              years:[2023,2024,2025,2026], note:"湿度・地層・月・地学と毎年1題"},
+    {unit:"化学（計算あり）",   years:[2024,2025,2026],      note:"溶解度・二酸化炭素・金属。計算で差がつく"},
+    {unit:"物理（電気・力学）", years:[2023,2024,2025,2026], note:"浮力・手回し発電機・ふりこ・電気。計算必須"},
+  ],
+  social: [
+    {unit:"地形図・資料読み取り", years:[2023,2024,2025,2026], note:"毎年。地図・グラフ・写真からの読み取り"},
+    {unit:"時事（直近1〜2年）",   years:[2023,2024,2025,2026], note:"インド首相・最高裁判決・関税など深掘り型"},
+    {unit:"歴史（テーマ史）",     years:[2023,2024,2025,2026], note:"放送史・火消・国宝など切り口が独特"},
+    {unit:"公民（選挙・裁判）",   years:[2025,2026],           note:"2年連続。三権分立の基礎"},
+    {unit:"「すべて選べ」形式",   years:[2023,2024,2025,2026], note:"毎年。完答必須で差がつく"},
+  ],
+};
+
+
+// 青学 理科小問集合・社会で出た時事・科学常識（過去4年）＋2027年入試向け候補
+const AOYAMA_JIJI_SEED = [
+  {id:"s2",cat:"past",year:2025,subj:"理",text:"ボルタ電池（イタリアの科学者ボルタ・電圧の単位V）",note:"科学史"},
+  {id:"s3",cat:"past",year:2025,subj:"理",text:"月までの距離（光の往復2.5秒→約37.5万km）",note:"計算"},
+  {id:"s4",cat:"past",year:2025,subj:"理",text:"海陸風（晴れた日の夜は陸→海へ風）",note:"気象"},
+  {id:"s5",cat:"past",year:2025,subj:"理",text:"サンゴの白化（褐虫藻・海水温上昇）",note:"環境"},
+  {id:"s6",cat:"past",year:2025,subj:"社",text:"ブロッコリーの指定野菜化（2026年〜15種類）",note:"時事・農業"},
+  {id:"s7",cat:"past",year:2025,subj:"社",text:"最高裁 旧優生保護法 違憲判決（2024年7月）",note:"時事・公民"},
+  {id:"s8",cat:"past",year:2025,subj:"社",text:"改正出入国管理法・育成就労制度（2024年6月）",note:"時事"},
+  {id:"s9",cat:"past",year:2024,subj:"理",text:"ノーベル賞の由来（ダイナマイトを発明したノーベル）",note:"科学史"},
+  {id:"s10",cat:"past",year:2024,subj:"理",text:"ウイルスの特徴（呼吸しない・細胞に寄生して増える）",note:"生物"},
+  {id:"s11",cat:"past",year:2024,subj:"理",text:"台風の風向き（反時計回り・東京の南西にあると東寄りの風）",note:"気象"},
+  {id:"s12",cat:"past",year:2024,subj:"理",text:"花火の音の距離計算（340m/秒）",note:"計算"},
+  {id:"s13",cat:"past",year:2024,subj:"社",text:"インドの首相（ナレンドラ・モディ）",note:"時事・世界"},
+  {id:"s14",cat:"past",year:2024,subj:"社",text:"オーバーツーリズム（観光公害）",note:"時事"},
+  {id:"s15",cat:"past",year:2023,subj:"理",text:"月の出の時刻は1日約50分遅れる・満ち欠け",note:"天体"},
+  {id:"s16",cat:"past",year:2023,subj:"理",text:"塩化コバルト紙（水で青→赤）・BTB溶液・ヨウ素液の用途",note:"実験器具"},
+  {id:"s17",cat:"past",year:2023,subj:"理",text:"地球の重さは月の約80倍",note:"天体・計算"},
+  {id:"s18",cat:"past",year:2023,subj:"理",text:"生物季節観測（サクラ・アジサイ・ウメの開花日）",note:"気象庁"},
+  {id:"s19",cat:"past",year:2023,subj:"理",text:"暑さ指数WBGT・黒球温度",note:"気象・時事"},
+  {id:"s20",cat:"past",year:2023,subj:"社",text:"全国水平社（1922年・部落差別からの解放）",note:"歴史"},
+  {id:"n1",cat:"next",year:2027,subj:"理",text:"2025年ノーベル生理学・医学賞：坂口志文（制御性T細胞）",note:"前年受賞。要確認"},
+  {id:"n2",cat:"next",year:2027,subj:"理",text:"2025年ノーベル化学賞：北川進（金属有機構造体MOF）",note:"前年受賞。要確認"},
+  {id:"n3",cat:"next",year:2027,subj:"理",text:"2026年ノーベル賞（10/5〜発表）→発表後に追記",note:"★10月に更新"},
+  {id:"n4",cat:"next",year:2027,subj:"理",text:"太陽フレアとオーロラ（通信障害・停電）",note:"2026年入試で頻出"},
+  {id:"n5",cat:"next",year:2027,subj:"理",text:"線状降水帯・猛暑日（35℃以上）の定義",note:"気象・毎年出題傾向"},
+  {id:"n6",cat:"next",year:2027,subj:"理",text:"クマの出没とベルクマンの法則",note:"2026年入試で出題例"},
+  {id:"n7",cat:"next",year:2027,subj:"社",text:"2025年参院選（定数248・改選124）",note:"公民"},
+  {id:"n8",cat:"next",year:2027,subj:"社",text:"関税と貿易（米国の関税政策）",note:"2026年度に出題済み・継続注目"},
+  {id:"n9",cat:"next",year:2027,subj:"社",text:"広島平和記念式典・被団協（2024年ノーベル平和賞）",note:"平和"},
+  {id:"n10",cat:"next",year:2027,subj:"社",text:"2025年国勢調査（総人口1億2304万人・一票の格差2.274倍）",note:"人口・公民"},
+  {id:"n11",cat:"next",year:2027,subj:"社",text:"2026年の主要ニュース→秋に追記",note:"★10月に更新"},
+];
+
 
 // 年度別記録に対応する学校（過去問を繰り返し解く志望校）
 const YEARLY_SCHOOLS = {
@@ -10028,6 +10308,13 @@ const [minScores, setMinScores] = React.useState({});   // 合格最低点 {scho
 const [yearlyData, setYearlyData] = React.useState({}); // {schoolId:{year:{math,...,min}}}
 const [editMin, setEditMin] = React.useState(null);
 const [editYear, setEditYear] = React.useState(null); // {schoolId,year,subjId,max,scores}
+const [trendOpen, setTrendOpen] = React.useState(false);
+const [trendSubj, setTrendSubj] = React.useState("math");
+const [jijiOpen, setJijiOpen] = React.useState(false);
+const [jijiTab, setJijiTab] = React.useState("next");
+const [jijiState, setJijiState] = React.useState({checked:{}, custom:[]});
+const [jijiInput, setJijiInput] = React.useState("");
+const [typeOpen, setTypeOpen] = React.useState(true);
 const [view, setView] = React.useState("list");           // "list" | schoolId
 
 React.useEffect(()=>{ (async()=>{
@@ -10040,16 +10327,32 @@ React.useEffect(()=>{ (async()=>{
     if(o&&o.value) setOverrides(JSON.parse(o.value));
   }catch(e){}
   try{
+    const j = await window.storage.get("aoyama-jiji");
+    if(j&&j.value) setJijiState(JSON.parse(j.value));
+  }catch(e){}
+  try{
     const m = await window.storage.get("yumeichu-minscores");
     if(m&&m.value) setMinScores(JSON.parse(m.value));
   }catch(e){}
   try{
+    let yd=null;
     const a = await window.storage.get("yumeichu-yearly");
-    if(a&&a.value) setYearlyData(JSON.parse(a.value));
+    if(a&&a.value) yd=JSON.parse(a.value);
     else {
       const legacy = await window.storage.get("yumeichu-aoyama-years");
-      if(legacy&&legacy.value) setYearlyData({aoyama:JSON.parse(legacy.value)});
+      if(legacy&&legacy.value) yd={aoyama:JSON.parse(legacy.value)};
     }
+    yd=yd||{};
+    // 青学2023の答案データを未入力なら投入
+    const ao={...(yd.aoyama||{})};
+    let seeded=false;
+    Object.entries(AOYAMA_SEED).forEach(([y,subs])=>{
+      const cur={...(ao[y]||{})};
+      Object.entries(subs).forEach(([sid,val])=>{ if(!cur[sid]){cur[sid]=val;seeded=true;} });
+      ao[y]=cur;
+    });
+    if(seeded){ yd={...yd,aoyama:ao}; try{ await window.storage.set("yumeichu-yearly", JSON.stringify(yd)); }catch(e){} }
+    setYearlyData(yd);
   }catch(e){}
   setLoaded(true);
 })(); },[]);
@@ -10065,6 +10368,10 @@ const saveOv = async (next) => {
 const saveMin = async (next) => {
   setMinScores(next);
   try{ await window.storage.set("yumeichu-minscores", JSON.stringify(next)); }catch(e){}
+};
+const saveJiji = async (next) => {
+  setJijiState(next);
+  try{ await window.storage.set("aoyama-jiji", JSON.stringify(next)); }catch(e){}
 };
 const saveYearly = async (next) => {
   setYearlyData(next);
@@ -10365,7 +10672,7 @@ if(view!=="list"&&YEARLY_SCHOOLS[view]){
       const tpl=(view==="aoyama"&&AOYAMA_TEMPLATES[y]&&AOYAMA_TEMPLATES[y][sid])||null;
       if(tpl){
         const per=tpl.max/tpl.sections.reduce((a,s)=>a+s.items,0);
-        rows=tpl.sections.map(s=>({label:`${s.n}. ${s.label}`,score:"",max:String(Math.round(per*s.items*10)/10),blank:"",reason:""}));
+        rows=tpl.sections.map(s=>({label:`${s.n}. ${s.label}`,score:"",max:s.pts!==undefined?String(s.pts):String(Math.round(per*s.items*10)/10),blank:"",reason:""}));
       }else{
         rows=[{label:"大問1",score:"",max:"",blank:"",reason:""},{label:"大問2",score:"",max:"",blank:"",reason:""}];
       }
@@ -10512,6 +10819,207 @@ if(view!=="list"&&YEARLY_SCHOOLS[view]){
                 </div>
               );
             })()}
+
+            {/* ① 型別の正答率（青学のみ） */}
+            {view==="aoyama"&&(()=>{
+              const classify=(label,idx,total)=>{
+                const L=label||"";
+                if(/四則|逆算/.test(L)) return "calc";
+                if(/図形|角度|面積/.test(L)) return "fig";
+                if(/\(1\)\(2\)|\(1\)〜|水の深さ|グラフ|水そう/.test(L)||idx>=total-2) return "fusion";
+                return "line";
+              };
+              const TYPES=[
+                {id:"calc",label:"計算（大問1・2）",color:"#60a5fa",goal:100,note:"落とせない12点"},
+                {id:"line",label:"一行問題（大問3〜9）",color:"#4ade80",goal:80,note:"合否を分ける約42点"},
+                {id:"fig",label:"図形（角度・面積）",color:"#fbbf24",goal:70,note:"角度は毎年必出"},
+                {id:"fusion",label:"融合・難問（大問12〜14）",color:"#f87171",goal:30,note:"(1)だけ拾えば十分"},
+              ];
+              const agg={calc:{s:0,m:0},line:{s:0,m:0},fig:{s:0,m:0},fusion:{s:0,m:0}};
+              const byYear={};
+              doneYears.forEach(y=>{
+                const d=getSub(y,"math"); if(!d||!Array.isArray(d.rows)) return;
+                const n=d.rows.length;
+                byYear[y]={calc:{s:0,m:0},line:{s:0,m:0},fig:{s:0,m:0},fusion:{s:0,m:0}};
+                d.rows.forEach((r,i)=>{
+                  const t=classify(r.label,i,n); const s=parseFloat(r.score)||0; const m=parseFloat(r.max)||0;
+                  agg[t].s+=s; agg[t].m+=m; byYear[y][t].s+=s; byYear[y][t].m+=m;
+                });
+              });
+              const anyMath=Object.values(agg).some(a=>a.m>0);
+              if(!anyMath) return null;
+              return (
+                <div style={{padding:"10px 11px",borderRadius:10,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",marginBottom:10}}>
+                  <div style={{fontSize:11,fontWeight:700,opacity:.75,marginBottom:6}}>🧩 算数・型別の正答率（合格ラインへの近道）</div>
+                  {TYPES.map(t=>{
+                    const a=agg[t.id]; if(!a.m) return null;
+                    const pct=Math.round(a.s/a.m*100); const ok=pct>=t.goal;
+                    return (
+                      <div key={t.id} style={{marginBottom:7}}>
+                        <div style={{display:"flex",justifyContent:"space-between",fontSize:10.5,marginBottom:3}}>
+                          <span style={{fontWeight:700,color:t.color}}>{t.label}</span>
+                          <span style={{fontFamily:"monospace",fontWeight:800,color:ok?"#4ade80":"#f87171"}}>{pct}%<span style={{opacity:.5,fontWeight:400,fontSize:9}}> /目標{t.goal}%</span></span>
+                        </div>
+                        <div style={{height:7,borderRadius:4,background:"rgba(255,255,255,.08)",position:"relative",overflow:"hidden"}}>
+                          <div style={{width:`${pct}%`,height:"100%",background:t.color,borderRadius:4}}/>
+                          <div style={{position:"absolute",left:`${t.goal}%`,top:-2,width:2,height:11,background:"rgba(255,255,255,.7)"}}/>
+                        </div>
+                        <div style={{fontSize:9,opacity:.5,marginTop:2}}>{t.note}　{Math.round(a.s)}/{Math.round(a.m)}点</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* ② 詩トラッカー（青学のみ） */}
+            {view==="aoyama"&&(()=>{
+              const poems=doneYears.map(y=>{
+                const d=getSub(y,"japanese"); if(!d||!Array.isArray(d.rows)) return null;
+                const r=d.rows.find(x=>/詩/.test(x.label||"")); if(!r) return null;
+                return {y,s:parseFloat(r.score)||0,m:parseFloat(r.max)||0};
+              }).filter(Boolean);
+              if(!poems.length) return null;
+              const latest=poems[poems.length-1];
+              return (
+                <div style={{padding:"10px 11px",borderRadius:10,background:"rgba(236,72,153,.08)",border:"1px solid rgba(244,114,182,.3)",marginBottom:10}}>
+                  <div style={{fontSize:11,fontWeight:700,color:"#f9a8d4",marginBottom:4}}>📝 詩トラッカー（国語・大問二）</div>
+                  <div style={{fontSize:9.5,opacity:.6,marginBottom:6}}>毎年必出・塾で扱われにくい分野。対策の有無がそのまま点差に。</div>
+                  <div style={{display:"flex",gap:6,alignItems:"flex-end",flexWrap:"wrap"}}>
+                    {poems.map(p=>{
+                      const pct=p.m?Math.round(p.s/p.m*100):0;
+                      return (
+                        <div key={p.y} style={{textAlign:"center",minWidth:48}}>
+                          <div style={{height:44,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+                            <div style={{width:26,height:`${Math.max(4,pct*0.44)}px`,borderRadius:4,background:pct>=60?"#4ade80":pct>=35?"#fbbf24":"#f87171"}}/>
+                          </div>
+                          <div style={{fontSize:10,fontFamily:"monospace",fontWeight:800}}>{p.s}/{p.m}</div>
+                          <div style={{fontSize:8.5,opacity:.5}}>{p.y}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{fontSize:9.5,marginTop:6,color:"#fbbf24"}}>
+                    直近 {latest.y}年度：{latest.m?Math.round(latest.s/latest.m*100):0}%　→ 目標60%（{Math.round(latest.m*0.6)}点）
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        );
+      })()}
+
+      {/* ══ 出題傾向（青学のみ・4年分から集計） ══ */}
+      {view==="aoyama"&&(()=>{
+        const [open,setOpen]=[trendOpen,setTrendOpen];
+        const SUBJ_C={math:"#3b82f6",japanese:"#ec4899",science:"#22c55e",social:"#f59e0b"};
+        const SUBJ_L={math:"算数",japanese:"国語",science:"理科",social:"社会"};
+        return (
+          <div style={{marginBottom:12,borderRadius:11,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",overflow:"hidden"}}>
+            <button onClick={()=>setOpen(!open)} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",
+              background:"none",border:"none",color:"white",padding:"10px 11px",cursor:"pointer",fontFamily:"inherit"}}>
+              <span style={{fontSize:11.5,fontWeight:700,opacity:.85}}>📚 出題傾向（2023〜2026の4年分）</span>
+              <span style={{fontSize:11,opacity:.5}}>{open?"▲":"▼"}</span>
+            </button>
+            {open&&(
+              <div style={{padding:"0 11px 11px"}}>
+                <div style={{display:"flex",gap:5,marginBottom:8}}>
+                  {Object.keys(SUBJ_L).map(sid=>(
+                    <button key={sid} onClick={()=>setTrendSubj(sid)}
+                      style={{flex:1,background:trendSubj===sid?`${SUBJ_C[sid]}30`:"rgba(255,255,255,.05)",
+                        border:trendSubj===sid?`1px solid ${SUBJ_C[sid]}80`:"1px solid rgba(255,255,255,.1)",
+                        color:trendSubj===sid?SUBJ_C[sid]:"rgba(255,255,255,.5)",borderRadius:7,padding:"6px 2px",
+                        fontSize:11,fontWeight:trendSubj===sid?800:500,cursor:"pointer",fontFamily:"inherit"}}>{SUBJ_L[sid]}</button>
+                  ))}
+                </div>
+                {(AOYAMA_TRENDS[trendSubj]||[]).map((t,i)=>{
+                  const freq=t.years.length;
+                  return (
+                    <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",padding:"7px 0",borderBottom:"1px solid rgba(255,255,255,.05)"}}>
+                      <div style={{flexShrink:0,width:40,textAlign:"center"}}>
+                        <div style={{fontSize:16,fontWeight:900,fontFamily:"monospace",color:freq>=4?"#f87171":freq>=3?"#fbbf24":"rgba(255,255,255,.6)"}}>{freq}<span style={{fontSize:9}}>/4</span></div>
+                        <div style={{fontSize:8,opacity:.4}}>{freq>=4?"必出":freq>=3?"頻出":"出題あり"}</div>
+                      </div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:12,fontWeight:700}}>{t.unit}</div>
+                        <div style={{fontSize:9.5,opacity:.6,marginTop:2,lineHeight:1.5}}>{t.note}</div>
+                        <div style={{display:"flex",gap:3,marginTop:4}}>
+                          {[2023,2024,2025,2026].map(y=>(
+                            <span key={y} style={{fontSize:8.5,padding:"1px 5px",borderRadius:4,
+                              background:t.years.includes(y)?`${SUBJ_C[trendSubj]}33`:"rgba(255,255,255,.04)",
+                              color:t.years.includes(y)?SUBJ_C[trendSubj]:"rgba(255,255,255,.25)"}}>{String(y).slice(2)}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ══ 時事・科学常識メモ（青学のみ） ══ */}
+      {view==="aoyama"&&(()=>{
+        const all=[...AOYAMA_JIJI_SEED,...(jijiState.custom||[])];
+        const list=all.filter(x=>jijiTab==="all"?true:x.cat===jijiTab);
+        const checked=jijiState.checked||{};
+        const doneCnt=all.filter(x=>x.cat==="next"&&checked[x.id]).length;
+        const nextCnt=all.filter(x=>x.cat==="next").length;
+        const toggle=(id)=>saveJiji({...jijiState,checked:{...checked,[id]:!checked[id]}});
+        const addCustom=()=>{
+          const t=jijiInput.trim(); if(!t) return;
+          const item={id:"c"+Date.now(),cat:"next",year:2027,subj:"",text:t,note:"追加",custom:true};
+          saveJiji({...jijiState,custom:[...(jijiState.custom||[]),item]}); setJijiInput("");
+        };
+        const delCustom=(id)=>saveJiji({...jijiState,custom:(jijiState.custom||[]).filter(x=>x.id!==id)});
+        return (
+          <div style={{marginBottom:12,borderRadius:11,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",overflow:"hidden"}}>
+            <button onClick={()=>setJijiOpen(!jijiOpen)} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",
+              background:"none",border:"none",color:"white",padding:"10px 11px",cursor:"pointer",fontFamily:"inherit"}}>
+              <span style={{fontSize:11.5,fontWeight:700,opacity:.85}}>📰 時事・科学常識メモ <span style={{fontSize:9.5,opacity:.5}}>確認済 {doneCnt}/{nextCnt}</span></span>
+              <span style={{fontSize:11,opacity:.5}}>{jijiOpen?"▲":"▼"}</span>
+            </button>
+            {jijiOpen&&(
+              <div style={{padding:"0 11px 11px"}}>
+                <div style={{fontSize:9.5,opacity:.55,marginBottom:7,lineHeight:1.5}}>
+                  理科の小問集合・社会で毎年出る時事と科学常識。「2027年入試向け」は2026年9月時点の候補。★印は10月以降に更新予定。
+                </div>
+                <div style={{display:"flex",gap:5,marginBottom:8}}>
+                  {[["next","2027年入試向け"],["past","過去の出題"],["all","すべて"]].map(([v,l])=>(
+                    <button key={v} onClick={()=>setJijiTab(v)}
+                      style={{flex:1,background:jijiTab===v?"rgba(96,165,250,.25)":"rgba(255,255,255,.05)",
+                        border:jijiTab===v?"1px solid rgba(96,165,250,.55)":"1px solid rgba(255,255,255,.1)",
+                        color:jijiTab===v?"#93c5fd":"rgba(255,255,255,.5)",borderRadius:7,padding:"6px 2px",fontSize:10.5,cursor:"pointer",fontFamily:"inherit"}}>{l}</button>
+                  ))}
+                </div>
+                {list.map(x=>{
+                  const on=!!checked[x.id];
+                  return (
+                    <div key={x.id} style={{display:"flex",gap:8,alignItems:"flex-start",padding:"6px 0",borderBottom:"1px solid rgba(255,255,255,.05)"}}>
+                      <button onClick={()=>toggle(x.id)} style={{flexShrink:0,width:20,height:20,borderRadius:5,marginTop:1,
+                        border:on?"1px solid #4ade80":"1px solid rgba(255,255,255,.25)",background:on?"rgba(74,222,128,.25)":"transparent",
+                        color:"#4ade80",fontSize:12,cursor:"pointer",padding:0}}>{on?"✓":""}</button>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:11,lineHeight:1.45,textDecoration:on?"line-through":"none",opacity:on?.55:1}}>
+                          {x.subj&&<span style={{fontSize:9,padding:"0 4px",borderRadius:3,marginRight:5,background:x.subj==="理"?"rgba(34,197,94,.25)":"rgba(245,158,11,.25)",color:x.subj==="理"?"#4ade80":"#fbbf24"}}>{x.subj}</span>}
+                          {x.text}
+                        </div>
+                        <div style={{fontSize:8.5,opacity:.45,marginTop:1}}>{x.cat==="past"?`${x.year}年度出題`:""}{x.note?`　${x.note}`:""}</div>
+                      </div>
+                      {x.custom&&<button onClick={()=>delCustom(x.id)} style={{flexShrink:0,background:"none",border:"none",color:"#f87171",fontSize:11,cursor:"pointer"}}>削除</button>}
+                    </div>
+                  );
+                })}
+                <div style={{display:"flex",gap:6,marginTop:8}}>
+                  <input value={jijiInput} onChange={e=>setJijiInput(e.target.value)} placeholder="ニュース・用語を追加（例：2026年ノーベル賞◯◯）"
+                    style={{flex:1,background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.15)",borderRadius:7,padding:"8px 10px",color:"white",fontSize:12,outline:"none",boxSizing:"border-box"}}/>
+                  <button onClick={addCustom} disabled={!jijiInput.trim()}
+                    style={{background:jijiInput.trim()?"rgba(59,130,246,.3)":"rgba(255,255,255,.05)",border:"1px solid rgba(96,165,250,.4)",color:jijiInput.trim()?"#93c5fd":"rgba(255,255,255,.3)",borderRadius:7,padding:"8px 12px",fontSize:12,cursor:"pointer",flexShrink:0,fontFamily:"inherit"}}>追加</button>
+                </div>
+              </div>
+            )}
           </div>
         );
       })()}
@@ -10792,7 +11300,17 @@ const [testScores, setTestScores] = useState([]);
 const [showAddTest, setShowAddTest] = useState(false);
 const [newTest, setNewTest] = useState({ date:"", name:"", type:"monthly", math:"", japanese:"", science:"", social:"", total:"", hensachi:"", mathH:"", japaneseH:"", scienceH:"", socialH:"", memo:"" });
 const [targetHensachi, setTargetHensachi] = useState(() => {
-  try { const v=localStorage.getItem("sapix_target_hensachi"); return v?parseFloat(v):63; } catch { return 63; }
+  // 目標校を青学に変更したため、旧初期値(63)のままなら53へ移行
+  try {
+    const migrated=localStorage.getItem("sapix_target_migrated_aoyama");
+    const v=localStorage.getItem("sapix_target_hensachi");
+    if(!migrated && (v===null || parseFloat(v)===63)){
+      localStorage.setItem("sapix_target_hensachi","53");
+      localStorage.setItem("sapix_target_migrated_aoyama","1");
+      return 53;
+    }
+  } catch {}
+  try { const v=localStorage.getItem("sapix_target_hensachi"); return v?parseFloat(v):53; } catch { return 53; }
 });
 const [weakInputStep, setWeakInputStep] = useState("basic"); // "basic"|"weak"
 const [weakViewMode, setWeakViewMode] = useState("weak"); // "weak"|"strong"
@@ -11859,7 +12377,7 @@ return(
 <div style={{marginBottom:14,borderRadius:13,background:"rgba(99,102,241,.1)",border:"1px solid rgba(99,102,241,.35)",padding:"11px 14px"}}>
   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
     <div>
-      <div style={{fontSize:10,color:"#a78bfa",fontWeight:700,letterSpacing:1}}>目標偏差値（渋渋合格ライン）</div>
+      <div style={{fontSize:10,color:"#a78bfa",fontWeight:700,letterSpacing:1}}>目標偏差値（青山学院 合格ライン）</div>
       {gap!=null&&<div style={{fontSize:11,color:gap<=0?"#4ade80":"#f87171",marginTop:2}}>{gap<=0?`✅ 目標達成（+${Math.abs(gap)}）`:`あと +${gap} で目標達成`}</div>}
     </div>
     <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -12184,6 +12702,46 @@ return(
             </div>
           ))
         )}
+      </div>
+    );
+  })()}
+
+  {/* ── 青学換算 ── */}
+  {t.qData&&(()=>{
+    const c=convertToAoyama(t); if(!c) return null;
+    const C=AOYAMA_CONV;
+    return (
+      <div style={{marginBottom:14,borderRadius:12,overflow:"hidden",
+        background:"linear-gradient(160deg,rgba(236,72,153,.13),rgba(59,130,246,.08))",
+        border:"1px solid rgba(244,114,182,.32)"}}>
+        <div style={{padding:"10px 12px",borderBottom:"1px solid rgba(244,114,182,.18)"}}>
+          <div style={{fontSize:12.5,fontWeight:800,color:"#f9a8d4"}}>★ 青学換算スコア</div>
+          <div style={{fontSize:9.5,opacity:.5,marginTop:2}}>正答率{C.easyThreshold}%以上の問題のみを青学配点に換算</div>
+        </div>
+        <div style={{padding:"11px 12px"}}>
+          <div style={{textAlign:"center",marginBottom:9}}>
+            <div style={{fontSize:30,fontWeight:900,fontFamily:"monospace",lineHeight:1.05,
+              color:c.gap>=0?"#4ade80":"#f87171"}}>{c.total}<span style={{fontSize:13,opacity:.55}}>/{C.total}</span></div>
+            <div style={{fontSize:12,fontWeight:700,color:c.gap>=0?"#4ade80":"#f87171"}}>
+              合格ライン{C.line}点まで {c.gap>=0?`+${c.gap}`:c.gap}点
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5}}>
+            {["math","japanese","science","social"].map(s=>{
+              const v=c.subjects[s]; if(!v||v.conv==null) return <div key={s}/>;
+              const ok=v.conv>=C.goal[s];
+              return (
+                <div key={s} style={{padding:"7px 3px",borderRadius:9,textAlign:"center",
+                  background:`${C.color[s]}16`,border:`1px solid ${C.color[s]}3d`}}>
+                  <div style={{fontSize:9.5,fontWeight:700,color:C.color[s]}}>{C.label[s]}</div>
+                  <div style={{fontSize:15,fontWeight:900,fontFamily:"monospace",color:ok?"#4ade80":"#fbbf24"}}>
+                    {v.conv}<span style={{fontSize:8,opacity:.5}}>/{C.max[s]}</span></div>
+                  <div style={{fontSize:8,opacity:.45}}>目標{C.goal[s]}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     );
   })()}
