@@ -34,7 +34,7 @@ window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
 if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sapix-support/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260916-056';
+const CURRENT_VERSION = '20260916-057';
 async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
 function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
 setTimeout(checkForUpdate,3000);
@@ -9739,31 +9739,57 @@ function RateBar({ label, rate, sub }) {
 // ============================================================
 // AnalysisTab: 科目別 得意・苦手単元一覧
 // ============================================================
-// ══ 青学換算：SAPIXテストを青学型（基礎重視・300点満点）に読み替える ══
+// ══ 青学換算：4年分の実問題から算出した難易度構成に基づく ══
+// 2023〜2026の青学入試を全問精査し、各科目の難易度構成比を判定
+// A=基礎 B=標準 C=応用 D=難問
 const AOYAMA_CONV = {
   max: {math:100, japanese:100, science:50, social:50},
   total: 300,
-  line: 183,                 // 2026年度 女子 合格最低点
-  easyThreshold: 60,         // 正答率60%以上＝青学レベルの基礎問題とみなす
+  line: 183,
   label: {math:"算数", japanese:"国語", science:"理科", social:"社会"},
   color: {math:"#3b82f6", japanese:"#ec4899", science:"#22c55e", social:"#f59e0b"},
-  // 科目別の目安（青学の合格ライン61%から逆算）
-  goal: {math:65, japanese:65, science:33, social:33},
+  // 実問題から判定した難易度構成（配点%）
+  dist: {
+    math:     {A:13, B:20, C:40, D:27},
+    japanese: {A:25, B:40, C:25, D:10},
+    science:  {A:30, B:35, C:25, D:10},
+    social:   {A:35, B:40, C:20, D:5},
+  },
+  // 合格ライン61%到達に必要な科目別目安
+  goal: {math:61, japanese:61, science:31, social:31},
+  levelName: {A:"基礎", B:"標準", C:"応用", D:"難問"},
 };
+// 分位点マッチング：SAPIXの設問を易しい順に並べ、青学の難易度構成比で区切って換算
 function convertToAoyama(test){
   if(!test||!test.qData) return null;
+  const C=AOYAMA_CONV;
   const out={subjects:{}, total:0, ok:true};
   for(const s of ["math","japanese","science","social"]){
-    const qs=(test.qData[s]||[]).filter(q=>q[3]>=AOYAMA_CONV.easyThreshold);
-    if(!qs.length){ out.subjects[s]={conv:null,rate:null,got:0,full:0}; out.ok=false; continue; }
-    const got=qs.filter(q=>q[2]==="○").reduce((a,q)=>a+q[1],0);
-    const full=qs.reduce((a,q)=>a+q[1],0);
-    const rate=full?got/full:0;
-    const conv=Math.round(rate*AOYAMA_CONV.max[s]);
-    out.subjects[s]={conv, rate:Math.round(rate*100), got, full};
+    const qs=[...(test.qData[s]||[])].sort((a,b)=>b[3]-a[3]); // 正答率が高い＝易しい順
+    if(!qs.length){ out.subjects[s]={conv:null,bands:null}; out.ok=false; continue; }
+    const totalPts=qs.reduce((a,q)=>a+q[1],0);
+    const D=C.dist[s];
+    const bA=D.A/100*totalPts, bB=(D.A+D.B)/100*totalPts, bC=(D.A+D.B+D.C)/100*totalPts;
+    const got={A:0,B:0,C:0,D:0}, full={A:0,B:0,C:0,D:0};
+    let acc=0;
+    for(const q of qs){
+      const lv = acc<bA?"A" : acc<bB?"B" : acc<bC?"C" : "D";
+      full[lv]+=q[1];
+      if(q[2]==="○") got[lv]+=q[1];
+      acc+=q[1];
+    }
+    let conv=0; const bands={};
+    for(const lv of ["A","B","C","D"]){
+      const rate=full[lv]?got[lv]/full[lv]:0;
+      const weight=D[lv]/100*C.max[s];
+      conv+=rate*weight;
+      bands[lv]={rate:Math.round(rate*100), pts:Math.round(rate*weight*10)/10, max:Math.round(weight*10)/10};
+    }
+    conv=Math.round(conv);
+    out.subjects[s]={conv, bands};
     out.total+=conv;
   }
-  out.gap=out.total-AOYAMA_CONV.line;
+  out.gap=out.total-C.line;
   return out;
 }
 
@@ -9908,8 +9934,8 @@ return (
             <span style={{fontSize:9,opacity:.5}}>合格ライン {C.line}/{C.total}</span>
           </div>
           <div style={{fontSize:9.5,opacity:.55,marginBottom:9,lineHeight:1.5}}>
-            各テストから<b>正答率{C.easyThreshold}%以上の問題だけ</b>を抜き出し、青学の配点（算100・国100・理50・社50）に換算。
-            青学は基礎9割の入試なので、SAPIX偏差値よりこちらが実力に近い指標です。
+            青学の実問題4年分（2023〜2026）を全問精査して算出した<b>難易度構成</b>にもとづく換算です。
+            SAPIXの設問を易しい順に並べ、青学と同じ比率で基礎/標準/応用/難問に区切って得点率を当てはめます。
           </div>
           {/* 最新 */}
           <div style={{display:"grid",gridTemplateColumns:"1.15fr 1fr",gap:8,marginBottom:9}}>
@@ -12716,7 +12742,7 @@ return(
         border:"1px solid rgba(244,114,182,.32)"}}>
         <div style={{padding:"10px 12px",borderBottom:"1px solid rgba(244,114,182,.18)"}}>
           <div style={{fontSize:12.5,fontWeight:800,color:"#f9a8d4"}}>★ 青学換算スコア</div>
-          <div style={{fontSize:9.5,opacity:.5,marginTop:2}}>正答率{C.easyThreshold}%以上の問題のみを青学配点に換算</div>
+          <div style={{fontSize:9.5,opacity:.5,marginTop:2}}>青学の実問題4年分の難易度構成にもとづく換算</div>
         </div>
         <div style={{padding:"11px 12px"}}>
           <div style={{textAlign:"center",marginBottom:9}}>
@@ -12726,7 +12752,7 @@ return(
               合格ライン{C.line}点まで {c.gap>=0?`+${c.gap}`:c.gap}点
             </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5,marginBottom:10}}>
             {["math","japanese","science","social"].map(s=>{
               const v=c.subjects[s]; if(!v||v.conv==null) return <div key={s}/>;
               const ok=v.conv>=C.goal[s];
@@ -12740,6 +12766,38 @@ return(
                 </div>
               );
             })}
+          </div>
+          {/* 難易度帯ごとの内訳 */}
+          <div style={{padding:"9px 10px",borderRadius:9,background:"rgba(6,12,24,.4)"}}>
+            <div style={{fontSize:10,fontWeight:700,opacity:.7,marginBottom:6}}>難易度帯ごとの取れ方</div>
+            <div style={{display:"grid",gridTemplateColumns:"38px repeat(4,1fr)",gap:3,fontSize:9,textAlign:"center"}}>
+              <div/>
+              {["A","B","C","D"].map(lv=>(
+                <div key={lv} style={{opacity:.55,fontWeight:700}}>{C.levelName[lv]}</div>
+              ))}
+              {["math","japanese","science","social"].map(s=>{
+                const v=c.subjects[s]; if(!v||!v.bands) return null;
+                return (
+                  <React.Fragment key={s}>
+                    <div style={{color:C.color[s],fontWeight:700,alignSelf:"center"}}>{C.label[s]}</div>
+                    {["A","B","C","D"].map(lv=>{
+                      const b=v.bands[lv];
+                      const r=b.rate;
+                      const bg=r>=70?"rgba(74,222,128,.4)":r>=50?"rgba(163,230,53,.33)":r>=30?"rgba(251,191,36,.33)":"rgba(248,113,113,.3)";
+                      return (
+                        <div key={lv} style={{padding:"4px 2px",borderRadius:5,background:bg}}>
+                          <div style={{fontFamily:"monospace",fontWeight:800,fontSize:10}}>{r}%</div>
+                          <div style={{fontSize:7.5,opacity:.6}}>{b.pts}/{b.max}</div>
+                        </div>
+                      );
+                    })}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+            <div style={{fontSize:8.5,opacity:.45,marginTop:5,lineHeight:1.5}}>
+              青学の配点比率：算数は基礎13%・標準20%・応用40%・難問27%。<b>算数は応用問題を取らないと合格点に届きません。</b>
+            </div>
           </div>
         </div>
       </div>
