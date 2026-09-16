@@ -34,7 +34,7 @@ window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
 if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sapix-support/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260916-057';
+const CURRENT_VERSION = '20260916-061';
 async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
 function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
 setTimeout(checkForUpdate,3000);
@@ -10199,6 +10199,13 @@ const DEFAULT_MIN = {
 
 // 青学 年度別の大問テンプレート（配点非公表のため問題数で均等推定）
 const AOYAMA_TEMPLATES = {
+  2022: {
+    math: {max:100, sections:[{n:1,label:"四則計算",items:1},{n:2,label:"四則計算",items:1},{n:3,label:"逆算",items:1},{n:4,label:"割合と比",items:1},{n:5,label:"平均とのべ",items:1},{n:6,label:"整数の性質",items:1},{n:7,label:"条件の整理",items:1},{n:8,label:"グラフ・水の深さと体積",items:1},{n:9,label:"平面図形・点の移動",items:1},{n:10,label:"角度",items:1},{n:11,label:"時計算(1)(2)",items:2},{n:12,label:"平面図形・面積(1)(2)",items:2},{n:13,label:"速さ(1)(2)",items:2}]},
+    japanese: {max:100, sections:[{n:1,label:"漢字",items:5},{n:2,label:"詩",items:6},{n:3,label:"論説文",items:8},{n:4,label:"物語文①",items:8},{n:5,label:"物語文②",items:6}]},
+    science: {max:50, sections:[{n:1,label:"小問集合",items:5},{n:2,label:"生物",items:5},{n:3,label:"地学",items:5},{n:4,label:"化学",items:5},{n:5,label:"物理",items:4}]},
+    social: {max:50, sections:[{n:1,label:"地理総合",items:5},{n:2,label:"歴史総合",items:5},{n:3,label:"公民・時事",items:4},{n:4,label:"大問4",items:3},{n:5,label:"大問5",items:3}]},
+  },
+
   2026: {
     math: {max:100, sections:[{n:1,label:"四則計算",items:1},{n:2,label:"逆算",items:1},{n:3,label:"単位の計算",items:1},{n:4,label:"売買損益・つるかめ算",items:1},{n:5,label:"差集め算",items:1},{n:6,label:"条件の整理",items:1},{n:7,label:"集まり・相当算",items:1},{n:8,label:"速さと比",items:1},{n:9,label:"比",items:1},{n:10,label:"比",items:1},{n:11,label:"角度",items:1},{n:12,label:"速さ・周期 (1)(2)",items:2},{n:13,label:"場合分け (1)(2)",items:2}]},
     japanese: {max:100, sections:[{n:1,label:"漢字",items:5},{n:2,label:"詩",items:5},{n:3,label:"論説文",items:8},{n:4,label:"物語文①",items:9},{n:5,label:"物語文②",items:5}]},
@@ -10234,44 +10241,50 @@ const LOSS_REASONS = [
 
 
 // 青学 2023年度 椿さんの実績（答案から登録・未入力時のみ投入）
+const AOYAMA_SEED_VERSION = "2026-09-16";
 const AOYAMA_SEED = {
+  2019: { japanese: {max:100,time:"",rows:[{label:"一 漢字",score:"10",max:"12",blank:"0",reason:""},{label:"二 詩",score:"5",max:"18",blank:"0",reason:"read"},{label:"三 論説文",score:"7",max:"25",blank:"0",reason:"read"},{label:"四 物語文①",score:"6",max:"30",blank:"0",reason:"read"},{label:"五 物語文②",score:"20",max:"15",blank:"0",reason:""}],scores:["10","5","7","6","20"]} },
+  2018: { japanese: {max:100,time:"",rows:[{label:"一 漢字",score:"4",max:"10",blank:"0",reason:"know"},{label:"二 語句",score:"10",max:"16",blank:"0",reason:""},{label:"三 論説文",score:"7",max:"27",blank:"0",reason:"read"},{label:"四 物語文①",score:"9",max:"21",blank:"0",reason:"read"},{label:"五 物語文②",score:"5",max:"26",blank:"0",reason:"read"}],scores:["4","10","7","9","5"]} },
+  2017: { social: {max:50,time:"",rows:[{label:"1 地理(地形図)",score:"4",max:"9",blank:"0",reason:""},{label:"2 地理(気候・律令)",score:"4",max:"8",blank:"0",reason:"know"},{label:"3 歴史",score:"4",max:"8",blank:"0",reason:"know"},{label:"4 歴史(人物)",score:"3",max:"7",blank:"0",reason:"know"},{label:"5 歴史",score:"3",max:"4",blank:"0",reason:""},{label:"6 公民",score:"3",max:"8",blank:"0",reason:"know"},{label:"7 公民",score:"3",max:"6",blank:"0",reason:""}],scores:["4","4","4","3","3","3","3"]} },
   2023: { math: {max:100,time:"",rows:[{label:"1. 四則計算",score:"6",max:"6",blank:"0",reason:""},{label:"2. 逆算",score:"6",max:"6",blank:"0",reason:""},{label:"3. 整数の性質",score:"6",max:"6",blank:"0",reason:""},{label:"4. 単位の計算",score:"0",max:"6",blank:"0",reason:"calc"},{label:"5. 比の性質・相当算",score:"6",max:"6",blank:"0",reason:""},{label:"6. つるかめ算",score:"0",max:"6",blank:"0",reason:"know"},{label:"7. 濃度",score:"0",max:"6",blank:"0",reason:"calc"},{label:"8. 条件の整理（選挙）",score:"0",max:"6",blank:"0",reason:"read"},{label:"9. 流水算・速さと比",score:"0",max:"6",blank:"0",reason:"know"},{label:"10. 図形と規則 (1)(2)",score:"6",max:"12",blank:"0",reason:"know"},{label:"11. 平面図形・面積",score:"6",max:"6",blank:"0",reason:""},{label:"12. 平面図形",score:"3",max:"7",blank:"0",reason:""},{label:"13. 平面図形・角度",score:"3",max:"7",blank:"0",reason:""},{label:"14. 比 (1)(2)",score:"0",max:"14",blank:"0",reason:"know"}],scores:["6","6","6","0","6","0","0","0","0","6","6","3","3","0"]}, japanese: {max:100,time:"",rows:[{label:"一 漢字",score:"6",max:"10",blank:"0",reason:"know"},{label:"二 詩",score:"2",max:"18",blank:"0",reason:"read"},{label:"三 論説文",score:"9",max:"25",blank:"0",reason:"read"},{label:"四 物語文①",score:"4",max:"26",blank:"0",reason:"read"},{label:"五 物語文②",score:"12",max:"21",blank:"0",reason:"read"}],scores:["6","2","9","4","12"]} },
 };
 // 青学 頻出単元（2023〜2026の4年分から集計）
 const AOYAMA_TRENDS = {
   math: [
-    {unit:"四則計算・逆算",   years:[2023,2024,2025,2026], note:"毎年大問1・2で必出。落とせない12点"},
-    {unit:"平面図形（角度）", years:[2023,2024,2025,2026], note:"4年連続。折り曲げ・合同を使う角度"},
-    {unit:"平面図形（面積）", years:[2023,2024,2025],      note:"3年連続。構成・移動を含む"},
-    {unit:"条件の整理",       years:[2023,2024,2025,2026], note:"4年連続。表にまとめる力"},
-    {unit:"速さと比・旅人算", years:[2023,2024,2025,2026], note:"4年連続。流水算・グラフ含む"},
-    {unit:"割合と比・相当算", years:[2023,2024,2025,2026], note:"4年連続。倍数算・消去算含む"},
-    {unit:"平均とのべ",       years:[2024,2025],           note:"2年連続。条件整理と融合"},
-    {unit:"つるかめ算",       years:[2023,2024,2026],      note:"3回出題。売買損益と融合も"},
-    {unit:"単位の計算",       years:[2023,2025,2026],      note:"3回出題。ha・面積の換算"},
-    {unit:"水の深さと体積",   years:[2024,2025],           note:"2年連続。大問13〜14の難問枠"},
-    {unit:"場合の数",         years:[2025,2026],           note:"2年連続"},
-    {unit:"濃度",             years:[2023],                note:"やりとり型の難問"},
+    {unit:"四則計算・逆算",       years:[2022,2023,2024,2025,2026], note:"5年連続で大問1〜3。配点13%の確実な得点源"},
+    {unit:"平面図形（角度）",     years:[2022,2023,2024,2025,2026], note:"5年連続。折り曲げ・合同・二等辺の組合せ"},
+    {unit:"平面図形（面積・比）", years:[2022,2023,2024,2025,2026], note:"5年連続。補助線と相似がカギ"},
+    {unit:"条件の整理",           years:[2022,2023,2024,2025,2026], note:"5年連続。表・図に整理する作業力"},
+    {unit:"速さ（旅人・流水・時計）",years:[2022,2023,2024,2025,2026], note:"5年連続。比を使った処理が必須"},
+    {unit:"割合と比・相当算",     years:[2022,2023,2024,2025,2026], note:"5年連続。倍数算・消去算も含む"},
+    {unit:"水量・グラフ",         years:[2022,2024,2025,2026],      note:"4/5回。大問後半の難問枠"},
+    {unit:"平均とのべ",           years:[2022,2024,2025],           note:"3/5回。面積図で処理"},
+    {unit:"つるかめ算",           years:[2023,2024,2026],           note:"3/5回。売買損益と融合も"},
+    {unit:"単位換算",             years:[2023,2025,2026],           note:"3/5回。ha・縮尺・概数の複合"},
+    {unit:"場合の数",             years:[2025,2026],                note:"2/5回。近年増加傾向"},
+    {unit:"点の移動",             years:[2022,2026],                note:"2/5回。大問12前後の難問"},
+    {unit:"整数の性質",           years:[2022,2023],                note:"2/5回"},
   ],
   japanese: [
-    {unit:"漢字（書き取り5問）", years:[2023,2024,2025,2026], note:"毎年大問一。10点。全問正解が前提"},
-    {unit:"詩",                years:[2023,2024,2025,2026], note:"毎年大問二。塾で扱われにくい。要対策"},
-    {unit:"論説文",            years:[2023,2024,2025,2026], note:"毎年大問三。選択・抜き出し中心"},
-    {unit:"物語文×2題",        years:[2023,2024,2025,2026], note:"毎年大問四・五。読む量が多い"},
+    {unit:"漢字（書き取り）",     years:[2022,2023,2024,2025,2026], note:"毎年大問一。10〜12点。全問正解が前提"},
+    {unit:"詩",                   years:[2021,2022,2023,2024,2025,2026], note:"毎年大問二。塾で扱われにくく差がつく最重要分野"},
+    {unit:"論説文",               years:[2022,2023,2024,2025,2026], note:"毎年大問三。選択・抜き出し中心"},
+    {unit:"物語文×2題",           years:[2022,2023,2024,2025,2026], note:"毎年大問四・五。読む総量が多い"},
   ],
   science: [
-    {unit:"小問集合（総合）",   years:[2023,2024,2025,2026], note:"毎年大問1。時事・科学常識（ノーベル賞等）"},
-    {unit:"生物",              years:[2023,2024,2025,2026], note:"季節観測・昆虫・血液・微生物と幅広い"},
-    {unit:"地学",              years:[2023,2024,2025,2026], note:"湿度・地層・月・地学と毎年1題"},
-    {unit:"化学（計算あり）",   years:[2024,2025,2026],      note:"溶解度・二酸化炭素・金属。計算で差がつく"},
-    {unit:"物理（電気・力学）", years:[2023,2024,2025,2026], note:"浮力・手回し発電機・ふりこ・電気。計算必須"},
+    {unit:"小問集合（時事・常識）",years:[2022,2023,2024,2025,2026], note:"毎年大問1。ノーベル賞・話題の科学ニュース"},
+    {unit:"生物",                 years:[2022,2023,2024,2025,2026], note:"季節観測・昆虫・血液・微生物と幅広い"},
+    {unit:"地学",                 years:[2022,2023,2024,2025,2026], note:"湿度・地層・月・天体。計算を含む年も"},
+    {unit:"化学（計算あり）",     years:[2022,2024,2025,2026],      note:"溶解度・二酸化炭素・金属。差がつく"},
+    {unit:"物理（電気・力学）",   years:[2022,2023,2024,2025,2026], note:"浮力・発電機・ふりこ・電気。計算必須"},
   ],
   social: [
-    {unit:"地形図・資料読み取り", years:[2023,2024,2025,2026], note:"毎年。地図・グラフ・写真からの読み取り"},
-    {unit:"時事（直近1〜2年）",   years:[2023,2024,2025,2026], note:"インド首相・最高裁判決・関税など深掘り型"},
-    {unit:"歴史（テーマ史）",     years:[2023,2024,2025,2026], note:"放送史・火消・国宝など切り口が独特"},
-    {unit:"公民（選挙・裁判）",   years:[2025,2026],           note:"2年連続。三権分立の基礎"},
-    {unit:"「すべて選べ」形式",   years:[2023,2024,2025,2026], note:"毎年。完答必須で差がつく"},
+    {unit:"地形図・資料読み取り", years:[2021,2022,2023,2024,2025,2026], note:"毎年。地図・グラフ・写真から読み取る"},
+    {unit:"時事（直近1〜2年）",   years:[2021,2022,2023,2024,2025,2026], note:"インド首相・最高裁判決・関税など深掘り型"},
+    {unit:"歴史（テーマ史）",     years:[2021,2022,2023,2024,2025,2026], note:"放送史・火消・国宝・音楽など独特の切り口"},
+    {unit:"自然災害・防災",       years:[2021,2022,2024],           note:"ハザードマップ・自然災害伝承碑"},
+    {unit:"公民（選挙・裁判）",   years:[2025,2026],                note:"2年連続。三権分立の基礎"},
+    {unit:"「すべて選べ」形式",   years:[2021,2022,2023,2024,2025,2026], note:"毎年。完答必須で最も差がつく"},
   ],
 };
 
@@ -10369,15 +10382,26 @@ React.useEffect(()=>{ (async()=>{
       if(legacy&&legacy.value) yd={aoyama:JSON.parse(legacy.value)};
     }
     yd=yd||{};
-    // 青学2023の答案データを未入力なら投入
+    // 青学の答案データ（実物から登録）を投入。SEED_VERSION更新時はseed由来データを差し替え
     const ao={...(yd.aoyama||{})};
-    let seeded=false;
+    let seeded=false, sv=null;
+    try{ const v=await window.storage.get("aoyama-seed-version"); sv=v&&v.value?v.value:null; }catch(e){}
+    const needUpdate = sv!==AOYAMA_SEED_VERSION;
     Object.entries(AOYAMA_SEED).forEach(([y,subs])=>{
       const cur={...(ao[y]||{})};
-      Object.entries(subs).forEach(([sid,val])=>{ if(!cur[sid]){cur[sid]=val;seeded=true;} });
+      Object.entries(subs).forEach(([sid,val])=>{
+        if(!cur[sid]){ cur[sid]={...val,seed:true}; seeded=true; }
+        else if(needUpdate && cur[sid].seed!==false){ cur[sid]={...val,seed:true}; seeded=true; }
+      });
       ao[y]=cur;
     });
-    if(seeded){ yd={...yd,aoyama:ao}; try{ await window.storage.set("yumeichu-yearly", JSON.stringify(yd)); }catch(e){} }
+    if(seeded||needUpdate){
+      yd={...yd,aoyama:ao};
+      try{
+        await window.storage.set("yumeichu-yearly", JSON.stringify(yd));
+        await window.storage.set("aoyama-seed-version", AOYAMA_SEED_VERSION);
+      }catch(e){}
+    }
     setYearlyData(yd);
   }catch(e){}
   setLoaded(true);
@@ -10561,6 +10585,7 @@ if(editYear){
     const sd={...(next[editYear.schoolId]||{})};
     const yd={...(sd[editYear.year]||{})};
     yd[editYear.subjId]={
+      seed:false,
       max:parseFloat(editYear.max)||0,
       time:editYear.time===""?"":String(editYear.time),
       rows:rows.map(r=>({label:r.label||"",score:r.score===""?"":String(r.score),
@@ -10944,7 +10969,7 @@ if(view!=="list"&&YEARLY_SCHOOLS[view]){
           <div style={{marginBottom:12,borderRadius:11,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",overflow:"hidden"}}>
             <button onClick={()=>setOpen(!open)} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",
               background:"none",border:"none",color:"white",padding:"10px 11px",cursor:"pointer",fontFamily:"inherit"}}>
-              <span style={{fontSize:11.5,fontWeight:700,opacity:.85}}>📚 出題傾向（2023〜2026の4年分）</span>
+              <span style={{fontSize:11.5,fontWeight:700,opacity:.85}}>📚 出題傾向（2021〜2026の実データ）</span>
               <span style={{fontSize:11,opacity:.5}}>{open?"▲":"▼"}</span>
             </button>
             {open&&(
@@ -10963,14 +10988,14 @@ if(view!=="list"&&YEARLY_SCHOOLS[view]){
                   return (
                     <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",padding:"7px 0",borderBottom:"1px solid rgba(255,255,255,.05)"}}>
                       <div style={{flexShrink:0,width:40,textAlign:"center"}}>
-                        <div style={{fontSize:16,fontWeight:900,fontFamily:"monospace",color:freq>=4?"#f87171":freq>=3?"#fbbf24":"rgba(255,255,255,.6)"}}>{freq}<span style={{fontSize:9}}>/4</span></div>
-                        <div style={{fontSize:8,opacity:.4}}>{freq>=4?"必出":freq>=3?"頻出":"出題あり"}</div>
+                        <div style={{fontSize:16,fontWeight:900,fontFamily:"monospace",color:freq>=5?"#f87171":freq>=3?"#fbbf24":"rgba(255,255,255,.6)"}}>{freq}<span style={{fontSize:9}}>/5</span></div>
+                        <div style={{fontSize:8,opacity:.4}}>{freq>=5?"必出":freq>=3?"頻出":"出題あり"}</div>
                       </div>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontSize:12,fontWeight:700}}>{t.unit}</div>
                         <div style={{fontSize:9.5,opacity:.6,marginTop:2,lineHeight:1.5}}>{t.note}</div>
                         <div style={{display:"flex",gap:3,marginTop:4}}>
-                          {[2023,2024,2025,2026].map(y=>(
+                          {[2022,2023,2024,2025,2026].map(y=>(
                             <span key={y} style={{fontSize:8.5,padding:"1px 5px",borderRadius:4,
                               background:t.years.includes(y)?`${SUBJ_C[trendSubj]}33`:"rgba(255,255,255,.04)",
                               color:t.years.includes(y)?SUBJ_C[trendSubj]:"rgba(255,255,255,.25)"}}>{String(y).slice(2)}</span>
