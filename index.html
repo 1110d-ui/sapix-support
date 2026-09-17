@@ -34,7 +34,7 @@ window.onerror=function(msg,src,line){setLoadMsg("Error: "+msg);return false;};
 setTimeout(function(){var e=document.getElementById("loading");if(e&&!e.classList.contains("hide"))setLoadMsg("時間がかかっています。Wi-Fiを確認してください。");},20000);
 if("serviceWorker"in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("/sapix-support/sw.js").catch(()=>{});}
 
-const CURRENT_VERSION = '20260916-061';
+const CURRENT_VERSION = '20260917-063';
 async function checkForUpdate(){if(!navigator.onLine)return;try{const res=await fetch('/',{cache:'no-store'});const text=await res.text();const m=text.match(/CURRENT_VERSION = '([^']+)'/);if(m&&m[1]&&m[1]!==CURRENT_VERSION)showUpdateBanner();}catch(e){}}
 function showUpdateBanner(){if(document.getElementById('update-banner'))return;const b=document.createElement('div');b.id='update-banner';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#059669,#0d9488);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);';b.innerHTML='<div style="color:white;font-size:13px;font-weight:700">🆕 新しいバージョンがあります</div><button id="update-btn" style="background:white;color:#059669;border:none;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">今すぐ更新</button>';document.body.prepend(b);document.getElementById('update-btn').addEventListener('click',async()=>{const btn=document.getElementById('update-btn');btn.textContent='更新中...';btn.disabled=true;try{if('serviceWorker'in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));}const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}window.location.reload(true);});}
 setTimeout(checkForUpdate,3000);
@@ -9739,6 +9739,44 @@ function RateBar({ label, rate, sub }) {
 // ============================================================
 // AnalysisTab: 科目別 得意・苦手単元一覧
 // ============================================================
+
+// ══ 出願シミュレーター：受験校データ ══
+// 出典：2026年7月実施 前期第2回合格力判定SO 80%判定偏差値表<女子>（2026年9月登録）
+const EXAM_PLAN_SRC = "2026年7月 前期第2回合格力判定SO・女子80%判定";
+const EXAM_PLAN = [
+  {id:"kaichi_0110",     date:"2027-01-10", day:"1/10", name:"開智",              short:"開智",        hensachi:42, group:"safe",   place:"埼玉",   note:"確保本命。過去問−18点まで来ている", affinity:2},
+  {id:"lutheran_0111",   date:"2027-01-11", day:"1/11", name:"青学浦和ルーテル",   short:"浦和ルーテル", hensachi:49, group:"safe",   place:"埼玉",   note:"青学系属校。キリスト教・共学と校風が一致。偏差値49で実力相応", affinity:3},
+  {id:"ichikawa_0120",   date:"2027-01-20", day:"1/20", name:"市川",              short:"市川",        hensachi:58, group:"second", place:"千葉",   note:"作図・書き出し中心。青学と別種の対策が必要", affinity:1},
+  {id:"senshu_0120",     date:"2027-01-20", day:"1/20", name:"専修大松戸",        short:"専大松戸",     hensachi:42, group:"mid",    place:"千葉",   note:"市川と同日。どちらかを選択。偏差値42で開智と並ぶ確保候補", affinity:2},
+  {id:"toho_0121",       date:"2027-01-21", day:"1/21", name:"東邦大東邦",        short:"東邦大東邦",   hensachi:54, group:"second", place:"千葉",   note:"算数の構成・頻出単元が青学に最も近い。偏差値54で青学とほぼ同格", affinity:3},
+  {id:"knihonbashi_0201",date:"2027-02-01", day:"2/1",  name:"開智日本橋 1回",    short:"開智日本橋①",  hensachi:46, group:"second", place:"東京",   note:"算数は記述式。単元は青学と重なる。偏差値46で実力相応", affinity:2},
+  {id:"hiroo_kois_0201", date:"2027-02-01", day:"2/1",  name:"広尾学園小石川",     short:"広尾小石川",   hensachi:51, group:"challenge",place:"東京", note:"思考力重視。青学対策の転用度は低い", affinity:1},
+  {id:"hiroo_0201",      date:"2027-02-01", day:"2/1",  name:"広尾学園",          short:"広尾学園",     hensachi:59, group:"challenge",place:"東京", note:"思考力問題30%弱。現在地から大きく離れる", affinity:1},
+  {id:"aoyama_0202",     date:"2027-02-02", day:"2/2",  name:"青山学院中等部",     short:"青山学院",     hensachi:53, group:"first",  place:"東京",   note:"第一志望。合格最低点183/300（女子）", affinity:5},
+  {id:"knihonbashi_0203",date:"2027-02-03", day:"2/3",  name:"開智日本橋 3回",    short:"開智日本橋③",  hensachi:49, group:"second", place:"東京",   note:"午後入試。青学の結果を見て再挑戦", affinity:2},
+  {id:"toho_0203",       date:"2027-02-03", day:"2/3",  name:"東邦大東邦 後期",    short:"東邦後期",     hensachi:54, group:"second", place:"千葉",   note:"定員20名で倍率が高い", affinity:3},
+  {id:"knihonbashi_0204",date:"2027-02-04", day:"2/4",  name:"開智日本橋 4回",    short:"開智日本橋④",  hensachi:47, group:"second", place:"東京",   note:"最終日程。倍率は最も高い", affinity:2},
+];
+const GROUP_META = {
+  first:     {label:"第一志望", color:"#f472b6"},
+  second:    {label:"第二志望群", color:"#60a5fa"},
+  challenge: {label:"チャレンジ", color:"#f87171"},
+  mid:       {label:"実力相応", color:"#fbbf24"},
+  safe:      {label:"確保",     color:"#4ade80"},
+};
+// 現在のSAPIX偏差値から合格可能性を推定
+function estimateProb(hensachi, current){
+  const d = current - hensachi;           // 差（＋なら有利）
+  if(d >= 5)  return 85;
+  if(d >= 2)  return 70;
+  if(d >= 0)  return 55;
+  if(d >= -3) return 40;
+  if(d >= -6) return 25;
+  if(d >= -9) return 15;
+  if(d >= -12)return 8;
+  return 3;
+}
+
 // ══ 青学換算：4年分の実問題から算出した難易度構成に基づく ══
 // 2023〜2026の青学入試を全問精査し、各科目の難易度構成比を判定
 // A=基礎 B=標準 C=応用 D=難問
@@ -10354,6 +10392,11 @@ const [jijiTab, setJijiTab] = React.useState("next");
 const [jijiState, setJijiState] = React.useState({checked:{}, custom:[]});
 const [jijiInput, setJijiInput] = React.useState("");
 const [typeOpen, setTypeOpen] = React.useState(true);
+const [planSel, setPlanSel] = React.useState({
+  kaichi_0110:true, toho_0121:true, aoyama_0202:true, knihonbashi_0203:true
+});
+const [planResult, setPlanResult] = React.useState({});// {schoolId:"pass"|"fail"} 結果入力
+const [planHensachi, setPlanHensachi] = React.useState(43); // 想定偏差値
 const [view, setView] = React.useState("list");           // "list" | schoolId
 
 React.useEffect(()=>{ (async()=>{
@@ -10364,6 +10407,12 @@ React.useEffect(()=>{ (async()=>{
   try{
     const o = await window.storage.get("yumeichu-overrides");
     if(o&&o.value) setOverrides(JSON.parse(o.value));
+  }catch(e){}
+  try{
+    const pl = await window.storage.get("exam-plan");
+    if(pl&&pl.value){ const o=JSON.parse(pl.value);
+      if(o.sel) setPlanSel(o.sel); if(o.result) setPlanResult(o.result);
+      if(o.hensachi!=null) setPlanHensachi(o.hensachi); }
   }catch(e){}
   try{
     const j = await window.storage.get("aoyama-jiji");
@@ -10418,6 +10467,11 @@ const saveOv = async (next) => {
 const saveMin = async (next) => {
   setMinScores(next);
   try{ await window.storage.set("yumeichu-minscores", JSON.stringify(next)); }catch(e){}
+};
+const savePlan = async (sel, result, hensachi) => {
+  const s=sel!==undefined?sel:planSel, r=result!==undefined?result:planResult, hh=hensachi!==undefined?hensachi:planHensachi;
+  setPlanSel(s); setPlanResult(r); setPlanHensachi(hh);
+  try{ await window.storage.set("exam-plan", JSON.stringify({sel:s,result:r,hensachi:hh})); }catch(e){}
 };
 const saveJiji = async (next) => {
   setJijiState(next);
@@ -10677,6 +10731,168 @@ if(editYear){
       <button onClick={commitYear} style={{width:"100%",background:"linear-gradient(135deg,#059669,#0d9488)",border:"none",color:"white",borderRadius:10,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer",marginBottom:8}}>保存する</button>
       {(()=>{const d=((yearlyData[editYear.schoolId]||{})[editYear.year]||{})[editYear.subjId];
         return d?<button onClick={delYear} style={{width:"100%",background:"rgba(239,68,68,.12)",border:"1px solid rgba(248,113,113,.3)",color:"#f87171",borderRadius:10,padding:"11px",fontSize:13,cursor:"pointer"}}>この記録を削除</button>:null;})()}
+    </div>
+  );
+}
+
+// ── 出願シミュレーター ──
+if(view==="plan"){
+  const cur=planHensachi;
+  const sel=planSel, res=planResult;
+  const toggle=(id)=>{const n={...sel}; if(n[id])delete n[id]; else n[id]=true; savePlan(n,undefined,undefined);};
+  const setRes=(id,v)=>{const n={...res}; if(n[id]===v)delete n[id]; else n[id]=v; savePlan(undefined,n,undefined);};
+  const chosen=EXAM_PLAN.filter(s=>sel[s.id]);
+  // 日程ごとにグループ化
+  const byDay={};
+  EXAM_PLAN.forEach(s=>{(byDay[s.day]=byDay[s.day]||[]).push(s);});
+  const days=Object.keys(byDay);
+  // 少なくとも1つ合格する確率
+  const probs=chosen.map(s=>{
+    if(res[s.id]==="pass")return 100;
+    if(res[s.id]==="fail")return 0;
+    return estimateProb(s.hensachi,cur);
+  });
+  const anyPass=probs.length?Math.round((1-probs.reduce((a,p)=>a*(1-p/100),1))*100):0;
+  // 2/2以前に合格があるか
+  const before22=chosen.filter(s=>s.date<"2027-02-02");
+  const beforeProbs=before22.map(s=>res[s.id]==="pass"?100:res[s.id]==="fail"?0:estimateProb(s.hensachi,cur));
+  const anyBefore=beforeProbs.length?Math.round((1-beforeProbs.reduce((a,p)=>a*(1-p/100),1))*100):0;
+  const confirmedBefore=before22.some(s=>res[s.id]==="pass");
+  const allFailBefore=before22.length>0&&before22.every(s=>res[s.id]==="fail");
+  // 2/1の推奨
+  const feb1=chosen.filter(s=>s.day==="2/1");
+  let advice=null;
+  if(confirmedBefore){
+    advice={type:"ok", title:"1月に合格あり → 2/1は休養を推奨",
+      body:"進学先が確保できています。2/1は受験せず、2/2の青学に万全の状態で臨むのが最も得点期待値が高い選択です。"};
+  }else if(allFailBefore){
+    advice={type:"warn", title:"1月が全滅 → 2/1に確保校が必須",
+      body:"2/1は開智日本橋1回（偏差値51）が候補ですが、現在地から見て安全とは言えません。より確実な学校の追加出願を検討してください。"};
+  }else{
+    advice={type:"info", title:"1月の結果待ち",
+      body:"1月校の結果を入力すると、2/1の推奨プランが表示されます。Web出願は1月下旬まで可能な学校が多いので、結果を見てから決められます。"};
+  }
+  const inp={background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.15)",borderRadius:8,
+    padding:"8px 10px",color:"white",fontSize:14,outline:"none",boxSizing:"border-box",colorScheme:"dark",width:70,textAlign:"center",fontFamily:"monospace"};
+  return (
+    <div style={{padding:"12px 12px 90px"}}>
+      <button onClick={()=>setView("list")} style={{background:"none",border:"none",color:"#93c5fd",fontSize:13,cursor:"pointer",padding:"6px 0",marginBottom:8}}>← 有名中一覧にもどる</button>
+      <div style={{fontSize:17,fontWeight:800,marginBottom:2}}>🗓 出願シミュレーター</div>
+      <div style={{fontSize:10.5,opacity:.5,marginBottom:4}}>受験する学校を選び、結果を入力すると次の日程の判断材料が出ます</div>
+      <div style={{fontSize:9,opacity:.35,marginBottom:12}}>偏差値：{EXAM_PLAN_SRC}にもとづく</div>
+
+      {/* 想定偏差値 */}
+      <div style={{padding:"10px 11px",borderRadius:11,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",marginBottom:10}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontSize:10.5,opacity:.6}}>入試時点の想定SAPIX偏差値</div>
+            <div style={{fontSize:9,opacity:.4,marginTop:1}}>直近8月は42.7。秋の伸びを見込んで設定</div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <button onClick={()=>savePlan(undefined,undefined,Math.max(30,cur-1))} style={{background:"rgba(255,255,255,.08)",border:"none",color:"white",width:28,height:28,borderRadius:7,fontSize:15,cursor:"pointer"}}>−</button>
+            <input type="number" value={cur} onChange={e=>savePlan(undefined,undefined,parseFloat(e.target.value)||0)} style={inp}/>
+            <button onClick={()=>savePlan(undefined,undefined,Math.min(70,cur+1))} style={{background:"rgba(255,255,255,.08)",border:"none",color:"white",width:28,height:28,borderRadius:7,fontSize:15,cursor:"pointer"}}>＋</button>
+          </div>
+        </div>
+      </div>
+
+      {/* サマリー */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
+        <div style={{padding:"11px",borderRadius:11,textAlign:"center",
+          background:anyPass>=80?"rgba(34,197,94,.14)":anyPass>=50?"rgba(251,191,36,.12)":"rgba(239,68,68,.1)",
+          border:`1px solid ${anyPass>=80?"rgba(74,222,128,.4)":anyPass>=50?"rgba(251,191,36,.35)":"rgba(248,113,113,.3)"}`}}>
+          <div style={{fontSize:9.5,opacity:.6}}>どこか1校に合格</div>
+          <div style={{fontSize:28,fontWeight:900,fontFamily:"monospace",lineHeight:1.05,
+            color:anyPass>=80?"#4ade80":anyPass>=50?"#fbbf24":"#f87171"}}>{anyPass}<span style={{fontSize:13}}>%</span></div>
+          <div style={{fontSize:9,opacity:.45}}>{chosen.length}校を受験</div>
+        </div>
+        <div style={{padding:"11px",borderRadius:11,textAlign:"center",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)"}}>
+          <div style={{fontSize:9.5,opacity:.6}}>2/2までに合格</div>
+          <div style={{fontSize:28,fontWeight:900,fontFamily:"monospace",lineHeight:1.05,
+            color:anyBefore>=70?"#4ade80":anyBefore>=40?"#fbbf24":"#f87171"}}>{anyBefore}<span style={{fontSize:13}}>%</span></div>
+          <div style={{fontSize:9,opacity:.45}}>青学を安心して受けられる確率</div>
+        </div>
+      </div>
+
+      {/* 2/1の判断 */}
+      {advice&&(
+        <div style={{padding:"11px 12px",borderRadius:11,marginBottom:12,
+          background:advice.type==="ok"?"rgba(34,197,94,.12)":advice.type==="warn"?"rgba(239,68,68,.1)":"rgba(96,165,250,.1)",
+          border:`1px solid ${advice.type==="ok"?"rgba(74,222,128,.4)":advice.type==="warn"?"rgba(248,113,113,.35)":"rgba(96,165,250,.3)"}`}}>
+          <div style={{fontSize:12,fontWeight:800,marginBottom:4,
+            color:advice.type==="ok"?"#4ade80":advice.type==="warn"?"#f87171":"#93c5fd"}}>{advice.title}</div>
+          <div style={{fontSize:10.5,opacity:.75,lineHeight:1.6}}>{advice.body}</div>
+        </div>
+      )}
+
+      {/* 日程別リスト */}
+      {days.map(day=>{
+        const list=byDay[day];
+        const dayChosen=list.filter(s=>sel[s.id]);
+        return (
+          <div key={day} style={{marginBottom:11}}>
+            <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:5}}>
+              <span style={{fontSize:13,fontWeight:800,color:"#93c5fd"}}>{day}</span>
+              {dayChosen.length>1&&<span style={{fontSize:9,padding:"1px 6px",borderRadius:4,background:"rgba(251,191,36,.2)",color:"#fbbf24"}}>同日に{dayChosen.length}校選択中</span>}
+            </div>
+            {list.map(s=>{
+              const on=!!sel[s.id];
+              const r=res[s.id];
+              const prob=estimateProb(s.hensachi,cur);
+              const G=GROUP_META[s.group];
+              return (
+                <div key={s.id} style={{marginBottom:6,padding:"9px 10px",borderRadius:10,
+                  background:on?`${G.color}12`:"rgba(255,255,255,.03)",
+                  border:on?`1.5px solid ${G.color}55`:"1px solid rgba(255,255,255,.07)"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <button onClick={()=>toggle(s.id)}
+                      style={{flexShrink:0,width:22,height:22,borderRadius:6,cursor:"pointer",padding:0,
+                        border:on?`1px solid ${G.color}`:"1px solid rgba(255,255,255,.25)",
+                        background:on?`${G.color}33`:"transparent",color:G.color,fontSize:13,fontWeight:800}}>{on?"✓":""}</button>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap"}}>
+                        <span style={{fontSize:12.5,fontWeight:700}}>{s.name}</span>
+                        <span style={{fontSize:8.5,padding:"1px 5px",borderRadius:4,background:`${G.color}22`,color:G.color}}>{G.label}</span>
+                        {s.affinity>=3&&<span style={{fontSize:8.5,padding:"1px 5px",borderRadius:4,background:"rgba(244,114,182,.2)",color:"#f472b6"}}>青学と相性◎</span>}
+                      </div>
+                      <div style={{fontSize:9,opacity:.5,marginTop:2}}>偏差値{s.hensachi}　{s.place}　{s.note}</div>
+                    </div>
+                    <div style={{flexShrink:0,textAlign:"right"}}>
+                      <div style={{fontSize:15,fontWeight:900,fontFamily:"monospace",
+                        color:prob>=60?"#4ade80":prob>=35?"#fbbf24":"#f87171"}}>{prob}%</div>
+                    </div>
+                  </div>
+                  {on&&(
+                    <div style={{display:"flex",gap:5,marginTop:7,paddingLeft:30}}>
+                      <span style={{fontSize:9.5,opacity:.45,alignSelf:"center",marginRight:2}}>結果</span>
+                      <button onClick={()=>setRes(s.id,"pass")}
+                        style={{flex:1,background:r==="pass"?"rgba(74,222,128,.28)":"rgba(255,255,255,.05)",
+                          border:r==="pass"?"1px solid rgba(74,222,128,.6)":"1px solid rgba(255,255,255,.1)",
+                          color:r==="pass"?"#4ade80":"rgba(255,255,255,.45)",borderRadius:6,padding:"5px",fontSize:11,fontWeight:r==="pass"?800:400,cursor:"pointer",fontFamily:"inherit"}}>合格</button>
+                      <button onClick={()=>setRes(s.id,"fail")}
+                        style={{flex:1,background:r==="fail"?"rgba(248,113,113,.22)":"rgba(255,255,255,.05)",
+                          border:r==="fail"?"1px solid rgba(248,113,113,.5)":"1px solid rgba(255,255,255,.1)",
+                          color:r==="fail"?"#f87171":"rgba(255,255,255,.45)",borderRadius:6,padding:"5px",fontSize:11,fontWeight:r==="fail"?800:400,cursor:"pointer",fontFamily:"inherit"}}>不合格</button>
+                      <button onClick={()=>setRes(s.id,null)}
+                        style={{flex:.7,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",
+                          color:"rgba(255,255,255,.3)",borderRadius:6,padding:"5px",fontSize:10,cursor:"pointer",fontFamily:"inherit"}}>未定</button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+
+      {/* 注記 */}
+      <div style={{padding:"10px 11px",borderRadius:10,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",marginTop:6}}>
+        <div style={{fontSize:10,fontWeight:700,opacity:.7,marginBottom:5}}>合格可能性の目安について</div>
+        <div style={{fontSize:9.5,opacity:.55,lineHeight:1.65}}>
+          SAPIX偏差値の差から推定した参考値です。青学は基礎重視型で偏差値より過去問適合が効くため、
+          実際の可能性は過去問の得点率で判断してください。「どこか1校に合格」は各校が独立と仮定した計算です。
+        </div>
+      </div>
     </div>
   );
 }
@@ -11278,6 +11494,18 @@ return (
   <div style={{padding:"12px 13px 90px"}}>
     <div style={{fontSize:17,fontWeight:800,marginBottom:2}}>📕 有名中入試問題集</div>
     <div style={{fontSize:11,opacity:.5,marginBottom:12}}>2027年度受験用（全47校）／科目をタップして大問ごとの得点を記録</div>
+
+    <button onClick={()=>setView("plan")}
+      style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",
+        background:"linear-gradient(135deg,rgba(96,165,250,.22),rgba(167,139,250,.16))",
+        border:"1px solid rgba(96,165,250,.45)",borderRadius:11,padding:"11px 13px",
+        cursor:"pointer",color:"white",marginBottom:11,fontFamily:"inherit"}}>
+      <div style={{textAlign:"left"}}>
+        <div style={{fontSize:13,fontWeight:800}}>🗓 出願シミュレーター</div>
+        <div style={{fontSize:9.5,opacity:.6,marginTop:1}}>受験日程を組んで、合格可能性と2/1の判断を確認</div>
+      </div>
+      <span style={{fontSize:17,color:"#93c5fd"}}>›</span>
+    </button>
 
     <div style={{display:"flex",gap:8,marginBottom:12}}>
       <div style={{flex:1,padding:"10px",borderRadius:10,background:"rgba(59,130,246,.12)",border:"1px solid rgba(96,165,250,.25)",textAlign:"center"}}>
